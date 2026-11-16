@@ -1,0 +1,9 @@
+node_modules
+dist
+.env
+.env.local
+*.log
+.DS_Store
+
+# 개인 Claude Code 작업 지침 (저장소에 올리지 않음)
+CLAUDE.md

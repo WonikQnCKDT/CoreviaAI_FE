@@ -1,0 +1,283 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+
+/* design token: 색상 / 크기 / 글꼴 / motion을 파일별로 분리 */
+@import './tokens/colors.css';
+@import './tokens/sizes.css';
+@import './tokens/typography.css';
+@import './tokens/motion.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-page);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: var(--letter-spacing-heading);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: var(--size-scrollbar);
+  height: var(--size-scrollbar);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-scrollbar-thumb);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+@layer components {
+  /* ---------- card ---------- */
+  .card {
+    --card-radius: var(--radius-card);
+    --card-elevation: var(--elevation-card);
+
+    border: var(--size-border-default) solid var(--color-border-default);
+    border-radius: var(--card-radius);
+    background-color: var(--color-bg-surface);
+    box-shadow: var(--card-elevation);
+  }
+
+  /* ---------- field ---------- */
+  .field {
+    --field-padding-block: var(--space-inset-control-block);
+    --field-padding-inline: var(--space-inset-control-inline);
+    --field-radius: var(--radius-control);
+
+    /* structure */
+    width: 100%;
+    box-sizing: border-box;
+    padding: var(--field-padding-block) var(--field-padding-inline);
+    border: var(--size-border-default) solid var(--color-border-default);
+    border-radius: var(--field-radius);
+    font-size: var(--font-size-control);
+    outline: none;
+    transition:
+      border-color var(--motion-duration-fast) var(--motion-easing-standard),
+      box-shadow var(--motion-duration-fast) var(--motion-easing-standard);
+
+    /* skin */
+    background-color: var(--color-bg-surface);
+    color: var(--color-text-primary);
+  }
+
+  .field:focus {
+    border-color: var(--color-border-focus);
+    box-shadow: 0 0 0 var(--size-focus-ring) var(--color-focus-ring);
+  }
+
+  .field::placeholder {
+    color: var(--color-text-placeholder);
+  }
+
+  /* ---------- button: structure (모든 변형 공통) ---------- */
+  .btn,
+  .btn-primary,
+  .btn-outline,
+  .btn-ghost {
+    --btn-padding-block: var(--space-inset-button-block);
+    --btn-padding-inline: var(--space-inset-button-inline);
+    --btn-gap: var(--space-inline-icon-text);
+    --btn-radius: var(--radius-control);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--btn-gap);
+    white-space: nowrap;
+    padding: var(--btn-padding-block) var(--btn-padding-inline);
+    border: var(--size-border-default) solid transparent;
+    border-radius: var(--btn-radius);
+    font-size: var(--font-size-control);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition:
+      background-color var(--motion-duration-fast) var(--motion-easing-standard),
+      color var(--motion-duration-fast) var(--motion-easing-standard),
+      border-color var(--motion-duration-fast) var(--motion-easing-standard);
+  }
+
+  /* 크기 변형: scope token만 바꾼다 */
+  .btn-ghost {
+    --btn-padding-inline: var(--space-inset-button-compact-inline);
+  }
+
+  /* ---------- button: skin ---------- */
+  .btn-primary {
+    border-color: var(--color-action-primary);
+    background-color: var(--color-action-primary);
+    color: var(--color-text-on-action);
+  }
+
+  .btn-primary:hover {
+    border-color: var(--color-action-primary-hover);
+    background-color: var(--color-action-primary-hover);
+  }
+
+  .btn-outline {
+    border-color: var(--color-border-default);
+    background-color: var(--color-bg-surface);
+    color: var(--color-text-secondary);
+  }
+
+  .btn-outline:hover {
+    border-color: var(--color-border-hover);
+    background-color: var(--color-bg-surface-hover);
+  }
+
+  .btn-ghost {
+    background-color: transparent;
+    color: var(--color-text-tertiary);
+  }
+
+  .btn-ghost:hover {
+    background-color: var(--color-bg-hover-strong);
+    color: var(--color-text-primary);
+  }
+
+  .btn[disabled],
+  .btn-primary[disabled],
+  .btn-outline[disabled],
+  .btn-ghost[disabled] {
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
+  }
+
+  /* ---------- nav item ---------- */
+  .nav-item {
+    --nav-item-padding-block: var(--space-inset-nav-item-block);
+    --nav-item-padding-inline: var(--space-inset-nav-item-inline);
+    --nav-item-gap: var(--space-inline-nav-icon-text);
+    --nav-item-radius: var(--radius-control);
+
+    /* structure */
+    display: flex;
+    align-items: center;
+    gap: var(--nav-item-gap);
+    padding: var(--nav-item-padding-block) var(--nav-item-padding-inline);
+    border-radius: var(--nav-item-radius);
+    font-size: var(--font-size-nav);
+    cursor: pointer;
+    transition:
+      background-color var(--motion-duration-fast) var(--motion-easing-standard),
+      color var(--motion-duration-fast) var(--motion-easing-standard);
+
+    /* skin */
+    color: var(--color-text-muted);
+  }
+
+  .nav-item:hover {
+    background-color: var(--color-bg-surface-hover);
+    color: var(--color-text-strong);
+  }
+
+  .nav-item-active,
+  .nav-item-active:hover {
+    background-color: var(--color-bg-selected);
+    color: var(--color-text-selected);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  /* ---------- table ---------- */
+  .th {
+    --th-padding-block: var(--space-inset-table-header-block);
+    --th-padding-inline: var(--space-inset-table-cell-inline);
+
+    /* structure */
+    padding: var(--th-padding-block) var(--th-padding-inline);
+    border-bottom: var(--size-border-default) solid var(--color-border-default);
+    text-align: left;
+    white-space: nowrap;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-medium);
+
+    /* skin */
+    background-color: var(--color-bg-subtle);
+    color: var(--color-text-tertiary);
+  }
+
+  .td {
+    --td-padding-block: var(--space-inset-table-cell-block);
+    --td-padding-inline: var(--space-inset-table-cell-inline);
+
+    /* structure */
+    padding: var(--td-padding-block) var(--td-padding-inline);
+    border-bottom: var(--size-border-default) solid var(--color-border-subtle);
+    vertical-align: middle;
+    font-size: var(--font-size-control);
+
+    /* skin */
+    color: var(--color-text-secondary);
+  }
+
+  /* ---------- motion ---------- */
+  @keyframes dialog-in {
+    from {
+      opacity: 0;
+      transform: translateY(var(--motion-distance-dialog)) scale(var(--motion-scale-dialog-start));
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .dialog-enter {
+    animation: dialog-in var(--motion-duration-dialog) var(--motion-easing-enter);
+  }
+
+  .fade-enter {
+    animation: fade-in var(--motion-duration-fast) var(--motion-easing-enter);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dialog-enter,
+    .fade-enter {
+      animation: none;
+    }
+  }
+
+  /* 봇 차단용 숨김 필드. 디자인 크기가 아니라 화면 밖으로 빼는 기법이라 raw 값을 그대로 둔다 */
+  .honeypot-field {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+}

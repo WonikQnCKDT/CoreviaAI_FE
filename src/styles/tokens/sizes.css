@@ -1,0 +1,66 @@
+/*
+ * 크기 token (3단계 중 1·2단계. 3단계 컴포넌트 scope token은 각 컴포넌트 class 안에 둔다)
+ * 1) base: root 16px = 1rem, 기본 단위 4px(0.25rem). 이 파일 안에서만 쓴다.
+ * 2) semantic: 컴포넌트와 tailwind.config.ts는 이 token만 쓴다.
+ */
+
+/* ---------- 1. base scale (이 파일 전용) ---------- */
+:root {
+  /* hairline: border처럼 text scaling을 따라 커지면 안 되는 값만 px로 둔다 */
+  --base-px: 1px;
+  --base-0-5: 0.125rem;  /* 2px */
+  --base-0-75: 0.1875rem; /* 3px */
+  --base-1: 0.25rem;     /* 4px */
+  --base-1-5: 0.375rem;  /* 6px */
+  --base-2: 0.5rem;      /* 8px */
+  --base-2-5: 0.625rem;  /* 10px */
+  --base-3: 0.75rem;     /* 12px */
+  --base-3-5: 0.875rem;  /* 14px */
+  --base-4: 1rem;        /* 16px */
+  --base-4-5: 1.125rem;  /* 18px */
+  --base-12: 3rem;       /* 48px */
+}
+
+/* ---------- 2. semantic token ---------- */
+:root {
+  /* inset: 요소 안쪽 padding */
+  --space-inset-control-block: var(--base-2);
+  --space-inset-control-inline: var(--base-3);
+  --space-inset-button-block: var(--base-2);
+  --space-inset-button-inline: var(--base-3-5);
+  --space-inset-button-compact-inline: var(--base-2-5);
+  --space-inset-nav-item-block: var(--base-2);
+  --space-inset-nav-item-inline: var(--base-3);
+  --space-inset-table-header-block: var(--base-2-5);
+  --space-inset-table-cell-block: var(--base-3);
+  --space-inset-table-cell-inline: var(--base-3);
+
+  /* inline: 가로 간격 */
+  --space-inline-icon-text: var(--base-1-5);
+  --space-inline-nav-icon-text: var(--base-2-5);
+
+  /* size */
+  --size-border-default: var(--base-px);
+  --size-focus-ring: var(--base-0-75);
+  --size-scrollbar: var(--base-2);
+  --size-touch-target-min: 2.75rem;
+  --space-motion-dialog-offset: var(--base-2-5); /* dialog 등장 시 이동 거리 */
+
+  /* radius */
+  --radius-control: var(--base-2);
+  --radius-surface: var(--base-2-5); /* Tailwind rounded-lg */
+  --radius-card: var(--base-3);      /* Tailwind rounded-xl, .card */
+  --radius-pill: 999px;
+
+  /* font size / line height */
+  --font-size-caption: 0.75rem;     /* 12px: 표 헤더 */
+  --font-size-control: 0.8125rem;   /* 13px: 입력·버튼·표 셀 */
+  --font-size-nav: 0.84375rem;      /* 13.5px: 사이드 메뉴 */
+  --font-size-body: 0.875rem;       /* 14px: 본문 */
+  --line-height-body: 1.55;
+
+  /* elevation: 형태는 여기서, 색은 colors.css의 semantic 색상을 쓴다 */
+  --elevation-card: 0 var(--base-px) var(--base-0-5) var(--color-shadow-card);
+  --elevation-soft: 0 var(--base-px) var(--base-0-5) var(--color-shadow-soft);
+  --elevation-panel: 0 var(--base-4-5) var(--base-12) var(--color-shadow-panel);
+}

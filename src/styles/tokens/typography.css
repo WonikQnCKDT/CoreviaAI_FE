@@ -1,0 +1,11 @@
+/* 글꼴 token (글자 크기·줄 높이는 sizes.css에 있다) */
+:root {
+  --font-heading: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-body: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-label: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  --letter-spacing-heading: -0.01em;
+}

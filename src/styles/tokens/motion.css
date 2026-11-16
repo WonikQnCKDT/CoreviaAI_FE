@@ -1,0 +1,9 @@
+/* motion token. prefers-reduced-motion 처리는 사용하는 쪽(index.css)에서 한다 */
+:root {
+  --motion-duration-fast: 0.15s;
+  --motion-duration-dialog: 0.18s;
+  --motion-easing-standard: ease;
+  --motion-easing-enter: ease-out;
+  --motion-distance-dialog: var(--space-motion-dialog-offset);
+  --motion-scale-dialog-start: 0.985;
+}
