@@ -9,7 +9,7 @@
  * expireSession("expired") / reportNetworkIssue() 로 연결하면 됩니다.
  */
 
-export type SessionEndReason = "expired";
+export type SessionEndReason = "expired" | "passwordChanged";
 
 export interface SessionNotice {
   reason: SessionEndReason;
@@ -96,11 +96,26 @@ export function markSessionExpiredNotice() {
   writeJson(NOTICE_KEY, notice);
 }
 
+/** 비밀번호 변경으로 세션이 끝났을 때 로그인 화면에서 한 번 보여줄 안내를 기록합니다. */
+export const markPasswordChangedNotice = function ({ title, note }: { title: string; note: string }) {
+  writeJson(NOTICE_KEY, { reason: "passwordChanged", title, note, at: Date.now() } satisfies SessionNotice);
+};
+
+/**
+ * 안내를 지우지 않고 읽기만 합니다. 화면 첫 렌더에서 읽고, 삭제는 effect에서 clearSessionNotice로 합니다.
+ * (StrictMode는 effect를 두 번 실행하므로 effect에서 '읽고 지우기'를 하면 두 번째 실행이 안내를 빈 값으로 덮어씁니다.)
+ */
+export const peekSessionNotice = function (): SessionNotice | null {
+  const notice = readJson<SessionNotice>(NOTICE_KEY);
+  if (!notice || (notice.reason !== "expired" && notice.reason !== "passwordChanged")) return null;
+  return notice;
+};
+
 /** 안내를 읽고 즉시 삭제해 새로고침·재진입 시 중복 표시를 막습니다. */
 export function consumeSessionNotice(): SessionNotice | null {
   const notice = readJson<SessionNotice>(NOTICE_KEY);
   removeKey(NOTICE_KEY);
-  if (!notice || notice.reason !== "expired") return null;
+  if (!notice || (notice.reason !== "expired" && notice.reason !== "passwordChanged")) return null;
   return notice;
 }
 

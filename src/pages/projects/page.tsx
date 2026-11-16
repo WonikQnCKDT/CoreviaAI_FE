@@ -10,7 +10,8 @@ import StatCard from "@/components/ui/StatCard";
 import { formatDate, TODAY } from "@/utils/date";
 import { HEALTH_LABEL, STAGE_LABEL, riskLevel } from "@/utils/ui";
 import { projectProgress } from "@/features/task/utils/taskTree";
-import { canCreateProject } from "@/utils/permission";
+import { canCreateProject, isSystemAdmin } from "@/utils/permission";
+import { PROJECT_TEXT, useServerProjectList } from "@/features/project/hooks/useServerProjects";
 import type { Health } from "@/types";
 
 type SortKey = "risk" | "progressDesc" | "progressAsc" | "endDate" | "name";
@@ -37,7 +38,13 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
-  const { projects, tasks, users, currentUser } = useDemoStore();
+  const { projects: allProjects, tasks, users, currentUser } = useDemoStore();
+  // api 모드: 서버 목록(GET /api/projects)을 받아 화면 프로젝트로 연결하고, 서버 프로젝트만 보여준다.
+  const { isApi, state: listState, reload: reloadList } = useServerProjectList();
+  const projects = useMemo(
+    () => (isApi ? allProjects.filter((project) => project.serverId !== undefined) : allProjects),
+    [isApi, allProjects],
+  );
   const allowCreate = canCreateProject(currentUser);
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
@@ -113,7 +120,10 @@ export default function ProjectsPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-[12px] text-foreground-500">가상 프로젝트 5건 · 진척률은 WBS 최하위 업무의 예상 작업량 가중 평균입니다</p>
+          <p className="text-[12px] text-foreground-500">
+            {isApi ? `볼 수 있는 프로젝트 ${projects.length}건` : `가상 프로젝트 ${projects.length}건`} · 진척률은 WBS 최하위 업무의
+            예상 작업량 가중 평균입니다
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" className="btn-outline" onClick={resetFilters}>
@@ -222,7 +232,29 @@ export default function ProjectsPage() {
           </select>
         </div>
 
-        {rows.length === 0 ? (
+        {listState.phase === "loading" ? (
+          <p role="status" className="px-4 py-12 text-center text-sm text-foreground-500">
+            {PROJECT_TEXT.loading}
+          </p>
+        ) : listState.phase === "error" ? (
+          <div role="alert" className="px-4 py-12 text-center">
+            <p className="text-sm font-medium text-foreground-900">{PROJECT_TEXT.loadListFailed}</p>
+            <p className="mt-1 text-xs text-foreground-600">{listState.message}</p>
+            <button type="button" className="btn-outline mt-3" onClick={reloadList}>
+              {PROJECT_TEXT.retry}
+            </button>
+          </div>
+        ) : projects.length === 0 ? (
+          <EmptyState
+            icon="ri-folder-open-line"
+            title="볼 수 있는 프로젝트가 없습니다"
+            description={
+              isSystemAdmin(currentUser)
+                ? "시스템 관리자 역할로는 프로젝트 데이터에 접근할 수 없습니다. 프로젝트 멤버로 참여한 계정으로 확인해 주세요."
+                : "참여 중이거나 공개 범위에 포함된 프로젝트가 여기에 표시됩니다."
+            }
+          />
+        ) : rows.length === 0 ? (
           <EmptyState
             icon="ri-search-eye-line"
             title="검색 결과가 없습니다"
@@ -271,9 +303,16 @@ export default function ProjectsPage() {
                         <span className="text-[12px]">{pmUser?.name}</span>
                       </span>
                     </td>
-                    <td className="td text-[12px]">폭포수</td>
+                    <td className="td text-[12px]">{project.method === "agile" ? "애자일" : "폭포수"}</td>
                     <td className="td">
-                      <Badge className="border-primary-200 bg-primary-50 text-primary-700">{STAGE_LABEL[project.stage]}</Badge>
+                      {project.serverId !== undefined && !project.serverStageKnown ? (
+                        // 목록 API에는 단계 정보가 없어, 상세에서 단계를 받기 전에는 표시하지 않는다.
+                        <span className="text-[12px] text-foreground-400" title="상세 화면에서 단계를 불러오면 표시됩니다">
+                          -
+                        </span>
+                      ) : (
+                        <Badge className="border-primary-200 bg-primary-50 text-primary-700">{STAGE_LABEL[project.stage]}</Badge>
+                      )}
                     </td>
                     <td className="td text-[11.5px] text-foreground-600">
                       {formatDate(project.startDate)} ~ {formatDate(project.endDate)}

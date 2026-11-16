@@ -29,6 +29,8 @@ export interface User {
   canCreateProject: boolean;
   scopeDepts?: string[];
   isSystemAdmin?: boolean;
+  /** 인증 서버의 사용자 ID. 실제 서버로 로그인한 적이 있는 사용자에만 있습니다. */
+  serverUserId?: number;
 }
 
 export interface Milestone {
@@ -71,6 +73,10 @@ export interface Project {
   colorKey: string;
   description: string;
   gateApprovers?: Partial<Record<StageKey, string>>;
+  /** 인증 서버(프로젝트 API)에서 온 프로젝트의 서버 ID. 프론트 데모 프로젝트에는 없습니다. */
+  serverId?: number;
+  /** 서버 프로젝트의 현재 단계를 폭포수 단계 API로 확인했는지. false면 stage는 기본값이라 화면에 표시하지 않습니다. */
+  serverStageKnown?: boolean;
 }
 
 export interface Task {

@@ -63,6 +63,13 @@ import { ISSUE_KIND_LABEL, nextIssueStatus } from "@/features/issue/utils/issue"
 import { blockingDeliverables, bumpVersion, nextStage } from "@/features/gate/utils/deliverable";
 import { clearSessionActivity, touchSession } from "@/features/auth/utils/session";
 import { passwordPolicyError } from "@/features/auth/utils/password";
+import type { AuthAccount } from "@/features/auth/api/authApi";
+import type {
+  ServerProjectDetail,
+  ServerProjectPhase,
+  ServerProjectSummary,
+} from "@/features/project/api/projectApi";
+import { mergeServerDetail, mergeServerSummary } from "@/features/project/utils/serverProject";
 import { assigneeIdsOf, assigneeNameText, settleAssignees } from "@/utils/assignee";
 import { clearLoginNotices } from "@/features/notification/utils/notificationNotice";
 import { isSystemAdmin } from "@/utils/permission";
@@ -393,6 +400,14 @@ interface DemoStoreValue extends DemoState {
   signedIn: boolean;
   login: (userId: string, password: string) => LoginResult;
   logout: () => void;
+  /** 실제 인증 서버로 로그인한 계정을 화면용 사용자에 연결합니다. */
+  signInWithAccount: (account: AuthAccount) => void;
+  /** 서버 프로젝트 목록을 화면 프로젝트로 연결합니다. 목록에서 빠진(볼 수 없게 된) 서버 프로젝트는 지웁니다. */
+  syncServerProjects: (summaries: ServerProjectSummary[]) => void;
+  /** 서버 프로젝트 상세·폭포수 단계를 화면 프로젝트에 반영합니다. */
+  syncServerProjectDetail: (input: { detail: ServerProjectDetail; phases: ServerProjectPhase[] | null }) => void;
+  /** 볼 수 없게 된(404) 서버 프로젝트를 화면에서 지웁니다. */
+  removeServerProject: (serverId: number) => void;
   switchDemoUser: (userId: string) => void;
   requestPasswordChange: (currentPassword: string, nextPassword: string) => LoginResult;
   resetUserPassword: (userId: string) => void;
@@ -1875,6 +1890,88 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
     clearLoginNotices();
   }, []);
 
+  /**
+   * 인증 서버 계정 → 화면용 사용자 연결.
+   * 1) 이미 연결된 서버 사용자 ID, 2) loginId와 같은 데모 이메일 또는 이메일 앞부분 순으로 찾고,
+   * 없으면 서버가 준 이름·권한으로 사용자를 새로 만듭니다. 권한(systemRole)은 항상 서버 값을 따릅니다.
+   */
+  const signInWithAccount = useCallback((account: AuthAccount) => {
+    const { userId: serverUserId, loginId, name, systemRole } = account;
+    const key = loginId.trim().toLowerCase();
+    clearLoginNotices();
+    setState((prev) => {
+      const matched =
+        prev.users.find((u) => u.serverUserId === serverUserId) ||
+        prev.users.find((u) => {
+          const email = u.email.toLowerCase();
+          return email === key || email.split("@")[0] === key;
+        });
+      const targetId = matched ? matched.id : `server-${serverUserId}`;
+      const linked: User = matched
+        ? { ...matched, serverUserId, systemRole, isSystemAdmin: systemRole === "admin" }
+        : {
+            id: targetId,
+            name,
+            dept: "-",
+            job: "-",
+            role: "biz",
+            roleLabel: "구성원",
+            email: loginId,
+            systemRole,
+            active: true,
+            canCreateProject: false,
+            isSystemAdmin: systemRole === "admin",
+            serverUserId,
+          };
+      const users = matched
+        ? prev.users.map((u) => (u.id === matched.id ? linked : u))
+        : [...prev.users.filter((u) => u.id !== targetId), linked];
+      return {
+        ...prev,
+        users,
+        authUserId: targetId,
+        currentUserId: targetId,
+        auditLogs: [
+          { id: uid("log"), type: "login_success", userId: targetId, userName: linked.name, ip: "-", at: isoNow(), detail: "로그인 성공 · 인증 서버" },
+          ...prev.auditLogs,
+        ],
+      };
+    });
+    setActiveTaskId(null);
+  }, []);
+
+  const syncServerProjects = useCallback((summaries: ServerProjectSummary[]) => {
+    setState((prev) => {
+      let users = prev.users;
+      const synced = summaries.map((summary) => {
+        const existing = prev.projects.find((p) => p.serverId === summary.id);
+        const merged = mergeServerSummary({ summary, existing, users });
+        users = merged.users;
+        return merged.project;
+      });
+      const syncedIds = new Set(synced.map((p) => p.id));
+      // 프론트 데모 프로젝트는 그대로 두고, 서버 프로젝트는 서버 목록 기준으로 맞춘다.
+      const others = prev.projects.filter((p) => p.serverId === undefined && !syncedIds.has(p.id));
+      return { ...prev, users, projects: [...synced, ...others] };
+    });
+  }, []);
+
+  const syncServerProjectDetail = useCallback(
+    ({ detail, phases }: { detail: ServerProjectDetail; phases: ServerProjectPhase[] | null }) => {
+      setState((prev) => {
+        const existing = prev.projects.find((p) => p.serverId === detail.id);
+        const { project, users } = mergeServerDetail({ detail, phases, existing, users: prev.users });
+        const projects = existing ? prev.projects.map((p) => (p.serverId === detail.id ? project : p)) : [project, ...prev.projects];
+        return { ...prev, users, projects };
+      });
+    },
+    [],
+  );
+
+  const removeServerProject = useCallback((serverId: number) => {
+    setState((prev) => ({ ...prev, projects: prev.projects.filter((p) => p.serverId !== serverId) }));
+  }, []);
+
   const switchDemoUser = useCallback((userId: string) => {
     clearLoginNotices();
     setState((prev) => {
@@ -2123,6 +2220,10 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
     saveKnowledgeQuestion,
     login,
     logout,
+    signInWithAccount,
+    syncServerProjects,
+    syncServerProjectDetail,
+    removeServerProject,
     switchDemoUser,
     requestPasswordChange,
     resetUserPassword,

@@ -3,6 +3,7 @@ import { useDemoStore, type NewUserInput } from "@/stores/DemoStore";
 import Avatar from "@/components/ui/Avatar";
 import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
+import PasswordResetDialog from "@/features/admin/components/PasswordResetDialog";
 import { SYSTEM_ROLE_LABEL } from "@/utils/permission";
 import type { SystemRole, User } from "@/types";
 
@@ -327,38 +328,14 @@ export default function AdminUsers() {
         )}
       </Modal>
 
-      <Modal
-        open={Boolean(resetTarget)}
-        title="비밀번호 초기화"
-        description="관리자 초기화는 데모에서 실제 비밀번호를 변경하지 않습니다."
+      <PasswordResetDialog
+        target={resetTarget}
         onClose={() => setResetTarget(null)}
-        footer={
-          <>
-            <button type="button" className="btn-outline" onClick={() => setResetTarget(null)}>
-              취소
-            </button>
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={() => {
-                if (resetTarget) {
-                  resetUserPassword(resetTarget.id);
-                  setMessage(`${resetTarget.name} 사용자의 비밀번호 초기화를 요청했습니다. (데모 · 실제 변경 없음)`);
-                }
-                setResetTarget(null);
-              }}
-            >
-              초기화 요청
-            </button>
-          </>
-        }
-      >
-        <p className="text-[12.5px] leading-6 text-foreground-700">
-          <span className="font-medium text-foreground-950">{resetTarget?.name}</span> 사용자의 비밀번호를 초기화하면 다음
-          로그인 시 임시 비밀번호를 사용해야 합니다. 실제 서비스에서는 본인 확인 후 임시 비밀번호를 발급하고, 접속 로그에
-          기록합니다.
-        </p>
-      </Modal>
+        onDemoReset={(target) => {
+          resetUserPassword(target.id);
+          setMessage(`${target.name} 사용자의 비밀번호 초기화를 요청했습니다. (데모 · 실제 변경 없음)`);
+        }}
+      />
     </div>
   );
 }

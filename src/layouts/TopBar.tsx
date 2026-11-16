@@ -4,6 +4,7 @@ import { useDemoStore } from "@/stores/DemoStore";
 import Avatar from "@/components/ui/Avatar";
 import Modal from "@/components/ui/Modal";
 import PasswordChangeModal from "@/features/auth/components/PasswordChangeModal";
+import { useAuth } from "@/features/auth/authContext";
 import NotificationBell from "@/features/notification/components/NotificationBell";
 import { SYSTEM_ROLE_LABEL } from "@/utils/permission";
 import { getUnsavedGuard } from "@/utils/navGuard";
@@ -27,7 +28,9 @@ const STATIC_META: Record<string, PageMeta> = {
 export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { projects, tasks, currentUser, activeTaskId, closeTask, logout } = useDemoStore();
+  const { projects, tasks, currentUser, activeTaskId, closeTask } = useDemoStore();
+  const { mode, signOut } = useAuth();
+  const [signingOut, setSigningOut] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
@@ -199,18 +202,25 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
+                      disabled={signingOut}
+                      onClick={async () => {
+                        // 중복 클릭 방지. 서버 로그아웃이 실패해도(멱등 API) 화면은 로그아웃한다.
+                        if (signingOut) return;
+                        setSigningOut(true);
+                        await signOut();
+                        setSigningOut(false);
                         setUserOpen(false);
-                        logout();
                         navigate("/login", { replace: true });
                       }}
-                      className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-2 text-left text-[12.5px] text-rose-600 hover:bg-rose-50"
+                      className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-2 text-left text-[12.5px] text-rose-600 hover:bg-rose-50 disabled:cursor-wait disabled:opacity-60"
                     >
-                      <i className="ri-logout-box-r-line" /> 로그아웃
+                      <i className="ri-logout-box-r-line" aria-hidden="true" /> {signingOut ? "로그아웃 중" : "로그아웃"}
                     </button>
-                    <span className="mt-1 block rounded-md bg-background-100 px-2.5 py-2 text-[11px] leading-4 text-foreground-500">
-                      데모 세션입니다. 실제 인증·세션 관리는 연결되어 있지 않습니다.
-                    </span>
+                    {mode === "demo" && (
+                      <span className="mt-1 block rounded-md bg-background-100 px-2.5 py-2 text-[11px] leading-4 text-foreground-500">
+                        데모 세션입니다. 실제 인증·세션 관리는 연결되어 있지 않습니다.
+                      </span>
+                    )}
                   </div>
                 </div>
               </>

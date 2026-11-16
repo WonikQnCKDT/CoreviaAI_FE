@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDemoStore } from "@/stores/DemoStore";
+import { useAuth } from "@/features/auth/authContext";
 import {
   clearSessionActivity,
   isOffline,
@@ -18,7 +19,9 @@ const CHECK_INTERVAL_MS = 20 * 1000;
  * - 일시적인 네트워크 끊김은 로그아웃 사유로 보지 않고 상태만 알려줍니다.
  */
 export function useSessionGuard(): { offline: boolean } {
-  const { signedIn, currentUserId, logout } = useDemoStore();
+  const { signedIn, currentUserId } = useDemoStore();
+  // api 모드에서는 서버 로그아웃(멱등)까지 호출한다. 무활동 만료의 최종 판단은 서버가 한다.
+  const { signOut: logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const expiringRef = useRef(false);

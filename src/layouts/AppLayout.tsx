@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "@/layouts/Sidebar";
 import TopBar from "@/layouts/TopBar";
 import TaskDetailPanel from "@/features/task/components/TaskDetailPanel";
-import { useDemoStore } from "@/stores/DemoStore";
 import { useSessionGuard } from "@/features/auth/hooks/useSessionGuard";
+import { useAuth } from "@/features/auth/authContext";
+import AuthStatusScreen from "@/features/auth/components/AuthStatusScreen";
+import PasswordChangeModal from "@/features/auth/components/PasswordChangeModal";
 
 const SIDEBAR_STORAGE_KEY = "corevia-sidebar-collapsed";
 const SIDEBAR_WIDTH_KEY = "corevia-sidebar-width";
@@ -38,8 +40,9 @@ export default function AppLayout() {
   // 사용자가 드래그로 조절한 메뉴 폭도 함께 기억합니다.
   const [sidebarWidth, setSidebarWidth] = useState<number>(loadWidth);
   const widthRef = useRef(sidebarWidth);
-  const { signedIn } = useDemoStore();
+  const { status, mustChangePassword, recheck } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const { offline } = useSessionGuard();
 
   useEffect(() => {
@@ -83,7 +86,17 @@ export default function AppLayout() {
     window.addEventListener("pointerup", onUp);
   };
 
-  if (!signedIn) {
+  if (status === "checking") return <AuthStatusScreen kind="checking" />;
+  if (status === "unreachable") {
+    return (
+      <AuthStatusScreen
+        kind="unreachable"
+        onRetry={recheck}
+        onGoToLogin={() => navigate("/login", { replace: true, state: { from: `${location.pathname}${location.search}` } })}
+      />
+    );
+  }
+  if (status !== "signedIn") {
     return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />;
   }
 
@@ -117,6 +130,8 @@ export default function AppLayout() {
         </main>
       </div>
       <TaskDetailPanel />
+      {/* 비밀번호 변경 강제 계정: 변경 전까지 닫을 수 없는 변경 창을 띄운다 */}
+      {mustChangePassword && <PasswordChangeModal open forced onClose={() => undefined} />}
     </div>
   );
 }

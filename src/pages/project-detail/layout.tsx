@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { useDemoStore } from "@/stores/DemoStore";
 import EmptyState from "@/components/ui/EmptyState";
 import { canEditProject, isProjectMember, isSystemAdmin } from "@/utils/permission";
+import { PROJECT_TEXT, useServerProjectDetail } from "@/features/project/hooks/useServerProjects";
 
 interface TabItem {
   label: string;
@@ -51,7 +52,10 @@ export default function ProjectDetailLayout() {
   const navRef = useRef<HTMLElement | null>(null);
   const activeRef = useRef<HTMLAnchorElement | null>(null);
 
-  const project = projects.find((p) => p.id === projectId);
+  // api 모드: 들어올 때마다 서버 상세·폭포수 단계를 받아 화면 프로젝트에 반영한다.
+  const { state: serverState, reload: reloadServer } = useServerProjectDetail(projectId);
+  const found = projects.find((p) => p.id === projectId);
+  const project = serverState.phase === "notFound" ? undefined : found;
 
   const suffix = location.pathname.split(`/projects/${projectId}`)[1]?.replace(/^\//, "") || "";
   const activeGroup =
@@ -66,6 +70,26 @@ export default function ProjectDetailLayout() {
     const left = active.offsetLeft - nav.clientWidth / 2 + active.clientWidth / 2;
     nav.scrollTo({ left: Math.max(left, 0), behavior: "smooth" });
   }, [suffix]);
+
+  if (!project && serverState.phase === "loading") {
+    return (
+      <p role="status" className="card px-4 py-12 text-center text-sm text-foreground-500">
+        {PROJECT_TEXT.loading}
+      </p>
+    );
+  }
+
+  if (!project && serverState.phase === "error") {
+    return (
+      <div role="alert" className="card px-4 py-12 text-center">
+        <p className="text-sm font-medium text-foreground-900">{PROJECT_TEXT.loadDetailFailed}</p>
+        <p className="mt-1 text-xs text-foreground-600">{serverState.message}</p>
+        <button type="button" className="btn-outline mt-3" onClick={reloadServer}>
+          {PROJECT_TEXT.retry}
+        </button>
+      </div>
+    );
+  }
 
   if (!project) {
     return (
@@ -126,6 +150,17 @@ export default function ProjectDetailLayout() {
           })}
         </nav>
       </div>
+
+      {serverState.phase === "error" && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs text-rose-700">
+          <span>
+            최신 프로젝트 정보를 불러오지 못해 마지막으로 받은 내용을 보여주고 있습니다. {serverState.message}
+          </span>
+          <button type="button" className="shrink-0 font-medium underline underline-offset-2" onClick={reloadServer}>
+            {PROJECT_TEXT.retry}
+          </button>
+        </div>
+      )}
 
       {subItems && (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">

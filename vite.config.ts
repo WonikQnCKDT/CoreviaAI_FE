@@ -1,11 +1,15 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "node:path";
 import AutoImport from "unplugin-auto-import/vite";
 
 const base = process.env.BASE_PATH || "/";
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
+  // 개발 서버에서 /api 요청을 백엔드로 넘긴다. 같은 출처가 되어 HttpOnly 인증 쿠키가 그대로 동작한다.
+  const apiProxyTarget = env.VITE_API_PROXY_TARGET;
+  return {
   define: {
     __BASE_PATH__: JSON.stringify(base),
   },
@@ -69,5 +73,7 @@ export default defineConfig({
   server: {
     port: 3000,
     host: "0.0.0.0",
+    proxy: apiProxyTarget ? { "/api": { target: apiProxyTarget, changeOrigin: true } } : undefined,
   },
+  };
 });

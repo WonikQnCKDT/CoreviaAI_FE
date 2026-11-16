@@ -1,13 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import BrandLogo from "@/components/ui/BrandLogo";
 import { useDemoStore, DEMO_PASSWORD } from "@/stores/DemoStore";
 import { isExecutive, isSystemAdmin, canCreateProject, canViewPortfolio, canViewProject } from "@/utils/permission";
-import { consumeSessionNotice, peekReturnTo, takeReturnTo, type SessionNotice } from "@/features/auth/utils/session";
+import {
+  clearSessionNotice,
+  peekReturnTo,
+  peekSessionNotice,
+  takeReturnTo,
+  type SessionNotice,
+} from "@/features/auth/utils/session";
 import { PASSWORD_POLICY_TEXT } from "@/features/auth/utils/password";
+import { useAuth } from "@/features/auth/authContext";
+import { AUTH_TEXT } from "@/features/auth/i18n/ko";
 import type { Project, User } from "@/types";
 
 type FieldErrors = { account?: string; password?: string; form?: string };
+
+const LOGIN_ID_MAX_LENGTH = 50;
+const PASSWORD_INPUT_MAX_LENGTH = 128;
 
 /** 로그인 후 복귀 경로가 현재 사용자의 접근 권한 안에 있는지 확인합니다. */
 function resolveAccessPath(path: string | null, user: User, projects: Project[]): string {
@@ -34,8 +45,11 @@ function resolveAccessPath(path: string | null, user: User, projects: Project[])
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { users, projects, login, getLoginState, unlockDemoAccount, signedIn, currentUser } = useDemoStore();
-  const [account, setAccount] = useState("seoyeon.kim@corevia.co.kr");
+  const { users, projects, getLoginState, unlockDemoAccount, currentUser } = useDemoStore();
+  const { mode, status, signIn } = useAuth();
+  const isApi = mode === "api";
+  const signedIn = status === "signedIn";
+  const [account, setAccount] = useState(isApi ? "" : "seoyeon.kim@corevia.co.kr");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -43,12 +57,15 @@ export default function LoginPage() {
   const [lockedMessage, setLockedMessage] = useState("");
   const [notice, setNotice] = useState("");
   const [selectKey, setSelectKey] = useState(0);
-  const [sessionNotice, setSessionNotice] = useState<SessionNotice | null>(null);
+  // 첫 렌더에서 읽고, 저장된 값은 아래 effect에서 지워 새로고침 시 다시 보이지 않게 한다.
+  const [sessionNotice, setSessionNotice] = useState<SessionNotice | null>(peekSessionNotice);
   const [offline, setOffline] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const controllerRef = useRef<AbortController | null>(null);
 
   const activeUsers = useMemo(() => users.filter((u) => u.active), [users]);
 
-  const findUser = (input: string) => {
+  const findDemoUser = (input: string) => {
     const value = input.trim().toLowerCase();
     return users.find((u) => u.email.toLowerCase() === value || u.name === input.trim() || u.id === value) || null;
   };
@@ -58,9 +75,9 @@ export default function LoginPage() {
     return fromState || peekReturnTo() || null;
   }, [location.state]);
 
-  // 만료 안내는 저장된 값을 한 번만 읽고 즉시 삭제해 중복 표시를 막습니다.
+  // 만료·비밀번호 변경 안내는 저장된 값을 한 번만 읽고 즉시 삭제해 중복 표시를 막습니다.
   useEffect(() => {
-    setSessionNotice(consumeSessionNotice());
+    clearSessionNotice();
     const sync = () => setOffline(navigator.onLine === false);
     sync();
     window.addEventListener("online", sync);
@@ -68,12 +85,19 @@ export default function LoginPage() {
     return () => {
       window.removeEventListener("online", sync);
       window.removeEventListener("offline", sync);
+      controllerRef.current?.abort();
     };
   }, []);
 
-  // 잠금 여부는 인증 서버(데모)가 알려준 상태만 그대로 표시합니다.
+  // 데모 모드: 잠금 여부는 데모 인증 저장소가 알려준 상태를 그대로 표시합니다.
+  // api 모드: 계정 존재를 노출하지 않도록 미리 조회하지 않고, 로그인 응답(423)으로만 알립니다.
   useEffect(() => {
-    const found = findUser(account);
+    if (isApi) {
+      setLocked(false);
+      setLockedMessage("");
+      return;
+    }
+    const found = findDemoUser(account);
     if (!found) {
       setLocked(false);
       setLockedMessage("");
@@ -83,7 +107,7 @@ export default function LoginPage() {
     setLocked(serverState.locked);
     setLockedMessage(serverState.locked ? "비밀번호 5회 연속 오류로 잠긴 계정입니다." : "");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [account, users, getLoginState]);
+  }, [account, users, getLoginState, isApi]);
 
   useEffect(() => {
     if (!signedIn) return;
@@ -93,53 +117,56 @@ export default function LoginPage() {
 
   if (signedIn) return null;
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitting) return;
     const nextErrors: FieldErrors = {};
     setNotice("");
 
-    if (!account.trim()) nextErrors.account = "아이디를 입력해 주세요.";
-    if (!password) nextErrors.password = "비밀번호를 입력해 주세요.";
+    if (!account.trim()) nextErrors.account = AUTH_TEXT.loginIdRequired;
+    else if (account.trim().length > LOGIN_ID_MAX_LENGTH) nextErrors.account = AUTH_TEXT.loginIdTooLong;
+    if (!password.trim()) nextErrors.password = AUTH_TEXT.passwordRequired;
+    else if (password.length > PASSWORD_INPUT_MAX_LENGTH) nextErrors.password = AUTH_TEXT.passwordTooLong;
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
-      return;
-    }
-
-    const found = findUser(account);
-    if (!found) {
-      setErrors({ account: "등록된 계정을 찾을 수 없습니다. 아이디를 확인해 주세요." });
       return;
     }
 
     // 네트워크 오류는 인증 실패와 구분하며, 실패 횟수에 포함되지 않습니다.
     if (navigator.onLine === false) {
       setOffline(true);
-      setErrors({ form: "네트워크 연결이 끊겨 로그인 서버에 연결하지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요." });
+      setErrors({ form: AUTH_TEXT.network });
       return;
     }
 
-    const result = login(found.id, password);
-    if (result.ok) {
-      setErrors({});
-      takeReturnTo();
-      const signedUser = users.find((u) => u.id === found.id) || currentUser;
-      navigate(resolveAccessPath(pendingPath, signedUser, projects), { replace: true });
-      return;
-    }
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
+    setSubmitting(true);
+    const outcome = await signIn({ loginId: account, password, signal: controller.signal });
+    if (controller.signal.aborted) return;
+    setSubmitting(false);
 
-    if (result.code === "locked") {
-      setLocked(true);
-      setLockedMessage(result.message);
-      setErrors({ password: "계정이 잠겨 있습니다." });
-      return;
+    switch (outcome.kind) {
+      case "success":
+        // 이동은 signedIn 상태 변화를 보고 위 effect가 처리합니다.
+        // 비밀번호 변경 강제 계정이면 이동한 화면에서 변경 창이 바로 열립니다.
+        setErrors({});
+        setPassword("");
+        return;
+      case "locked":
+        setLocked(true);
+        setLockedMessage(outcome.message);
+        setErrors({ password: "계정이 잠겨 있습니다." });
+        return;
+      case "rejected":
+        setErrors({ [outcome.field]: outcome.message });
+        return;
+      case "failed":
+        setErrors({ form: outcome.message });
+        return;
+      default:
     }
-
-    if (result.code === "inactive") {
-      setErrors({ account: result.message });
-      return;
-    }
-
-    setErrors({ password: result.message });
   };
 
   const quickFill = (email: string) => {
@@ -151,7 +178,7 @@ export default function LoginPage() {
   };
 
   const handleUnlock = () => {
-    const found = findUser(account);
+    const found = findDemoUser(account);
     if (found) unlockDemoAccount(found.id);
     setLocked(false);
     setLockedMessage("");
@@ -173,7 +200,10 @@ export default function LoginPage() {
 
         {sessionNotice && (
           <div className="mb-3 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5" role="alert">
-            <i className="ri-time-line mt-0.5 text-[13px] text-amber-600" aria-hidden="true" />
+            <i
+              className={`${sessionNotice.reason === "passwordChanged" ? "ri-lock-password-line" : "ri-time-line"} mt-0.5 text-[13px] text-amber-600`}
+              aria-hidden="true"
+            />
             <div className="min-w-0 flex-1">
               <p className="text-[12px] font-semibold text-amber-900">{sessionNotice.title}</p>
               <p className="mt-0.5 text-[11px] leading-4 text-amber-800">{sessionNotice.note}</p>
@@ -190,23 +220,28 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form className="card space-y-3.5 p-5 md:p-6" onSubmit={handleSubmit} noValidate>
+        <form className="card space-y-3.5 p-5 md:p-6" onSubmit={handleSubmit} noValidate aria-busy={submitting}>
           <div>
             <label htmlFor="login-account" className="mb-1.5 block text-[12px] font-medium text-foreground-800">
-              아이디 (이메일)
+              {isApi ? "아이디" : "아이디 (이메일)"}
             </label>
             <div className="relative">
-              <i className="ri-user-line pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-foreground-400" />
+              <i
+                className="ri-user-line pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-foreground-400"
+                aria-hidden="true"
+              />
               <input
                 id="login-account"
                 name="account"
                 type="text"
                 autoComplete="username"
+                maxLength={LOGIN_ID_MAX_LENGTH}
                 className={`field pl-9 text-[13px] ${errors.account ? "border-rose-300" : ""}`}
-                placeholder="name@corevia.co.kr"
+                placeholder={isApi ? "아이디 입력" : "name@corevia.co.kr"}
                 value={account}
                 onChange={(event) => {
                   setAccount(event.target.value);
+                  setLocked(false);
                   setErrors((prev) => ({ ...prev, account: undefined, form: undefined }));
                 }}
                 aria-invalid={Boolean(errors.account)}
@@ -225,12 +260,16 @@ export default function LoginPage() {
               비밀번호
             </label>
             <div className="relative">
-              <i className="ri-lock-line pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-foreground-400" />
+              <i
+                className="ri-lock-line pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-foreground-400"
+                aria-hidden="true"
+              />
               <input
                 id="login-password"
                 name="password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
+                maxLength={PASSWORD_INPUT_MAX_LENGTH}
                 className={`field px-9 text-[13px] ${errors.password ? "border-rose-300" : ""}`}
                 placeholder="비밀번호 입력"
                 value={password}
@@ -239,7 +278,7 @@ export default function LoginPage() {
                   setErrors((prev) => ({ ...prev, password: undefined, form: undefined }));
                 }}
                 aria-invalid={Boolean(errors.password)}
-                aria-describedby={errors.password ? "login-password-error" : undefined}
+                aria-describedby={errors.password ? "login-password-error" : "login-password-hint"}
               />
               <button
                 type="button"
@@ -256,75 +295,94 @@ export default function LoginPage() {
                 <i className="ri-error-warning-line mt-0.5" aria-hidden="true" /> {errors.password}
               </p>
             )}
-            <p className="mt-1 text-[10.5px] leading-4 text-foreground-500">5회 연속 실패하면 계정이 잠깁니다.</p>
+            <p id="login-password-hint" className="mt-1 text-[11px] leading-4 text-foreground-500">
+              5회 연속 실패하면 계정이 잠깁니다.
+            </p>
           </div>
 
           {locked && (
             <div className="rounded-lg border border-background-300 bg-background-100 px-3 py-2.5">
-              <p className="flex items-start gap-1.5 text-[11.5px] leading-5 text-foreground-700">
+              <p className="flex items-start gap-1.5 text-[12px] leading-5 text-foreground-700">
                 <i className="ri-lock-2-line mt-0.5 text-[13px] text-foreground-500" aria-hidden="true" />
-                <span>
-                  {lockedMessage || "비밀번호 5회 연속 오류로 잠긴 계정입니다."} 잠금 시간과 해제 방식은 기존 인증 정책을
-                  따릅니다.
-                </span>
+                <span>{lockedMessage || AUTH_TEXT.accountLocked}</span>
               </p>
-              <button
-                type="button"
-                onClick={handleUnlock}
-                className="btn-outline mt-2 w-full py-1.5 text-[11.5px]"
-              >
-                <i className="ri-lock-unlock-line" />
-                데모 계정 잠금 해제
-              </button>
+              {!isApi && (
+                <button type="button" onClick={handleUnlock} className="btn-outline mt-2 w-full py-1.5 text-[12px]">
+                  <i className="ri-lock-unlock-line" aria-hidden="true" />
+                  데모 계정 잠금 해제
+                </button>
+              )}
             </div>
           )}
 
           {errors.form && (
-            <p role="alert" className="flex items-start gap-1.5 rounded-md border border-background-300 bg-background-100 px-2.5 py-2 text-[11.5px] leading-5 text-foreground-700">
-              <i className="ri-wifi-off-line mt-0.5 text-[13px] text-foreground-500" aria-hidden="true" />
+            <p
+              role="alert"
+              className="flex items-start gap-1.5 rounded-md border border-background-300 bg-background-100 px-2.5 py-2 text-[12px] leading-5 text-foreground-700"
+            >
+              <i
+                className={`${offline ? "ri-wifi-off-line" : "ri-error-warning-line"} mt-0.5 text-[13px] text-foreground-500`}
+                aria-hidden="true"
+              />
               {errors.form}
             </p>
           )}
 
           {notice && (
-            <p role="status" className="rounded-md border border-background-300 bg-background-100 px-2.5 py-2 text-[11.5px] leading-5 text-foreground-700">
+            <p
+              role="status"
+              className="rounded-md border border-background-300 bg-background-100 px-2.5 py-2 text-[12px] leading-5 text-foreground-700"
+            >
               <i className="ri-information-line mr-1" aria-hidden="true" />
               {notice}
             </p>
           )}
 
-          <button type="submit" className="btn-primary w-full py-2.5 text-[13.5px]" disabled={locked}>
-            로그인
+          <button
+            type="submit"
+            className="btn-primary w-full py-2.5 text-[13.5px]"
+            disabled={submitting || (!isApi && locked)}
+          >
+            {submitting ? (
+              <>
+                <i className="ri-loader-4-line animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                로그인 중
+              </>
+            ) : (
+              "로그인"
+            )}
           </button>
         </form>
 
-        <div className="mt-4 rounded-lg border border-background-300 bg-background-50 p-3.5">
-          <label htmlFor="demo-account" className="block text-[11.5px] font-medium text-foreground-700">
-            데모 계정
-          </label>
-          <select
-            key={selectKey}
-            id="demo-account"
-            className="field mt-1.5 text-[12.5px]"
-            defaultValue=""
-            onChange={(event) => {
-              if (event.target.value) quickFill(event.target.value);
-            }}
-          >
-            <option value="">계정을 선택하면 자동 입력됩니다</option>
-            {activeUsers.map((user) => (
-              <option key={user.id} value={user.email}>
-                {user.name} · {isSystemAdmin(user) ? "시스템 관리자" : isExecutive(user) ? "경영진" : user.dept}
-              </option>
-            ))}
-          </select>
-          <p className="mt-1.5 text-[10.5px] leading-4 text-foreground-500">
-            데모 고정 비밀번호 <span className="font-mono text-foreground-700">corevia1234</span> · 실제 인증 서버 미연결
-          </p>
-        </div>
+        {!isApi && (
+          <div className="mt-4 rounded-lg border border-background-300 bg-background-50 p-3.5">
+            <label htmlFor="demo-account" className="block text-[12px] font-medium text-foreground-700">
+              데모 계정
+            </label>
+            <select
+              key={selectKey}
+              id="demo-account"
+              className="field mt-1.5 text-[12.5px]"
+              defaultValue=""
+              onChange={(event) => {
+                if (event.target.value) quickFill(event.target.value);
+              }}
+            >
+              <option value="">계정을 선택하면 자동 입력됩니다</option>
+              {activeUsers.map((user) => (
+                <option key={user.id} value={user.email}>
+                  {user.name} · {isSystemAdmin(user) ? "시스템 관리자" : isExecutive(user) ? "경영진" : user.dept}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1.5 text-[11px] leading-4 text-foreground-500">
+              데모 고정 비밀번호 <span className="font-mono text-foreground-700">corevia1234</span> · 실제 인증 서버 미연결
+            </p>
+          </div>
+        )}
 
-        <p className="mt-4 text-center text-[10.5px] leading-4 text-foreground-400">
-          비밀번호 정책: {PASSWORD_POLICY_TEXT} · 회원가입·소셜 로그인은 제공하지 않습니다.
+        <p className="mt-4 text-center text-[11px] leading-4 text-foreground-500">
+          비밀번호 규칙: {PASSWORD_POLICY_TEXT} · 회원가입·소셜 로그인은 제공하지 않습니다.
         </p>
       </div>
     </div>
