@@ -1,112 +1,65 @@
 /*
- * 색상 token
- * 1) 원시 palette: OKLCH 채널 값("L C H")만 정의한다.
- *    - Tailwind 색상 class(bg-primary-500 등)가 이 변수를 참조하므로 이름을 바꾸지 않는다.
- *    - 직접 작성하는 CSS에서는 palette를 쓰지 않고 아래 semantic 색상만 쓴다.
- * 2) semantic 색상: 기능별 이름. 테마(라이트/다크)는 이 값만 바꿔서 대응한다.
+ * 색상 token — 기능 이름으로만 정의한다.
+ * - 색 이름·밝기 단계(gray-100, red-700 …)는 만들지 않는다. 쓰는 곳의 기능을 이름으로 하고 값을 바로 넣는다.
+ * - 값이 같아도 기능이 다르면 따로 둔다. (예: 페이지 배경과 hover 배경)
+ * - 새 기능에 색이 필요하면 여기에 기능 이름으로 하나 추가한다.
+ * - 테마(다크 등)는 이 값만 바꿔서 대응한다.
+ * Tailwind: bg-surface-* · text-fg-* · border-line-* · bg-action-* · text-danger / bg-danger-soft / border-danger-line …
  */
-
-/* ---------- 1. 원시 palette ---------- */
 :root {
-  --background-50: 1 0 0;
-  --background-100: 0.978 0.005 250;
-  --background-200: 0.955 0.007 250;
-  --background-300: 0.923 0.011 252;
-  --background-400: 0.868 0.019 252;
-  --background-500: 0.723 0.028 250;
-  --background-600: 0.551 0.032 250;
-  --background-700: 0.447 0.03 252;
-  --background-800: 0.372 0.028 255;
-  --background-900: 0.281 0.027 256;
-  --background-950: 0.208 0.024 258;
+  /* 배경 · 면 */
+  --color-bg-page: oklch(0.978 0.005 250);          /* 화면 전체 바탕 */
+  --color-bg-surface: oklch(1 0 0);                 /* 카드·패널·입력칸 */
+  --color-bg-surface-hover: oklch(0.978 0.005 250); /* 카드·행에 마우스를 올렸을 때 */
+  --color-bg-subtle: oklch(0.978 0.005 250);        /* 표 헤더·보조 영역 */
+  --color-bg-hover-strong: oklch(0.955 0.007 250);  /* 진한 hover (ghost 버튼) */
+  --color-bg-selected: oklch(0.97 0.014 254);       /* 선택된 메뉴·항목 */
 
-  --foreground-50: 1 0 0;
-  --foreground-100: 0.978 0.005 250;
-  --foreground-200: 0.923 0.011 252;
-  --foreground-300: 0.868 0.019 252;
-  --foreground-400: 0.723 0.028 250;
-  --foreground-500: 0.637 0.031 250;
-  --foreground-600: 0.551 0.032 250;
-  --foreground-700: 0.447 0.03 252;
-  --foreground-800: 0.372 0.028 255;
-  --foreground-900: 0.281 0.027 256;
-  --foreground-950: 0.208 0.024 258;
-
-  --primary-50: 0.97 0.014 254;
-  --primary-100: 0.932 0.032 255;
-  --primary-200: 0.884 0.057 254;
-  --primary-300: 0.809 0.096 254;
-  --primary-400: 0.707 0.155 258;
-  --primary-500: 0.546 0.215 263;
-  --primary-600: 0.488 0.217 264;
-  --primary-700: 0.424 0.18 265;
-  --primary-800: 0.379 0.146 265;
-  --primary-900: 0.33 0.11 265;
-  --primary-950: 0.24 0.08 264;
-
-  --accent-50: 0.984 0.014 180;
-  --accent-100: 0.953 0.04 180;
-  --accent-200: 0.905 0.073 181;
-  --accent-300: 0.845 0.104 181;
-  --accent-400: 0.75 0.115 182;
-  --accent-500: 0.6 0.104 183;
-  --accent-600: 0.51 0.09 183;
-  --accent-700: 0.44 0.077 183;
-  --accent-800: 0.39 0.065 183;
-  --accent-900: 0.34 0.055 183;
-  --accent-950: 0.25 0.04 183;
-
-  --secondary-50: 0.984 0.003 248;
-  --secondary-100: 0.968 0.006 248;
-  --secondary-200: 0.929 0.011 250;
-  --secondary-300: 0.869 0.016 251;
-  --secondary-400: 0.704 0.026 251;
-  --secondary-500: 0.554 0.033 251;
-  --secondary-600: 0.446 0.032 253;
-  --secondary-700: 0.372 0.03 255;
-  --secondary-800: 0.279 0.027 257;
-  --secondary-900: 0.208 0.024 258;
-  --secondary-950: 0.129 0.019 260;
-}
-
-/* ---------- 2. semantic 색상 (라이트 테마) ---------- */
-:root {
-  /* 배경 */
-  --color-bg-page: oklch(var(--background-100));
-  --color-bg-surface: oklch(var(--background-50));
-  --color-bg-surface-hover: oklch(var(--background-100));
-  --color-bg-subtle: oklch(var(--background-100));
-  --color-bg-hover-strong: oklch(var(--background-200));
-  --color-bg-selected: oklch(var(--primary-50));
-
-  /* 텍스트 */
-  --color-text-strong: oklch(var(--foreground-950));
-  --color-text-primary: oklch(var(--foreground-900));
-  --color-text-secondary: oklch(var(--foreground-800));
-  --color-text-muted: oklch(var(--foreground-700));
-  --color-text-tertiary: oklch(var(--foreground-600));
-  --color-text-placeholder: oklch(var(--foreground-400));
-  --color-text-on-action: oklch(var(--background-50));
-  --color-text-selected: oklch(var(--primary-700));
+  /* 글자 (진한 순) */
+  --color-text-strong: oklch(0.208 0.024 258);      /* 제목·강조 */
+  --color-text-primary: oklch(0.281 0.027 256);     /* 기본 본문 */
+  --color-text-secondary: oklch(0.372 0.028 255);   /* 표 셀·보조 본문 */
+  --color-text-muted: oklch(0.447 0.03 252);        /* 메뉴·설명 */
+  --color-text-tertiary: oklch(0.551 0.032 250);    /* 표 헤더·라벨 */
+  --color-text-subtle: oklch(0.637 0.031 250);      /* 건수·메타 정보 */
+  --color-text-placeholder: oklch(0.723 0.028 250); /* 입력 안내 문구 */
+  --color-text-on-action: oklch(1 0 0);             /* 주요 버튼 위 글자 */
+  --color-text-selected: oklch(0.424 0.18 265);     /* 선택된 메뉴 글자 */
+  --color-text-link: oklch(0.488 0.217 264);        /* 링크 */
 
   /* 테두리 */
-  --color-border-default: oklch(var(--background-300));
-  --color-border-hover: oklch(var(--background-400));
-  --color-border-subtle: oklch(var(--background-200));
-  --color-border-focus: oklch(var(--primary-500));
+  --color-border-default: oklch(0.923 0.011 252);   /* 카드·입력칸 기본 */
+  --color-border-hover: oklch(0.868 0.019 252);     /* hover·강조 */
+  --color-border-subtle: oklch(0.955 0.007 250);    /* 표 행 구분선 */
+  --color-border-focus: oklch(0.546 0.215 263);     /* 키보드 focus */
 
-  /* action */
-  --color-action-primary: oklch(var(--primary-500));
-  --color-action-primary-hover: oklch(var(--primary-600));
+  /* 주요 동작 (브랜드 파랑) */
+  --color-action-primary: oklch(0.546 0.215 263);       /* 주요 버튼 */
+  --color-action-primary-hover: oklch(0.488 0.217 264); /* 주요 버튼 hover */
+  --color-action-primary-soft: oklch(0.97 0.014 254);   /* 주요 동작 연한 배경 */
 
-  /* focus / 그림자 / 스크롤바 */
-  --color-focus-ring: oklch(var(--primary-500) / 0.12);
-  --color-shadow-card: oklch(var(--foreground-950) / 0.04);
-  --color-shadow-soft: oklch(var(--foreground-950) / 0.05);
-  --color-shadow-panel: oklch(var(--foreground-950) / 0.16);
-  --color-scrollbar-thumb: oklch(var(--background-300));
-  --color-scrollbar-thumb-hover: oklch(var(--background-400));
+  /* 상태 — 글자 · 연한 배경 · 테두리. 색만으로 의미를 전하지 않도록 항상 글자와 함께 쓴다 */
+  --color-danger-text: oklch(0.514 0.198 16.9);     /* 오류·위험·지연 */
+  --color-danger-bg: oklch(0.969 0.015 12.4);
+  --color-danger-border: oklch(0.892 0.058 10);
+  --color-warning-text: oklch(0.555 0.146 49);      /* 주의·마감 임박 */
+  --color-warning-bg: oklch(0.987 0.021 95);
+  --color-warning-border: oklch(0.924 0.115 95.7);
+  --color-success-text: oklch(0.508 0.105 166);     /* 완료·정상 */
+  --color-success-bg: oklch(0.979 0.021 166);
+  --color-success-border: oklch(0.905 0.093 164);
+  --color-info-text: oklch(0.424 0.18 265);         /* 안내 */
+  --color-info-bg: oklch(0.97 0.014 254);
+  --color-info-border: oklch(0.884 0.057 254);
 
-  /* 상태 표현용 불투명도 (skin) */
+  /* focus 링 · 그림자 · 스크롤바 */
+  --color-focus-ring: oklch(0.546 0.215 263 / 0.12);
+  --color-shadow-card: oklch(0.208 0.024 258 / 0.04);
+  --color-shadow-soft: oklch(0.208 0.024 258 / 0.05);
+  --color-shadow-panel: oklch(0.208 0.024 258 / 0.16);
+  --color-scrollbar-thumb: oklch(0.923 0.011 252);
+  --color-scrollbar-thumb-hover: oklch(0.868 0.019 252);
+
+  /* 비활성 표현 불투명도 */
   --opacity-disabled: 0.45;
 }

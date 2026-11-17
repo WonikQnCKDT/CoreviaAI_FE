@@ -2,6 +2,8 @@
 
 /* design token: 색상 / 크기 / 글꼴 / motion을 파일별로 분리 */
 @import './tokens/colors.css';
+/* 삭제 예정: 기존 화면 호환용 예전 색 값. 새 코드에서 쓰지 않는다 */
+@import './tokens/legacy-colors.css';
 @import './tokens/sizes.css';
 @import './tokens/typography.css';
 @import './tokens/motion.css';
@@ -213,7 +215,7 @@ h1, h2, h3, h4, h5, h6 {
     border-bottom: var(--size-border-default) solid var(--color-border-default);
     text-align: left;
     white-space: nowrap;
-    font-size: var(--font-size-caption);
+    font-size: var(--font-size-label);
     font-weight: var(--font-weight-medium);
 
     /* skin */

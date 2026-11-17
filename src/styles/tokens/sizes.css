@@ -52,12 +52,24 @@
   --radius-card: var(--base-3);      /* Tailwind rounded-xl, .card */
   --radius-pill: 999px;
 
-  /* font size / line height */
-  --font-size-caption: 0.75rem;     /* 12px: 표 헤더 */
-  --font-size-control: 0.8125rem;   /* 13px: 입력·버튼·표 셀 */
-  --font-size-nav: 0.84375rem;      /* 13.5px: 사이드 메뉴 */
-  --font-size-body: 0.875rem;       /* 14px: 본문 */
+  /* font size — 기준은 body(14px). 나머지는 용도로 정한다. 화면에서는 이 단계만 쓴다.
+   * Tailwind: text-caption · text-label · text-control · text-body · text-title · text-heading */
+  --font-size-body: 0.875rem;       /* 14px: 기본 본문 (기준) */
+  --font-size-caption: 0.6875rem;   /* 11px: 보조 설명·건수·도움말. 이보다 작은 글자는 만들지 않는다 */
+  --font-size-label: 0.75rem;       /* 12px: 입력 라벨·표 헤더·배지 */
+  --font-size-control: 0.8125rem;   /* 13px: 버튼·입력칸·표 셀 */
+  --font-size-title: 1rem;          /* 16px: 카드·섹션 제목 */
+  --font-size-heading: 1.25rem;     /* 20px: 화면 제목·핵심 숫자 */
+  /* 사이드 메뉴 전용. 위 단계에 없는 값이라 화면을 옮길 때 control(13px)로 맞출지 정한다 */
+  --font-size-nav: 0.84375rem;      /* 13.5px */
+
+  /* line height — 글씨 크기와 짝 */
   --line-height-body: 1.55;
+  --line-height-caption: 1rem;
+  --line-height-label: 1rem;
+  --line-height-control: 1.25rem;
+  --line-height-title: 1.5rem;
+  --line-height-heading: 1.75rem;
 
   /* elevation: 형태는 여기서, 색은 colors.css의 semantic 색상을 쓴다 */
   --elevation-card: 0 var(--base-px) var(--base-0-5) var(--color-shadow-card);
