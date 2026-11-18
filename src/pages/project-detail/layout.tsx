@@ -1,54 +1,27 @@
 import { Link, Outlet, useLocation, useParams } from "react-router-dom";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { createProjectCore } from "@/app/projectModules/projectCore";
+import { projectModules } from "@/app/projectModules/projectModules";
+import type { ProjectDetailOutlet } from "@/app/projectModules/ProjectModuleRoute";
+import type { ProjectModuleScope } from "@/core/projectModules/contracts";
 import { useDemoStore } from "@/stores/DemoStore";
 import EmptyState from "@/components/ui/EmptyState";
 import { canEditProject, isProjectMember, isSystemAdmin } from "@/utils/permission";
 import { PROJECT_TEXT, useServerProjectDetail } from "@/features/project/hooks/useServerProjects";
 
-interface TabItem {
-  label: string;
-  basePath: string;
-  children?: { label: string; path: string }[];
-}
+const overviewTab = {
+  basePath: "",
+  label: "개요",
+  pages: [{ path: "missing", label: "누락 의심 업무" }],
+  showPageLinks: true,
+};
 
-const TABS: TabItem[] = [
-  {
-    label: "개요",
-    basePath: "",
-    children: [
-      { label: "개요", path: "" },
-      { label: "누락 의심 업무", path: "missing" },
-    ],
-  },
-  {
-    label: "업무 계획",
-    basePath: "wbs",
-    children: [
-      { label: "WBS", path: "wbs" },
-      { label: "간트", path: "gantt" },
-      { label: "칸반", path: "kanban" },
-      { label: "AI WBS 초안", path: "wbs/draft" },
-    ],
-  },
-  { label: "이슈·결함", basePath: "issues" },
-  {
-    label: "협업 문서",
-    basePath: "collab/meeting",
-    children: [
-      { label: "회의록", path: "collab/meeting" },
-      { label: "게시판", path: "collab/board" },
-      { label: "산출물·검수", path: "collab/deliverables" },
-    ],
-  },
-  { label: "AI 리스크", basePath: "risk" },
-  { label: "주간 리포트", basePath: "report" },
-  { label: "멤버·설정", basePath: "settings" },
-];
+const settingsTab = { basePath: "settings", label: "멤버·설정", pages: [], showPageLinks: false };
 
 export default function ProjectDetailLayout() {
   const { projectId } = useParams();
   const location = useLocation();
-  const { projects, currentUser } = useDemoStore();
+  const { projects, currentUser, tasks, notifications } = useDemoStore();
   const navRef = useRef<HTMLElement | null>(null);
   const activeRef = useRef<HTMLAnchorElement | null>(null);
 
@@ -57,10 +30,19 @@ export default function ProjectDetailLayout() {
   const found = projects.find((p) => p.id === projectId);
   const project = serverState.phase === "notFound" ? undefined : found;
 
-  const suffix = location.pathname.split(`/projects/${projectId}`)[1]?.replace(/^\//, "") || "";
-  const activeGroup =
-    TABS.find((tab) => tab.children?.some((child) => child.path === suffix)) ||
-    TABS.find((tab) => tab.basePath === suffix);
+  const suffix = location.pathname.split(`/projects/${projectId}`)[1]?.replace(/^\/+|\/+$/g, "") || "";
+  const scope = useMemo<ProjectModuleScope | null>(() => project ? ({
+    projectId: project.id,
+    ...(project.moduleProfile ?? { departmentType: null, method: project.method, actors: project.actors }),
+  }) : null, [project]);
+  const core = useMemo(() => project ? createProjectCore(project, tasks, notifications) : null, [project, tasks, notifications]);
+  const modules = scope ? projectModules.list(scope, project?.serverId === undefined || serverState.phase === "ready") : [];
+  const tabs = [
+    overviewTab,
+    ...modules.map(({ label, pages, showPageLinks }) => ({ label, pages, showPageLinks, basePath: pages[0].path })),
+    settingsTab,
+  ];
+  const activeGroup = tabs.find((tab) => tab.basePath === suffix || tab.pages.some((page) => page.path === suffix));
 
   // 작은 화면에서 메뉴를 가로로 넘겨도 선택된 메뉴가 항상 보이도록 합니다.
   useEffect(() => {
@@ -91,7 +73,7 @@ export default function ProjectDetailLayout() {
     );
   }
 
-  if (!project) {
+  if (!project || !scope || !core) {
     return (
       <div className="card">
         <EmptyState
@@ -110,18 +92,19 @@ export default function ProjectDetailLayout() {
   }
 
   const canSeeSettings =
+    project.serverId !== undefined ||
     canEditProject(project, currentUser) ||
     isProjectMember(project, currentUser.id) ||
     isSystemAdmin(currentUser);
-  const visibleTabs = TABS.filter((tab) => tab.basePath !== "settings" || canSeeSettings);
-  // 업무 계획의 세부 보기는 각 화면 안의 보기 전환으로 옮겼습니다.
-  // 나머지 그룹은 큰 박스 없이 얇은 선만 있는 짧은 링크 줄로 구분합니다.
-  const subItems =
-    activeGroup?.label === "개요"
-      ? activeGroup.children?.filter((child) => child.path !== "")
-      : activeGroup?.label === "협업 문서"
-        ? activeGroup.children
-        : undefined;
+  const visibleTabs = tabs.filter((tab) => tab !== settingsTab || canSeeSettings);
+  const subItems = activeGroup?.showPageLinks ? activeGroup.pages : null;
+  const outlet: ProjectDetailOutlet = {
+    reload: reloadServer,
+    props: { scope, core },
+    pages: modules.flatMap(({ pages }) => pages),
+    loading: serverState.phase === "loading",
+    loadFailed: serverState.phase === "error",
+  };
 
   return (
     <div className="space-y-3">
@@ -132,10 +115,10 @@ export default function ProjectDetailLayout() {
           className="relative flex items-center gap-0.5 overflow-x-auto px-0.5"
         >
           {visibleTabs.map((tab) => {
-            const active = activeGroup?.label === tab.label;
+            const active = activeGroup === tab;
             return (
               <Link
-                key={tab.label}
+                key={tab.basePath}
                 ref={active ? activeRef : undefined}
                 to={tab.basePath ? `/projects/${project.id}/${tab.basePath}` : `/projects/${project.id}`}
                 aria-current={active ? "page" : undefined}
@@ -184,7 +167,7 @@ export default function ProjectDetailLayout() {
         </div>
       )}
 
-      <Outlet />
+      <Outlet context={outlet} />
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import type { ProjectModuleProfile } from "@/core/projectModules/contracts";
+
 export type TaskStatus = "todo" | "progress" | "review" | "done";
 
 export type Priority = "high" | "normal" | "low";
@@ -59,6 +61,7 @@ export interface Project {
   dept: string;
   pmId: string;
   method: MethodKey;
+  moduleProfile?: ProjectModuleProfile;
   stage: StageKey;
   startDate: string;
   endDate: string;

@@ -6,10 +6,11 @@ import AdminRiskSettings from "@/features/admin/components/AdminRiskSettings";
 import AdminAudit from "@/features/admin/components/AdminAudit";
 import ServerUsersPanel from "@/features/admin/components/ServerUsersPanel";
 import ServerDepartmentsPanel from "@/features/admin/components/ServerDepartmentsPanel";
+import ServerProjectPmPanel from "@/features/admin/components/ServerProjectPmPanel";
 import { useAuth } from "@/features/auth/authContext";
 import { canUseSystemAdmin } from "@/utils/permission";
 
-type TabKey = "users" | "departments" | "risk" | "audit";
+type TabKey = "users" | "departments" | "projectPm" | "risk" | "audit";
 
 interface TabItem {
   key: TabKey;
@@ -24,10 +25,11 @@ const DEMO_TABS: TabItem[] = [
   { key: "audit", label: "보안 · 접속 로그", icon: "ri-file-shield-2-line", hint: "읽기 전용 감사 로그" },
 ];
 
-// api 모드: 사용자·부서는 서버 API, 나머지 탭은 아직 데모 데이터
+// api 모드: 사용자·부서·PM 재지정은 서버 API, 리스크·접속 로그는 데모 데이터
 const API_TABS: TabItem[] = [
   { key: "users", label: "사용자", icon: "ri-team-line", hint: "계정·역할·생성 권한" },
   { key: "departments", label: "부서", icon: "ri-organization-chart", hint: "조직 트리" },
+  { key: "projectPm", label: "PM 재지정", icon: "ri-user-settings-line", hint: "비활성 PM 교체" },
   { key: "risk", label: "AI · 리스크 설정", icon: "ri-equalizer-line", hint: "데모 데이터" },
   { key: "audit", label: "보안 · 접속 로그", icon: "ri-file-shield-2-line", hint: "데모 데이터" },
 ];
@@ -87,6 +89,7 @@ export default function AdminPage() {
 
       {tab === "users" && (isApi ? <ServerUsersPanel /> : <AdminUsers />)}
       {tab === "departments" && isApi && <ServerDepartmentsPanel />}
+      {tab === "projectPm" && isApi && <ServerProjectPmPanel />}
       {tab === "risk" && <AdminRiskSettings />}
       {tab === "audit" && <AdminAudit />}
     </div>

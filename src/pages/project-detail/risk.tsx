@@ -5,13 +5,14 @@ import { Badge } from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
 import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
+import type { ProjectModuleProps } from "@/core/projectModules/contracts";
 import type { RiskSuggestion } from "@/types";
 import { addDays, formatDate, TODAY } from "@/utils/date";
 import { STAGE_LABEL, riskLevel } from "@/utils/ui";
 import { affectedMilestones, impactOf, riskFactors, topRippleTasks } from "@/features/risk/utils/risk";
 import { PRIORITY_LABEL } from "@/utils/ui";
 
-export default function RiskPage() {
+export default function RiskPage({ core }: ProjectModuleProps) {
   const { projectId } = useParams();
   const { projects, tasks, issues, users, currentUser, riskSettings, riskSuggestions, decideRiskSuggestion, openTask } = useDemoStore();
   const project = projects.find((p) => p.id === projectId);
@@ -37,7 +38,8 @@ export default function RiskPage() {
 
   if (!project) return null;
 
-  const level = riskLevel(project.riskScore);
+  const score = core.risk.readScore() ?? project.riskScore;
+  const level = riskLevel(score);
   const gradeLabel = level === "danger" ? "위험" : level === "caution" ? "주의" : "정상";
   const gradeClass = level === "danger" ? "text-rose-600" : level === "caution" ? "text-amber-600" : "text-emerald-600";
   const scoreColor = level === "danger" ? "bg-rose-500" : level === "caution" ? "bg-amber-500" : "bg-emerald-500";
@@ -93,12 +95,12 @@ export default function RiskPage() {
             <span className="rounded border border-background-300 bg-background-100 px-1.5 py-[1px] text-[9.5px] text-foreground-500">규칙 기반 샘플</span>
           </div>
           <div className="mt-2 flex items-end gap-1.5">
-            <span className="text-[46px] font-semibold leading-none text-foreground-950">{project.riskScore}</span>
+            <span className="text-[46px] font-semibold leading-none text-foreground-950">{score}</span>
             <span className="pb-1 text-[13px] text-foreground-500">/ 100</span>
             <span className={`pb-1.5 text-[15px] font-semibold ${gradeClass}`}>{gradeLabel}</span>
           </div>
           <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-background-300">
-            <div className={`h-2 rounded-full ${scoreColor}`} style={{ width: `${project.riskScore}%` }} />
+            <div className={`h-2 rounded-full ${scoreColor}`} style={{ width: `${score}%` }} />
           </div>
           <p className="mt-1.5 text-[10.5px] text-foreground-500">
             실제 계산 결과가 아닌 데모 샘플 점수입니다. 등급 기준 {riskSettings.thresholds.caution}점 / {riskSettings.thresholds.danger}점은 확정 요구사항이 아닌 데모 설정입니다.

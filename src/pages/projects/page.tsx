@@ -10,6 +10,8 @@ import StatCard from "@/components/ui/StatCard";
 import { formatDate, TODAY } from "@/utils/date";
 import { HEALTH_LABEL, STAGE_LABEL, riskLevel } from "@/utils/ui";
 import { projectProgress } from "@/features/task/utils/taskTree";
+import { useAuth } from "@/features/auth/authContext";
+import { useProjectCreationPermission } from "@/features/project/hooks/useProjectCreationPermission";
 import { canCreateProject, isSystemAdmin } from "@/utils/permission";
 import { PROJECT_TEXT, useServerProjectList } from "@/features/project/hooks/useServerProjects";
 import type { Health } from "@/types";
@@ -45,7 +47,9 @@ export default function ProjectsPage() {
     () => (isApi ? allProjects.filter((project) => project.serverId !== undefined) : allProjects),
     [isApi, allProjects],
   );
-  const allowCreate = canCreateProject(currentUser);
+  const { account } = useAuth();
+  const creationPermission = useProjectCreationPermission(isApi && account?.systemRole === "user" ? account.userId : undefined);
+  const allowCreate = isApi ? creationPermission === "allowed" || creationPermission === "unavailable" : canCreateProject(currentUser);
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [focus, setFocus] = useState<FocusKey>(() => readFocus(searchParams.get("focus")));
@@ -138,7 +142,7 @@ export default function ProjectsPage() {
           ) : (
             <button type="button" className="btn-outline" disabled title="프로젝트 생성 권한이 없습니다">
               <i className="ri-lock-line" />
-              생성 권한 없음
+              {creationPermission === "checking" ? "생성 권한 확인 중" : "생성 권한 없음"}
             </button>
           )}
         </div>

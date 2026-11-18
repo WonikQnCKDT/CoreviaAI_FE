@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/features/auth/authContext";
+import ServerProjectCreateWizard from "@/features/project/components/create/ServerProjectCreateWizard";
 import { useDemoStore } from "@/stores/DemoStore";
 import { addDays, TODAY } from "@/utils/date";
 import { generateProjectCode, issueYear } from "@/features/project/utils/projectCode";
@@ -401,7 +403,11 @@ function ProjectCreateWizard() {
 
 export default function ProjectCreatePage() {
   const { currentUser } = useDemoStore();
-  if (!canCreateProject(currentUser)) {
+  const { mode, account } = useAuth();
+  if (mode === "api" && account?.systemRole === "user") {
+    return <ServerProjectCreateWizard creatorId={account.userId} creatorName={account.name} />;
+  }
+  if (mode === "api" || !canCreateProject(currentUser)) {
     return (
       <NoAccess
         title="프로젝트 생성 권한이 없습니다"

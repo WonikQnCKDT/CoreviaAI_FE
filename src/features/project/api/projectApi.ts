@@ -1,3 +1,4 @@
+import type { ProjectModuleProfile } from "@/core/projectModules/contracts";
 import { apiRequest, type ApiResult } from "@/shared/api/client";
 import type { MethodKey, RoleKey, StageKey, Visibility } from "@/types";
 
@@ -98,6 +99,7 @@ export interface ServerProjectMember {
 }
 
 export interface ServerProjectDetail extends ServerProjectSummary {
+  moduleProfile: ProjectModuleProfile;
   departmentType: DepartmentType;
   createdBy: number;
   actors: ProjectActor[];
@@ -216,6 +218,11 @@ const toDetail = function (dto: ProjectDetailDto): ServerProjectDetail {
   const { departmentType, createdBy, actors, members } = dto;
   return {
     ...toSummary(dto),
+    moduleProfile: {
+      departmentType: DEPT_TYPE_FROM_DTO[departmentType] ?? departmentType.toLowerCase(),
+      method: METHOD_FROM_DTO[dto.methodology] ?? dto.methodology.toLowerCase(),
+      actors: (actors ?? []).map((actor) => toActor(actor) ?? actor.toLowerCase()),
+    },
     departmentType: DEPT_TYPE_FROM_DTO[departmentType] ?? "sw",
     createdBy,
     actors: (actors ?? []).map(toActor).filter((actor): actor is ProjectActor => actor !== null),
@@ -402,3 +409,96 @@ export const createProject = async function ({
   });
   return mapResult(result, toDetail);
 };
+
+interface ProjectMemberDto {
+  userId: number;
+  name: string;
+  actor: ActorDto;
+  assignedTaskCount: number;
+}
+
+interface MemberHistoryDto {
+  id: number;
+  userName: string;
+  changedByName: string;
+  beforeActor: ActorDto | null;
+  afterActor: ActorDto | null;
+  occurredAt: string;
+}
+
+interface MemberPageInput {
+  projectId: number;
+  cursor: string | null;
+  signal?: AbortSignal;
+}
+
+interface MemberMutationInput {
+  projectId: number;
+  userId: number;
+  signal?: AbortSignal;
+}
+
+export async function fetchProjectMembers({ projectId, cursor, signal }: MemberPageInput) {
+  const result = await apiRequest<CursorPageDto<ProjectMemberDto>>({
+    path: `${projectPath(projectId)}/members${toQuery({ cursor })}`, signal,
+  });
+  return mapResult(result, (page) => ({
+    ...page,
+    items: page.items.map((member) => ({ ...member, actor: ACTOR_FROM_DTO[member.actor] })),
+  }));
+}
+
+export async function fetchProjectMemberHistory({ projectId, cursor, signal }: MemberPageInput) {
+  const result = await apiRequest<CursorPageDto<MemberHistoryDto>>({
+    path: `${projectPath(projectId)}/members/histories${toQuery({ cursor })}`, signal,
+  });
+  return mapResult(result, (page) => ({
+    ...page,
+    items: page.items.map((entry) => ({
+      ...entry,
+      beforeActor: entry.beforeActor ? toActor(entry.beforeActor) : null,
+      afterActor: entry.afterActor ? toActor(entry.afterActor) : null,
+    })),
+  }));
+}
+
+export function inviteProjectMember({ projectId, userId, actor, signal }: MemberMutationInput & { actor: ProjectActor }) {
+  return apiRequest<ProjectMemberDto[]>({
+    method: "POST", path: `${projectPath(projectId)}/members`, signal,
+    body: { members: [{ userId, actor: ACTOR_TO_DTO[actor] }] },
+  });
+}
+
+export function changeProjectMemberRole({ projectId, userId, actor, signal }: MemberMutationInput & { actor: ProjectActor }) {
+  return apiRequest<ProjectMemberDto>({
+    method: "PATCH", path: `${projectPath(projectId)}/members/${userId}/role`, signal,
+    body: { actor: ACTOR_TO_DTO[actor] },
+  });
+}
+
+export function removeProjectMember({ projectId, userId, signal }: MemberMutationInput) {
+  return apiRequest<null>({ method: "DELETE", path: `${projectPath(projectId)}/members/${userId}`, signal });
+}
+
+export function delegateProjectPm({ projectId, newPmUserId, previousPmActor, signal }: {
+  projectId: number;
+  newPmUserId: number;
+  previousPmActor: ProjectActor | null;
+  signal?: AbortSignal;
+}) {
+  return apiRequest<unknown>({
+    method: "POST", path: `${projectPath(projectId)}/pm-delegation`, signal,
+    body: {
+      newPmUserId,
+      previousPmAction: previousPmActor ? "CHANGE_ROLE" : "LEAVE",
+      previousPmActor: previousPmActor ? ACTOR_TO_DTO[previousPmActor] : null,
+    },
+  });
+}
+
+export function reassignProjectPm({ projectCode, newPmUserId, signal }: { projectCode: string; newPmUserId: number; signal?: AbortSignal }) {
+  return apiRequest<unknown>({
+    method: "PUT", path: "/admin/projects/pm", signal,
+    body: { projectCode: projectCode.trim(), newPmUserId },
+  });
+}

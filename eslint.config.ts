@@ -85,6 +85,21 @@ export default [
       'no-undef': 'error',
     },
   },
+  {
+    files: ['src/extensions/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [{
+          regex: '^(?!(?:react(?:/[^/]+)?|@/core/projectModules/contracts|\\./[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*(?:\\.[A-Za-z0-9]+)?)$)',
+          message: 'Department extensions use the public project module contract and their own local components.',
+        }],
+      }],
+      'no-restricted-syntax': ['error', {
+        selector: 'ImportExpression, TSImportType, TSImportEqualsDeclaration',
+        message: 'Use statically checked imports for department extensions.',
+      }],
+    },
+  },
   // Only enforce this rule for the router config file to avoid false positives elsewhere.
   {
     files: ['src/app/router/config.tsx'],

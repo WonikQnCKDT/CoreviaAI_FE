@@ -160,6 +160,7 @@ export const mergeServerDetail = function ({
     users: nextUsers,
     project: {
       ...merged.project,
+      moduleProfile: detail.moduleProfile,
       actors: actors.length > 0 ? actors : merged.project.actors,
       members: members.length > 0 ? members : merged.project.members,
       stage: stageFrom(phases, existing),

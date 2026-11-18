@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import type { ProjectDetailOutlet } from "@/app/projectModules/ProjectModuleRoute";
+import { useOutletContext, useParams } from "react-router-dom";
+import ServerProjectMembers from "@/features/project/components/ServerProjectMembers";
 import { useDemoStore } from "@/stores/DemoStore";
 import { Badge } from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
@@ -12,6 +14,7 @@ import { gateApproverCandidates } from "@/features/gate/utils/gate";
 
 export default function ProjectSettingsPage() {
   const { projectId } = useParams();
+  const { reload: reloadProject } = useOutletContext<ProjectDetailOutlet>();
   const { projects, users, currentUser, changeProjectPm } = useDemoStore();
   const [nextPmId, setNextPmId] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -29,6 +32,11 @@ export default function ProjectSettingsPage() {
         />
       </div>
     );
+  }
+
+  if (project.serverId !== undefined) {
+    return <ServerProjectMembers key={project.serverId} projectId={project.serverId} actors={project.actors}
+      isPm={project.pmId === currentUser.id} onPmChanged={reloadProject} />;
   }
 
   const isPm = canEditProject(project, currentUser);
