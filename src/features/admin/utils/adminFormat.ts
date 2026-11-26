@@ -1,19 +1,35 @@
 import type { ApiFailure } from "@/shared/api/client";
 import { AUTH_TEXT } from "@/features/auth/i18n/ko";
-import { ADMIN_ERROR_TEXT } from "@/features/admin/i18n/ko";
 
-/** 실패 → 화면 문구. 오류 코드 표를 먼저 보고, 없으면 서버 검증 메시지, 마지막으로 공통 문구를 쓴다. */
-export const adminErrorMessage = function (failure: ApiFailure): string {
+/**
+ * 실패 → 화면 문구.
+ * 서버 오류 본문은 message·status만 준다(API 공통 규약 6절). 상황별로 FE 문구가 필요하면 호출하는 쪽이
+ * status로 골라 `byStatus`로 넘기고, 없으면 서버 메시지, 마지막으로 공통 문구를 쓴다.
+ * 서버 메시지는 보여 주기만 하고 분기 조건으로 쓰지 않는다(문구는 바뀔 수 있다).
+ */
+export const adminErrorMessage = function (
+  failure: ApiFailure,
+  { byStatus = {} }: { byStatus?: Partial<Record<number, string>> } = {},
+): string {
   if (failure.kind === "timeout") return AUTH_TEXT.timeout;
   if (failure.kind === "network") return AUTH_TEXT.network;
   if (failure.kind === "aborted") return "";
-  const { status, code, message } = failure;
-  if (code && ADMIN_ERROR_TEXT[code]) return ADMIN_ERROR_TEXT[code];
-  if (status === 400 && message) return message;
+  const { status, message } = failure;
+  const override = byStatus[status];
+  if (override) return override;
+  if (message) return message;
   if (status === 503) return AUTH_TEXT.serviceUnavailable;
   return AUTH_TEXT.unknown;
 };
 
+export const failureStatus = function (failure: ApiFailure): number | null {
+  return failure.kind === "http" ? failure.status : null;
+};
+
+/**
+ * 서버가 오류 본문에 code를 주지 않아 지금은 항상 null이다.
+ * 부서 화면(DepartmentFormDialog·ServerDepartmentsPanel)이 아직 쓰고 있어 남겨 둔다. 새 코드에서는 failureStatus를 쓴다.
+ */
 export const failureCode = function (failure: ApiFailure): string | null {
   return failure.kind === "http" ? failure.code : null;
 };

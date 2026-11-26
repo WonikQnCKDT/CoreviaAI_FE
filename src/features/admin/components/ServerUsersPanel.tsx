@@ -5,7 +5,6 @@ import { useAuth } from "@/features/auth/authContext";
 import {
   changeAdminUserRole,
   changeAdminUserStatus,
-  changeProjectCreation,
   fetchAdminUser,
   fetchAdminUsers,
   type AdminUser,
@@ -18,7 +17,8 @@ import UserFormDialog, { type UserFormMode } from "@/features/admin/components/U
 import UserHistoryDialog from "@/features/admin/components/UserHistoryDialog";
 import PasswordResetDialog from "@/features/admin/components/PasswordResetDialog";
 import { ADMIN_TEXT, STATUS_TEXT, SYSTEM_ROLE_TEXT } from "@/features/admin/i18n/ko";
-import { adminErrorMessage, failureCode, formatDateTime } from "@/features/admin/utils/adminFormat";
+import { formatDateTime } from "@/features/admin/utils/adminFormat";
+import { interpretAccountChangeFailure } from "@/features/admin/utils/adminUserFailure";
 import type { SystemRole } from "@/types";
 
 const ROLES: SystemRole[] = ["user", "exec", "admin"];
@@ -28,7 +28,8 @@ type PendingChange =
   | { kind: "role"; user: AdminUser; systemRole: SystemRole }
   | { kind: "status"; user: AdminUser; status: RecordStatus };
 
-type Notice = { tone: "info" | "error"; text: string } | null;
+/** 변경 성공 안내. 실패는 각 확인 창·입력 창 안에서 보여 준다. */
+type Notice = { text: string } | null;
 
 interface ResetTarget {
   name: string;
@@ -50,7 +51,6 @@ const ServerUsersPanel = function () {
   const [resetDescription, setResetDescription] = useState<string | undefined>(undefined);
   const [pending, setPending] = useState<PendingChange | null>(null);
   const [confirmState, setConfirmState] = useState<ConfirmPhase>({ phase: "idle" });
-  const [busyUserId, setBusyUserId] = useState<number | null>(null);
   const [notice, setNotice] = useState<Notice>(null);
   const controllerRef = useRef<AbortController | null>(null);
 
@@ -125,7 +125,6 @@ const ServerUsersPanel = function () {
       setPending(null);
       setConfirmState({ phase: "idle" });
       setNotice({
-        tone: "info",
         text:
           pending.kind === "role"
             ? `${user.name} 사용자의 역할을 ${SYSTEM_ROLE_TEXT[result.data.systemRole]}(으)로 바꿨습니다. 대상 사용자는 다시 로그인해야 합니다.`
@@ -133,26 +132,9 @@ const ServerUsersPanel = function () {
       });
       return;
     }
-    const code = failureCode(result.failure);
-    if (code === "CONCURRENT_MODIFICATION" || code === "USER_NOT_FOUND") refreshUser(user.id);
-    setConfirmState({ phase: "failed", message: adminErrorMessage(result.failure) });
-  };
-
-  /* ===== 프로젝트 생성 권한 (바로 실행) ===== */
-
-  const toggleProjectCreation = async (user: AdminUser) => {
-    if (busyUserId !== null) return;
-    setBusyUserId(user.id);
-    setNotice(null);
-    const result = await changeProjectCreation({ userId: user.id, enabled: !user.canCreateProject });
-    setBusyUserId(null);
-    if (result.ok === true) {
-      replaceItem(sameUser(user.id), result.data);
-      return;
-    }
-    const code = failureCode(result.failure);
-    if (code === "USER_NOT_FOUND" || code === "PROJECT_CREATION_NOT_ALLOWED") refreshUser(user.id);
-    setNotice({ tone: "error", text: `${user.name}: ${adminErrorMessage(result.failure)}` });
+    const { message, stale } = interpretAccountChangeFailure(result.failure);
+    if (stale) refreshUser(user.id);
+    setConfirmState({ phase: "failed", message });
   };
 
   const handleSaved = ({ user, created }: { user: AdminUser; created: boolean }) => {
@@ -165,7 +147,7 @@ const ServerUsersPanel = function () {
       return;
     }
     replaceItem(sameUser(user.id), user);
-    setNotice({ tone: "info", text: `${user.name} 사용자 정보를 저장했습니다.` });
+    setNotice({ text: `${user.name} 사용자 정보를 저장했습니다.` });
   };
 
   /* ===== 화면 ===== */
@@ -213,14 +195,13 @@ const ServerUsersPanel = function () {
     return (
       <>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1180px] border-collapse">
+          <table className="w-full min-w-[1060px] border-collapse">
             <thead>
               <tr>
                 <th className="th">사용자</th>
                 <th className="th w-40">부서</th>
                 <th className="th w-32">직무</th>
                 <th className="th w-40">시스템 역할</th>
-                <th className="th w-28">프로젝트 생성</th>
                 <th className="th w-20">상태</th>
                 <th className="th w-36">마지막 로그인</th>
                 <th className="th w-80">관리</th>
@@ -228,13 +209,11 @@ const ServerUsersPanel = function () {
             </thead>
             <tbody>
               {items.map((user) => {
-                const { id, loginId, name, systemRole: role, status: userStatus, departmentName, jobTitle, canCreateProject, lastLoginAt } =
-                  user;
+                const { id, loginId, name, systemRole: role, status: userStatus, departmentName, jobTitle, lastLoginAt } = user;
                 const isSelf = account?.userId === id;
-                const busy = busyUserId === id;
                 const active = userStatus === "active";
                 return (
-                  <tr key={id} className="border-b border-background-200 last:border-0" aria-busy={busy}>
+                  <tr key={id} className="border-b border-background-200 last:border-0">
                     <td className="td">
                       <span className="flex items-center gap-2">
                         <Avatar name={name} size="xs" />
@@ -259,7 +238,7 @@ const ServerUsersPanel = function () {
                         id={`role-${id}`}
                         className="field text-xs disabled:cursor-not-allowed disabled:opacity-60"
                         value={role}
-                        disabled={isSelf || busy}
+                        disabled={isSelf}
                         title={isSelf ? ADMIN_TEXT.ownAccountLocked : undefined}
                         onChange={(event) => openChange({ kind: "role", user, systemRole: event.target.value as SystemRole })}
                       >
@@ -269,25 +248,6 @@ const ServerUsersPanel = function () {
                           </option>
                         ))}
                       </select>
-                    </td>
-                    <td className="td">
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={canCreateProject}
-                        aria-label={`${name} 프로젝트 생성 권한`}
-                        disabled={busy || (role !== "user" && !canCreateProject)}
-                        title={role !== "user" ? ADMIN_TEXT.projectCreationUserOnly : undefined}
-                        onClick={() => toggleProjectCreation(user)}
-                        className={`inline-flex min-h-8 cursor-pointer items-center gap-1 rounded-full border px-2.5 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-50 ${
-                          canCreateProject
-                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                            : "border-background-300 bg-background-100 text-foreground-500"
-                        }`}
-                      >
-                        <i className={canCreateProject ? "ri-check-line" : "ri-close-line"} aria-hidden="true" />
-                        {busy ? ADMIN_TEXT.saving : canCreateProject ? "허용" : "미허용"}
-                      </button>
                     </td>
                     <td className="td">
                       <span className="inline-flex items-center gap-1.5 text-xs text-foreground-700">
@@ -325,7 +285,7 @@ const ServerUsersPanel = function () {
                         </button>
                         <button
                           type="button"
-                          disabled={isSelf || busy}
+                          disabled={isSelf}
                           title={isSelf ? ADMIN_TEXT.ownAccountLocked : undefined}
                           className="btn-outline px-2 py-1 text-xs"
                           onClick={() => openChange({ kind: "status", user, status: active ? "inactive" : "active" })}
@@ -372,10 +332,8 @@ const ServerUsersPanel = function () {
 
       {notice && (
         <div
-          role={notice.tone === "error" ? "alert" : "status"}
-          className={`flex items-start justify-between gap-2 rounded-lg border px-3.5 py-2.5 text-xs leading-5 ${
-            notice.tone === "error" ? "border-rose-200 bg-rose-50 text-rose-700" : "border-background-300 bg-background-50 text-foreground-700"
-          }`}
+          role="status"
+          className="flex items-start justify-between gap-2 rounded-lg border border-background-300 bg-background-50 px-3.5 py-2.5 text-xs leading-5 text-foreground-700"
         >
           <span>{notice.text}</span>
           <button type="button" className="shrink-0 underline underline-offset-2" onClick={() => setNotice(null)}>
@@ -468,7 +426,6 @@ const ServerUsersPanel = function () {
               <strong className="font-medium text-foreground-950">{SYSTEM_ROLE_TEXT[pending.systemRole]}</strong>(으)로 바꿉니다.
             </p>
             <p>{ADMIN_TEXT.roleChangeConfirmBody}</p>
-            {pending.systemRole !== "user" && pending.user.canCreateProject && <p>{ADMIN_TEXT.roleChangeProjectRevoke}</p>}
           </>
         )}
         {pending?.kind === "status" && (
