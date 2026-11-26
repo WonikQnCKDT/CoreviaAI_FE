@@ -26,7 +26,6 @@ export interface User {
   email: string;
   systemRole: SystemRole;
   active: boolean;
-  canCreateProject: boolean;
   scopeDepts?: string[];
   isSystemAdmin?: boolean;
   /** 인증 서버의 사용자 ID. 실제 서버로 로그인한 적이 있는 사용자에만 있습니다. */

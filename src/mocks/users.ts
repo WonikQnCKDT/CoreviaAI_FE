@@ -15,7 +15,6 @@ export const users: User[] = [
     email: "seoyeon.kim@corevia.co.kr",
     systemRole: "user",
     active: true,
-    canCreateProject: true,
   },
   {
     id: "u2",
@@ -27,7 +26,6 @@ export const users: User[] = [
     email: "jihoon.park@corevia.co.kr",
     systemRole: "user",
     active: true,
-    canCreateProject: false,
   },
   {
     id: "u3",
@@ -39,7 +37,6 @@ export const users: User[] = [
     email: "sumin.lee@corevia.co.kr",
     systemRole: "user",
     active: true,
-    canCreateProject: false,
   },
   {
     id: "u4",
@@ -51,7 +48,6 @@ export const users: User[] = [
     email: "minjae.jung@corevia.co.kr",
     systemRole: "user",
     active: true,
-    canCreateProject: false,
   },
   {
     id: "u5",
@@ -63,7 +59,6 @@ export const users: User[] = [
     email: "yujin.choi@corevia.co.kr",
     systemRole: "user",
     active: true,
-    canCreateProject: false,
   },
   {
     id: "u6",
@@ -75,7 +70,6 @@ export const users: User[] = [
     email: "jiwon.han@corevia.co.kr",
     systemRole: "user",
     active: true,
-    canCreateProject: false,
   },
   {
     id: "u7",
@@ -87,7 +81,6 @@ export const users: User[] = [
     email: "sehoon.oh@corevia.co.kr",
     systemRole: "user",
     active: true,
-    canCreateProject: false,
   },
   {
     id: "u8",
@@ -99,7 +92,6 @@ export const users: User[] = [
     email: "dohyun.yoon@corevia.co.kr",
     systemRole: "user",
     active: true,
-    canCreateProject: false,
   },
   {
     id: "u9",
@@ -111,7 +103,6 @@ export const users: User[] = [
     email: "jihye.seo@corevia.co.kr",
     systemRole: "user",
     active: true,
-    canCreateProject: true,
   },
   {
     id: "u10",
@@ -123,7 +114,6 @@ export const users: User[] = [
     email: "taewoo.kang@corevia.co.kr",
     systemRole: "user",
     active: true,
-    canCreateProject: false,
   },
   {
     id: "u11",
@@ -135,7 +125,6 @@ export const users: User[] = [
     email: "minseok.jang@corevia.co.kr",
     systemRole: "exec",
     active: true,
-    canCreateProject: false,
     scopeDepts: ["DX기획팀", "DX개발팀", "DX품질팀"],
   },
   {
@@ -148,7 +137,6 @@ export const users: User[] = [
     email: "nayoung.kwon@corevia.co.kr",
     systemRole: "user",
     active: true,
-    canCreateProject: true,
   },
   {
     id: "u13",
@@ -160,7 +148,6 @@ export const users: User[] = [
     email: "junho.baek@corevia.co.kr",
     systemRole: "admin",
     active: true,
-    canCreateProject: false,
   },
   {
     id: "u14",
@@ -172,7 +159,6 @@ export const users: User[] = [
     email: "seokyung.moon@corevia.co.kr",
     systemRole: "user",
     active: true,
-    canCreateProject: false,
   },
   {
     id: "u15",
@@ -184,7 +170,6 @@ export const users: User[] = [
     email: "eunji.noh@corevia.co.kr",
     systemRole: "user",
     active: false,
-    canCreateProject: false,
   },
 ];
 

@@ -136,7 +136,7 @@ export default function ProjectsPage() {
               프로젝트 생성
             </button>
           ) : (
-            <button type="button" className="btn-outline" disabled title="프로젝트 생성 권한이 없습니다">
+            <button type="button" className="btn-outline" disabled title="프로젝트는 일반 사용자만 만들 수 있습니다">
               <i className="ri-lock-line" />
               생성 권한 없음
             </button>

@@ -15,7 +15,6 @@ interface FormState {
   job: string;
   email: string;
   systemRole: SystemRole;
-  canCreateProject: boolean;
 }
 
 const EMPTY_FORM: FormState = {
@@ -24,7 +23,6 @@ const EMPTY_FORM: FormState = {
   job: "",
   email: "",
   systemRole: "user",
-  canCreateProject: false,
 };
 
 export default function AdminUsers() {
@@ -77,7 +75,7 @@ export default function AdminUsers() {
         <div>
           <h3 className="text-[13.5px] font-semibold text-foreground-950">사용자 · 조직</h3>
           <p className="mt-0.5 text-[11px] text-foreground-500">
-            시스템 역할과 프로젝트 생성 권한을 관리합니다. 프로젝트 역할은 각 프로젝트의 멤버·설정에서 부여합니다.
+            계정·부서·시스템 역할을 관리합니다. 프로젝트는 활성 일반 사용자 누구나 만들 수 있고, 프로젝트 역할은 각 프로젝트의 멤버·설정에서 부여합니다.
           </p>
         </div>
         <button type="button" className="btn-primary" onClick={() => setAddOpen(true)}>
@@ -155,14 +153,13 @@ export default function AdminUsers() {
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1000px] border-collapse">
+            <table className="w-full min-w-[880px] border-collapse">
               <thead>
                 <tr>
                   <th className="th">사용자</th>
                   <th className="th w-[130px]">부서</th>
                   <th className="th w-[130px]">직무</th>
                   <th className="th w-[150px]">시스템 역할</th>
-                  <th className="th w-[120px]">프로젝트 생성</th>
                   <th className="th w-[86px]">상태</th>
                   <th className="th w-[170px]">관리</th>
                 </tr>
@@ -200,20 +197,6 @@ export default function AdminUsers() {
                             </option>
                           ))}
                         </select>
-                      </td>
-                      <td className="td">
-                        <button
-                          type="button"
-                          onClick={() => updateUser(user.id, { canCreateProject: !user.canCreateProject })}
-                          className={`inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-0.5 text-[10.5px] font-medium ${
-                            user.canCreateProject
-                              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                              : "border-background-300 bg-background-100 text-foreground-500"
-                          }`}
-                        >
-                          <i className={user.canCreateProject ? "ri-check-line" : "ri-close-line"} />
-                          {user.canCreateProject ? "허용" : "미허용"}
-                        </button>
                       </td>
                       <td className="td">
                         <span
@@ -310,17 +293,6 @@ export default function AdminUsers() {
                 </option>
               ))}
             </select>
-          </div>
-          <div className="flex min-w-0 items-end">
-            <label className="flex cursor-pointer items-center gap-2 text-[12px] text-foreground-800">
-              <input
-                type="checkbox"
-                className="h-3.5 w-3.5 cursor-pointer accent-primary-600"
-                checked={form.canCreateProject}
-                onChange={(e) => setForm({ ...form, canCreateProject: e.target.checked })}
-              />
-              프로젝트 생성 권한 부여
-            </label>
           </div>
         </div>
         {formError && (

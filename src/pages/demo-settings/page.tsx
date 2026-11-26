@@ -77,9 +77,6 @@ export default function DemoSettingsPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
                   <Badge className={ROLE_BADGE[user.systemRole]}>{SYSTEM_ROLE_LABEL[user.systemRole]}</Badge>
-                  {user.canCreateProject && (
-                    <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700">프로젝트 생성</Badge>
-                  )}
                   <button
                     type="button"
                     disabled={!user.active || active}

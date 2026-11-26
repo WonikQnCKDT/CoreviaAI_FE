@@ -175,11 +175,6 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
                       <span className="rounded border border-primary-200 bg-primary-50 px-1.5 py-[1px] text-[10px] text-primary-700">
                         {SYSTEM_ROLE_LABEL[currentUser.systemRole]}
                       </span>
-                      {currentUser.canCreateProject && (
-                        <span className="rounded border border-emerald-200 bg-emerald-50 px-1.5 py-[1px] text-[10px] text-emerald-700">
-                          프로젝트 생성 가능
-                        </span>
-                      )}
                     </div>
                   </div>
                   <div className="p-1.5">

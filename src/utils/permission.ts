@@ -193,8 +193,12 @@ export function canViewJournal(
   return isLinkedTaskOfViewersProject;
 }
 
+/**
+ * 프로젝트 생성(FR-PRJ-01, 권한 매트릭스 3.3 PRJ-01): 별도 생성 권한 없이 활성 일반 사용자 전원이 만들 수 있다.
+ * 경영진은 조회만, 시스템 관리자는 프로젝트 데이터에 접근하지 않는다. 최종 판단은 서버가 한다(403 PROJECT_CREATION_FORBIDDEN).
+ */
 export function canCreateProject(user: User | undefined | null): boolean {
-  return Boolean(user && user.active && user.canCreateProject);
+  return Boolean(user && user.active && user.systemRole === "user");
 }
 
 export function canUseSystemAdmin(user: User | undefined | null): boolean {

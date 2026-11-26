@@ -45,7 +45,6 @@ export const ensureServerUser = function ({
     email: "",
     systemRole: "user",
     active: true,
-    canCreateProject: false,
     serverUserId,
   };
   return { users: [...users, created], userId };

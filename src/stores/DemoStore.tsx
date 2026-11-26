@@ -333,7 +333,6 @@ export interface NewUserInput {
   job: string;
   email: string;
   systemRole: User["systemRole"];
-  canCreateProject: boolean;
 }
 
 /** PM 위임 결과. 화면에서는 message를 그대로 안내문으로 사용합니다. */
@@ -1919,7 +1918,6 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
             email: loginId,
             systemRole,
             active: true,
-            canCreateProject: false,
             isSystemAdmin: systemRole === "admin",
             serverUserId,
           };
@@ -2102,7 +2100,6 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
         roleLabel,
         systemRole: input.systemRole,
         active: true,
-        canCreateProject: input.canCreateProject,
       };
       return {
         ...prev,

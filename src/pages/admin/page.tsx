@@ -19,14 +19,14 @@ interface TabItem {
 }
 
 const DEMO_TABS: TabItem[] = [
-  { key: "users", label: "사용자 · 조직", icon: "ri-team-line", hint: "계정·역할·생성 권한" },
+  { key: "users", label: "사용자 · 조직", icon: "ri-team-line", hint: "계정·부서·역할" },
   { key: "risk", label: "AI · 리스크 설정", icon: "ri-equalizer-line", hint: "임계값·가중치·이력" },
   { key: "audit", label: "보안 · 접속 로그", icon: "ri-file-shield-2-line", hint: "읽기 전용 감사 로그" },
 ];
 
 // api 모드: 사용자·부서는 서버 API, 나머지 탭은 아직 데모 데이터
 const API_TABS: TabItem[] = [
-  { key: "users", label: "사용자", icon: "ri-team-line", hint: "계정·역할·생성 권한" },
+  { key: "users", label: "사용자", icon: "ri-team-line", hint: "계정·부서·역할" },
   { key: "departments", label: "부서", icon: "ri-organization-chart", hint: "조직 트리" },
   { key: "risk", label: "AI · 리스크 설정", icon: "ri-equalizer-line", hint: "데모 데이터" },
   { key: "audit", label: "보안 · 접속 로그", icon: "ri-file-shield-2-line", hint: "데모 데이터" },

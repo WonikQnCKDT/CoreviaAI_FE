@@ -404,9 +404,9 @@ export default function ProjectCreatePage() {
   if (!canCreateProject(currentUser)) {
     return (
       <NoAccess
-        title="프로젝트 생성 권한이 없습니다"
-        description="프로젝트 생성은 별도 생성 권한을 부여받은 사용자만 수행할 수 있습니다. 권한이 필요하면 시스템 관리자에게 요청해 주세요."
-        requiredRole="프로젝트 생성 권한"
+        title="프로젝트를 만들 수 없는 계정입니다"
+        description="프로젝트는 활성 상태의 일반 사용자라면 누구나 만들 수 있습니다. 경영진은 프로젝트를 조회만 하고, 시스템 관리자는 프로젝트 데이터에 접근하지 않습니다."
+        requiredRole="일반 사용자"
       />
     );
   }
