@@ -14,6 +14,7 @@ import WorkPlanTabs from "@/features/task/components/WorkPlanTabs";
 import { ddayLabel, diffDays, formatShort, TODAY } from "@/utils/date";import { STAGES, STAGE_LABEL } from "@/utils/ui";
 import { childrenOf, isLateTask, isMissingTask, rollupMap } from "@/features/task/utils/taskTree";
 import type { StageKey, Task } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface FormContext {
   stage: StageKey;
@@ -108,7 +109,7 @@ export default function WbsPage() {
                   e.stopPropagation();
                   toggleParent(task.id);
                 }}
-                aria-label="하위작업 접기"
+                aria-label={BUTTON_TEXT.collapseSubtasks}
                 className="mt-0.5 flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded text-foreground-500 hover:bg-background-200"
               >
                 <i className={isCollapsed ? "ri-arrow-right-s-line text-[13px]" : "ri-arrow-down-s-line text-[13px]"} />
@@ -166,7 +167,7 @@ export default function WbsPage() {
               e.stopPropagation();
               handleStatusChange(task);
             }}
-            title="클릭하면 상태가 변경됩니다"
+            title={BUTTON_TEXT.hintClickToChangeStatus}
             className="cursor-pointer"
           >
             <StatusBadge status={task.status} />
@@ -188,7 +189,7 @@ export default function WbsPage() {
           <div className="flex items-center justify-end gap-0.5 opacity-60 transition group-hover:opacity-100">
             <button
               type="button"
-              title="위로 이동"
+              title={BUTTON_TEXT.moveUp}
               disabled={index <= 0}
               onClick={(e) => {
                 e.stopPropagation();
@@ -200,7 +201,7 @@ export default function WbsPage() {
             </button>
             <button
               type="button"
-              title="아래로 이동"
+              title={BUTTON_TEXT.moveDown}
               disabled={index < 0 || index >= siblings.length - 1}
               onClick={(e) => {
                 e.stopPropagation();
@@ -212,7 +213,7 @@ export default function WbsPage() {
             </button>
             <button
               type="button"
-              title="하위작업으로 들여쓰기"
+              title={BUTTON_TEXT.indent}
               disabled={task.level !== 2 || index <= 0}
               onClick={(e) => {
                 e.stopPropagation();
@@ -224,7 +225,7 @@ export default function WbsPage() {
             </button>
             <button
               type="button"
-              title="상위 레벨로 내어쓰기"
+              title={BUTTON_TEXT.outdent}
               disabled={task.level !== 3}
               onClick={(e) => {
                 e.stopPropagation();
@@ -236,7 +237,7 @@ export default function WbsPage() {
             </button>
             <button
               type="button"
-              title="선행작업 설정"
+              title={BUTTON_TEXT.setPredecessors}
               onClick={(e) => {
                 e.stopPropagation();
                 setPredTaskId(task.id);
@@ -248,7 +249,7 @@ export default function WbsPage() {
             {task.level === 2 && (
               <button
                 type="button"
-                title="하위작업 추가"
+                title={BUTTON_TEXT.addSubtask}
                 onClick={(e) => {
                   e.stopPropagation();
                   setFormContext({ stage: task.stage || "analysis", parentId: task.id, parentName: task.name });
@@ -277,7 +278,7 @@ export default function WbsPage() {
             className="btn-primary py-1.5 text-[12px]"
             onClick={() => setFormContext({ stage: project.stage, parentId: null })}
           >
-            <i className="ri-add-line" /> 작업 추가
+            <i className="ri-add-line" /> {BUTTON_TEXT.addWork}
           </button>
         </div>
       </div>
@@ -332,8 +333,8 @@ export default function WbsPage() {
         <div className="ml-auto flex items-center gap-0.5">
           <button
             type="button"
-            title="전체 접기"
-            aria-label="전체 접기"
+            title={BUTTON_TEXT.collapseAll}
+            aria-label={BUTTON_TEXT.collapseAll}
             onClick={() => setCollapsedParents(projectTasks.filter((t) => t.level === 2).map((t) => t.id))}
             className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-foreground-500 hover:bg-background-200 hover:text-foreground-900"
           >
@@ -341,8 +342,8 @@ export default function WbsPage() {
           </button>
           <button
             type="button"
-            title="전체 펼치기"
-            aria-label="전체 펼치기"
+            title={BUTTON_TEXT.expandAll}
+            aria-label={BUTTON_TEXT.expandAll}
             onClick={() => {
               setCollapsedParents([]);
               setCollapsedStages([]);
@@ -384,7 +385,7 @@ export default function WbsPage() {
                     description="작업을 추가하면 단계별 계층 구조로 관리할 수 있습니다."
                     action={
                       <button type="button" className="btn-outline" onClick={() => setFormContext({ stage: project.stage, parentId: null })}>
-                        <i className="ri-add-line" /> 작업 추가
+                        <i className="ri-add-line" /> {BUTTON_TEXT.addWork}
                       </button>
                     }
                   />
@@ -413,7 +414,7 @@ export default function WbsPage() {
                           type="button"
                           onClick={() => toggleStage(stage.key)}
                           className="flex h-5 w-5 cursor-pointer items-center justify-center rounded text-foreground-600 hover:bg-background-200"
-                          aria-label="단계 접기"
+                          aria-label={BUTTON_TEXT.collapseStage}
                         >
                           <i className={isCollapsed ? "ri-arrow-right-s-line" : "ri-arrow-down-s-line"} />
                         </button>
@@ -459,7 +460,7 @@ export default function WbsPage() {
                           onClick={() => setFormContext({ stage: stage.key, parentId: null })}
                           className="flex h-6 items-center gap-1 rounded px-1.5 text-[10.5px] font-medium text-primary-600 hover:bg-primary-50"
                         >
-                          <i className="ri-add-line" /> 작업
+                          <i className="ri-add-line" /> {BUTTON_TEXT.work}
                         </button>
                       </div>
                     </td>

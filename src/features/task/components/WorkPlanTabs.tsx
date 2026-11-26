@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
+import { PROJECT_MENU_TEXT } from "@/shared/i18n/catalog/menu";
 
 export type WorkPlanView = "wbs" | "gantt" | "kanban";
 
 const VIEWS: { key: WorkPlanView; label: string; icon: string }[] = [
-  { key: "wbs", label: "WBS", icon: "ri-node-tree" },
-  { key: "gantt", label: "간트", icon: "ri-bar-chart-horizontal-line" },
-  { key: "kanban", label: "칸반", icon: "ri-layout-grid-line" },
+  { key: "wbs", icon: "ri-node-tree", get label() { return PROJECT_MENU_TEXT.wbs; } },
+  { key: "gantt", icon: "ri-bar-chart-horizontal-line", get label() { return PROJECT_MENU_TEXT.gantt; } },
+  { key: "kanban", icon: "ri-layout-grid-line", get label() { return PROJECT_MENU_TEXT.kanban; } },
 ];
 
 interface WorkPlanTabsProps {

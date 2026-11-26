@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useDemoStore } from "@/stores/DemoStore";
 import type { RiskSettings } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 function cloneSettings(settings: RiskSettings): RiskSettings {
   return {
@@ -226,10 +227,10 @@ export default function AdminRiskSettings() {
               </p>
               <div className="flex gap-2">
                 <button type="button" className="btn-outline" onClick={() => { setDraft(cloneSettings(riskSettings)); setNote(""); setError(""); setSaved(""); }}>
-                  되돌리기
+                  {BUTTON_TEXT.revert}
                 </button>
                 <button type="button" className="btn-primary" onClick={handleSave}>
-                  설정 저장
+                  {BUTTON_TEXT.saveSettings}
                 </button>
               </div>
             </div>

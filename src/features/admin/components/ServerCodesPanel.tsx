@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import EmptyState from "@/components/ui/EmptyState";
 import { changeCodeSortOrder, MAX_SORT_ORDER, MIN_SORT_ORDER, type AdminCode } from "@/features/admin/api/adminCodeApi";
 import { useCodeGroups, useGroupCodes } from "@/features/admin/hooks/useCommonCodes";
-import { ADMIN_CODE_TEXT, ADMIN_TEXT } from "@/features/admin/i18n/ko";
+import { ADMIN_CODE_TEXT, ADMIN_NOTICE_TEXT, ADMIN_TEXT } from "@/features/admin/i18n/ko";
 import { formatDateTime } from "@/features/admin/utils/adminFormat";
 import { interpretCodeFailure, parseSortOrder } from "@/features/admin/utils/adminCodeRules";
+import { formatLabel } from "@/shared/i18n/store";
+import { translate } from "@/shared/i18n/store";
 
 type RowMap = Record<string, string>;
 
@@ -63,7 +65,7 @@ const ServerCodesPanel = function () {
     if (result.ok === true) {
       codes.replace(result.data);
       setDrafts(({ [code.code]: _saved, ...rest }) => rest);
-      setNotice(`${code.code} 코드의 정렬 순서를 ${result.data.sortOrder}(으)로 바꿨습니다.`);
+      setNotice(formatLabel(ADMIN_NOTICE_TEXT.codeSortOrderChanged, { code: code.code, sortOrder: result.data.sortOrder }));
       return;
     }
     const { message, stale } = interpretCodeFailure(result.failure);
@@ -110,7 +112,7 @@ const ServerCodesPanel = function () {
                 }`}
               >
                 <span className="font-mono text-xs font-medium">{value}</span>
-                <span className="font-mono text-xs text-foreground-500">{labelKey}</span>
+                <span className="text-xs text-foreground-600">{translate(labelKey, labelKey)}</span>
               </button>
             </li>
           );
@@ -147,11 +149,12 @@ const ServerCodesPanel = function () {
     }
     return (
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[720px] border-collapse">
+        <table className="w-full min-w-[840px] border-collapse">
           <thead>
             <tr>
               <th className="th">코드 값</th>
               <th className="th">라벨 키</th>
+              <th className="th">{ADMIN_CODE_TEXT.displayText}</th>
               <th className="th w-24">사용 여부</th>
               <th className="th w-56">정렬 순서</th>
               <th className="th w-36">수정일</th>
@@ -167,6 +170,7 @@ const ServerCodesPanel = function () {
                 <tr key={id} className="border-b border-background-200 last:border-0" aria-busy={saving}>
                   <td className="td font-mono text-xs font-medium text-foreground-950">{value}</td>
                   <td className="td font-mono text-xs text-foreground-600">{labelKey}</td>
+                  <td className="td text-xs text-foreground-800">{translate(labelKey, "") || <span className="text-foreground-400">{ADMIN_TEXT.none}</span>}</td>
                   <td className="td">
                     <span className="inline-flex items-center gap-1.5 text-xs text-foreground-700">
                       <span

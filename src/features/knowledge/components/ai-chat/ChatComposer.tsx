@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import type { KeyboardEvent } from "react";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface ChatComposerProps {
   value: string;
@@ -43,7 +44,7 @@ export default function ChatComposer({ value, onChange, onSubmit, disabled, erro
             type="button"
             onClick={onSubmit}
             disabled={!canSend}
-            aria-label="질문 전송"
+            aria-label={BUTTON_TEXT.sendQuestion}
             className="btn-primary h-[42px] w-[42px] shrink-0 p-0"
           >
             <i className={disabled ? "ri-loader-4-line animate-spin" : "ri-send-plane-2-line"} />

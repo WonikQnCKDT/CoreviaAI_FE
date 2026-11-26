@@ -8,6 +8,7 @@ import { useSessionGuard } from "@/features/auth/hooks/useSessionGuard";
 import { useAuth } from "@/features/auth/authContext";
 import AuthStatusScreen from "@/features/auth/components/AuthStatusScreen";
 import PasswordChangeModal from "@/features/auth/components/PasswordChangeModal";
+import { NOTIFICATION_TEXT } from "@/shared/i18n/catalog/notification";
 
 const SIDEBAR_STORAGE_KEY = "corevia-sidebar-collapsed";
 const SIDEBAR_WIDTH_KEY = "corevia-sidebar-width";
@@ -119,10 +120,7 @@ export default function AppLayout() {
             className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-[11.5px] leading-5 text-amber-900 md:px-6"
           >
             <i className="ri-wifi-off-line text-[14px]" aria-hidden="true" />
-            <span>
-              네트워크 연결이 끊겼습니다. 일시적인 통신 오류는 로그아웃 사유가 아니며, 연결이 복구되면 자동으로 다시
-              확인합니다.
-            </span>
+            <span>{NOTIFICATION_TEXT.offline}</span>
           </div>
         )}
         <main className="mx-auto w-full max-w-[1440px] px-4 py-5 md:px-6 md:py-6">

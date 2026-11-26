@@ -13,15 +13,12 @@ import { HEALTH_LABEL, STAGE_LABEL, riskLevel } from "@/utils/ui";
 import { projectProgress } from "@/features/task/utils/taskTree";
 import { canViewPortfolio, canViewProject, isExecutive, projectRole } from "@/utils/permission";
 import type { Health, StageKey } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { PROJECT_FOCUS_LABEL } from "@/shared/i18n/catalog/status";
 
 type FocusKey = "all" | "ongoing" | "late" | "done";
 
-const FOCUS_LABEL: Record<FocusKey, string> = {
-  all: "전체 프로젝트",
-  ongoing: "진행 중",
-  late: "지연",
-  done: "완료",
-};
+const FOCUS_LABEL: Record<FocusKey, string> = PROJECT_FOCUS_LABEL;
 
 export default function PortfolioPage() {
   const navigate = useNavigate();
@@ -179,7 +176,7 @@ export default function PortfolioPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" className="btn-outline" onClick={resetFilters}>
-            <i className="ri-refresh-line" /> 필터 초기화
+            <i className="ri-refresh-line" /> {BUTTON_TEXT.resetFilters}
           </button>
           <Link to="/projects" className="btn-primary">
             <i className="ri-folder-line" /> 프로젝트 목록
@@ -385,7 +382,7 @@ export default function PortfolioPage() {
               description="상태·단계·부서·PM·등급 필터를 변경해 다시 확인해 주세요."
               action={
                 <button type="button" className="btn-outline" onClick={resetFilters}>
-                  필터 초기화
+                  {BUTTON_TEXT.resetFilters}
                 </button>
               }
             />

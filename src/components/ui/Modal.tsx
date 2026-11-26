@@ -1,4 +1,5 @@
 import { useId, type ReactNode } from "react";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface ModalProps {
   open: boolean;
@@ -49,7 +50,7 @@ export default function Modal({
             <button
               type="button"
               onClick={onClose}
-              aria-label="닫기"
+              aria-label={BUTTON_TEXT.close}
               className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-foreground-500 hover:bg-background-200 hover:text-foreground-900"
             >
               <i className="ri-close-line text-base" aria-hidden="true" />

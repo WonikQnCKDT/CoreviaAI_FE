@@ -6,6 +6,7 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import EmptyState from "@/components/ui/EmptyState";
 import InfoTip from "@/components/ui/InfoTip";
 import { TASK_STATUS_LABEL } from "@/utils/ui";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 type Scope = "day" | "week";
 
@@ -219,7 +220,7 @@ export default function JournalTab({ focusRequest }: { focusRequest: number }) {
           {error && <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-[11.5px] text-rose-700">{error}</p>}
           <button type="button" className="btn-primary w-full" onClick={handleSubmit}>
             <i className="ri-save-line" />
-            업무일지 저장
+            {BUTTON_TEXT.saveJournal}
           </button>
         </div>
       </section>
@@ -240,18 +241,18 @@ export default function JournalTab({ focusRequest }: { focusRequest: number }) {
                     scope === item ? "bg-background-50 text-primary-700 shadow-card" : "text-foreground-600 hover:text-foreground-900"
                   }`}
                 >
-                  {item === "day" ? "일" : "주"}
+                  {item === "day" ? BUTTON_TEXT.periodDay : BUTTON_TEXT.periodWeek}
                 </button>
               ))}
             </div>
             <div className="flex items-center gap-1.5">
-              <button type="button" className="btn-outline" onClick={() => shift(-1)} aria-label="이전 기간">
+              <button type="button" className="btn-outline" onClick={() => shift(-1)} aria-label={BUTTON_TEXT.previousPeriod}>
                 <i className="ri-arrow-left-s-line" />
               </button>
               <button type="button" className="btn-outline" onClick={() => setAnchor(TODAY)}>
-                이번 {scope === "day" ? "날" : "주"}
+                {scope === "day" ? BUTTON_TEXT.thisDay : BUTTON_TEXT.thisWeek}
               </button>
-              <button type="button" className="btn-outline" onClick={() => shift(1)} aria-label="다음 기간">
+              <button type="button" className="btn-outline" onClick={() => shift(1)} aria-label={BUTTON_TEXT.nextPeriod}>
                 <i className="ri-arrow-right-s-line" />
               </button>
             </div>
@@ -263,7 +264,7 @@ export default function JournalTab({ focusRequest }: { focusRequest: number }) {
             </p>
             <button type="button" className="btn-outline" onClick={buildSummary}>
               <i className="ri-sparkling-2-line text-primary-500" />
-              AI 요약
+              {BUTTON_TEXT.aiSummary}
             </button>
           </div>
         </div>
@@ -280,10 +281,10 @@ export default function JournalTab({ focusRequest }: { focusRequest: number }) {
               </div>
               <div className="flex items-center gap-2">
                 <button type="button" className="btn-ghost" onClick={goToOrigin}>
-                  원본 일지로 이동
+                  {BUTTON_TEXT.openSourceJournal}
                   <i className="ri-arrow-right-up-line" />
                 </button>
-                <button type="button" className="btn-ghost" onClick={() => setSummary(null)} aria-label="요약 닫기">
+                <button type="button" className="btn-ghost" onClick={() => setSummary(null)} aria-label={BUTTON_TEXT.closeSummary}>
                   <i className="ri-close-line" />
                 </button>
               </div>
@@ -359,7 +360,7 @@ export default function JournalTab({ focusRequest }: { focusRequest: number }) {
                               className="cursor-pointer text-[11.5px] font-medium text-emerald-700 hover:text-emerald-800"
                               onClick={() => setTaskStatus(task.id, "done")}
                             >
-                              연결 업무 완료 처리
+                              {BUTTON_TEXT.completeLinkedTask}
                             </button>
                           ) : (
                             <span className="text-[11.5px] font-medium text-emerald-700">완료된 업무</span>

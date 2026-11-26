@@ -12,12 +12,13 @@ import { STAGES, STAGE_LABEL, TASK_STATUS_LABEL } from "@/utils/ui";
 import { childrenOf } from "@/features/task/utils/taskTree";
 import WorkPlanTabs from "@/features/task/components/WorkPlanTabs";
 import type { KanbanWip, StageKey, TaskStatus } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 const COLUMNS: { key: TaskStatus; label: string; icon: string; accent: string }[] = [
-  { key: "todo", label: "대기", icon: "ri-inbox-archive-line", accent: "bg-background-400" },
-  { key: "progress", label: "진행", icon: "ri-loader-4-line", accent: "bg-primary-500" },
-  { key: "review", label: "검토", icon: "ri-eye-line", accent: "bg-amber-500" },
-  { key: "done", label: "완료", icon: "ri-checkbox-circle-line", accent: "bg-emerald-500" },
+  { key: "todo", icon: "ri-inbox-archive-line", accent: "bg-background-400", get label() { return TASK_STATUS_LABEL.todo; } },
+  { key: "progress", icon: "ri-loader-4-line", accent: "bg-primary-500", get label() { return TASK_STATUS_LABEL.progress; } },
+  { key: "review", icon: "ri-eye-line", accent: "bg-amber-500", get label() { return TASK_STATUS_LABEL.review; } },
+  { key: "done", icon: "ri-checkbox-circle-line", accent: "bg-emerald-500", get label() { return TASK_STATUS_LABEL.done; } },
 ];
 
 export default function KanbanPage() {
@@ -108,10 +109,10 @@ export default function KanbanPage() {
             className="btn-outline"
             onClick={openWipModal}
             disabled={!isPm}
-            title={isPm ? "컬럼별 WIP 한도 설정" : "PM만 WIP 한도를 설정할 수 있습니다"}
+            title={isPm ? BUTTON_TEXT.hintSetWipLimit : BUTTON_TEXT.hintWipPmOnly}
           >
             <i className="ri-settings-3-line" />
-            WIP 한도 설정
+            {BUTTON_TEXT.setWipLimit}
           </button>
         </div>
       </div>
@@ -257,7 +258,7 @@ export default function KanbanPage() {
                   setAssigneeFilter("all");
                 }}
               >
-                필터 초기화
+                {BUTTON_TEXT.resetFilters}
               </button>
             }
           />
@@ -276,10 +277,10 @@ export default function KanbanPage() {
         footer={
           <>
             <button type="button" className="btn-outline" onClick={() => setWipOpen(false)}>
-              취소
+              {BUTTON_TEXT.cancel}
             </button>
             <button type="button" className="btn-primary" onClick={saveWip}>
-              저장
+              {BUTTON_TEXT.save}
             </button>
           </>
         }

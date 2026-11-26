@@ -10,19 +10,23 @@ import { SYSTEM_ROLE_LABEL } from "@/utils/permission";
 import { getUnsavedGuard } from "@/utils/navGuard";
 import { projectProgress } from "@/features/task/utils/taskTree";
 import { HEALTH_DOT, HEALTH_LABEL, STAGE_LABEL, riskLevel } from "@/utils/ui";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { MENU_TEXT } from "@/shared/i18n/catalog/menu";
+import LanguageMenu from "@/layouts/LanguageMenu";
 
 interface PageMeta {
   title: string;
 }
 
-const STATIC_META: Record<string, PageMeta> = {
-  "/": { title: "내 업무" },
-  "/projects": { title: "프로젝트" },
-  "/projects/new": { title: "프로젝트 생성" },
-  "/knowledge": { title: "지식 허브" },
-  "/portfolio": { title: "전체 현황" },
-  "/admin": { title: "시스템 관리" },
-  "/demo-settings": { title: "데모 설정" },
+/** 경로별 제목. 문구는 렌더링할 때 읽어 현재 언어를 따른다. */
+const STATIC_TITLE: Record<string, () => string> = {
+  "/": () => MENU_TEXT.myWork,
+  "/projects": () => MENU_TEXT.projects,
+  "/projects/new": () => MENU_TEXT.projectCreate,
+  "/knowledge": () => MENU_TEXT.knowledge,
+  "/portfolio": () => MENU_TEXT.portfolio,
+  "/admin": () => MENU_TEXT.admin,
+  "/demo-settings": () => MENU_TEXT.demoSettings,
 };
 
 export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
@@ -36,15 +40,15 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
   const [leaveOpen, setLeaveOpen] = useState(false);
 
   const meta = useMemo<PageMeta>(() => {
-    const staticMeta = STATIC_META[location.pathname];
-    if (staticMeta) return staticMeta;
+    const staticTitle = STATIC_TITLE[location.pathname];
+    if (staticTitle) return { title: staticTitle() };
     const match = location.pathname.match(/^\/projects\/([^/]+)/);
     if (match) {
       const project = projects.find((p) => p.id === match[1]);
       // 프로젝트명은 상단 제목에서 한 번만 표시합니다. 경로 안내에는 반복하지 않습니다.
       if (project) return { title: project.name };
     }
-    return { title: "내 업무" };
+    return { title: MENU_TEXT.myWork };
   }, [location.pathname, projects]);
 
   // 프로젝트 화면에서는 제목 아래 한 줄 요약만 보여 줍니다. 큰 카드로 다시 만들지 않습니다.
@@ -99,7 +103,7 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
         <button
           type="button"
           onClick={onOpenMenu}
-          aria-label="메뉴 열기"
+          aria-label={BUTTON_TEXT.openMenu}
           className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border border-background-300 text-foreground-600 lg:hidden"
         >
           <i className="ri-menu-line" />
@@ -109,8 +113,8 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
           <button
             type="button"
             onClick={handleBack}
-            aria-label="뒤로 가기"
-            title="이전 화면으로"
+            aria-label={BUTTON_TEXT.goBack}
+            title={BUTTON_TEXT.hintGoBack}
             className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md border border-background-300 bg-background-50 text-foreground-600 hover:bg-background-100"
           >
             <i className="ri-arrow-left-line text-[16px]" aria-hidden="true" />
@@ -163,7 +167,7 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
               <>
                 <button
                   type="button"
-                  aria-label="사용자 메뉴 닫기"
+                  aria-label={BUTTON_TEXT.closeUserMenu}
                   className="fixed inset-0 z-30 cursor-default"
                   onClick={() => setUserOpen(false)}
                 />
@@ -177,13 +181,14 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
                       </span>
                     </div>
                   </div>
+                  <LanguageMenu />
                   <div className="p-1.5">
                     <Link
                       to="/demo-settings"
                       onClick={() => setUserOpen(false)}
                       className="flex items-center gap-2 rounded-md px-2.5 py-2 text-[12.5px] text-foreground-700 hover:bg-background-100"
                     >
-                      <i className="ri-flask-line" /> 데모 계정 전환
+                      <i className="ri-flask-line" /> {BUTTON_TEXT.switchDemoAccount}
                     </Link>
                     <button
                       type="button"
@@ -193,7 +198,7 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
                       }}
                       className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-2 text-left text-[12.5px] text-foreground-700 hover:bg-background-100"
                     >
-                      <i className="ri-lock-password-line" /> 비밀번호 변경
+                      <i className="ri-lock-password-line" /> {BUTTON_TEXT.changePassword}
                     </button>
                     <button
                       type="button"
@@ -209,7 +214,7 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
                       }}
                       className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-2 text-left text-[12.5px] text-rose-600 hover:bg-rose-50 disabled:cursor-wait disabled:opacity-60"
                     >
-                      <i className="ri-logout-box-r-line" aria-hidden="true" /> {signingOut ? "로그아웃 중" : "로그아웃"}
+                      <i className="ri-logout-box-r-line" aria-hidden="true" /> {signingOut ? BUTTON_TEXT.signingOut : BUTTON_TEXT.logout}
                     </button>
                     {mode === "demo" && (
                       <span className="mt-1 block rounded-md bg-background-100 px-2.5 py-2 text-[11px] leading-4 text-foreground-500">
@@ -235,7 +240,7 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
         footer={
           <>
             <button type="button" className="btn-outline whitespace-nowrap" onClick={() => setLeaveOpen(false)}>
-              계속 작성
+              {BUTTON_TEXT.keepWriting}
             </button>
             <button
               type="button"
@@ -245,7 +250,7 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
                 goBackTo(backFallback);
               }}
             >
-              나가기
+              {BUTTON_TEXT.leave}
             </button>
           </>
         }

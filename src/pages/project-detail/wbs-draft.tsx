@@ -6,6 +6,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import { STAGES, STAGE_LABEL } from "@/utils/ui";
 import { effortUnitText } from "@/features/task/utils/effort";
 import { buildWbsDraft, type DraftWbsMilestone, type DraftWbsTask } from "@/features/knowledge/utils/aiDraft";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface DraftState {
   tasks: DraftWbsTask[];
@@ -118,7 +119,7 @@ export default function WbsDraftPage() {
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <p className="text-[10.5px] text-foreground-500">입력 내용은 데모 초안 생성에만 사용되며 서버로 전송되지 않습니다.</p>
           <button type="button" className="btn-primary ml-auto py-1.5" onClick={generate}>
-            <i className="ri-sparkling-2-line" /> 초안 생성
+            <i className="ri-sparkling-2-line" /> {BUTTON_TEXT.generateDraft}
           </button>
         </div>
       </div>
@@ -221,9 +222,9 @@ export default function WbsDraftPage() {
               등록 예정 업무 {draft.tasks.filter((t) => t.selected && !existing.has(`${t.stage}|${t.name}`)).length}건 · 마일스톤 {draft.milestones.filter((m) => m.selected).length}건
             </p>
             <div className="ml-auto flex gap-1.5">
-              <button type="button" className="btn-outline py-1.5" onClick={() => setDraft(null)}>초안 비우기</button>
+              <button type="button" className="btn-outline py-1.5" onClick={() => setDraft(null)}>{BUTTON_TEXT.clearDraft}</button>
               <button type="button" className="btn-primary py-1.5" onClick={apply} disabled={!isPm}>
-                <i className="ri-check-double-line" /> 선택 항목 승인 · WBS 등록
+                <i className="ri-check-double-line" /> {BUTTON_TEXT.approveSelectedAddWbs}
               </button>
             </div>
           </div>

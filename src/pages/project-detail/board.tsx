@@ -6,6 +6,7 @@ import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import type { BoardPost } from "@/types";
 import { formatDate } from "@/utils/date";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface PostForm {
   id: string | null;
@@ -110,11 +111,11 @@ export default function BoardPage() {
                   filter === key ? "bg-primary-500 text-background-50" : "text-foreground-600 hover:bg-background-100"
                 }`}
               >
-                {key === "all" ? "전체" : key === "notice" ? "공지" : "자료 공유"}
+                {key === "all" ? BUTTON_TEXT.filterAll : key === "notice" ? BUTTON_TEXT.categoryNotice : BUTTON_TEXT.categoryShare}
               </button>
             ))}
           </div>
-          <button type="button" className="btn-primary py-1.5" onClick={openNew}><i className="ri-edit-line" /> 글쓰기</button>
+          <button type="button" className="btn-primary py-1.5" onClick={openNew}><i className="ri-edit-line" /> {BUTTON_TEXT.writePost}</button>
         </div>
       </div>
 
@@ -124,7 +125,7 @@ export default function BoardPage() {
             icon="ri-article-line"
             title="게시글이 없습니다"
             description="프로젝트 공지나 자료 공유 글을 작성해 보세요."
-            action={<button type="button" className="btn-primary" onClick={openNew}><i className="ri-edit-line" /> 글쓰기</button>}
+            action={<button type="button" className="btn-primary" onClick={openNew}><i className="ri-edit-line" /> {BUTTON_TEXT.writePost}</button>}
           />
         </div>
       ) : (
@@ -141,14 +142,14 @@ export default function BoardPage() {
                   >
                     <span className="flex min-w-0 flex-1 items-center gap-1.5">
                       {post.type === "notice" && (
-                        <span role="img" aria-label="공지" title="공지" className="shrink-0 text-[12px] leading-none">
+                        <span role="img" aria-label={BUTTON_TEXT.categoryNotice} title={BUTTON_TEXT.categoryNotice} className="shrink-0 text-[12px] leading-none">
                           📢
                         </span>
                       )}
                       {post.pinned && (
                         <span className="flex shrink-0 items-center gap-0.5 whitespace-nowrap text-[10.5px] text-foreground-500">
                           <i className="ri-pushpin-2-line" aria-hidden="true" />
-                          상단 고정
+                          {BUTTON_TEXT.pinTop}
                         </span>
                       )}
                       <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-foreground-950">{post.title}</span>
@@ -172,8 +173,8 @@ export default function BoardPage() {
                       <button
                         type="button"
                         onClick={() => togglePinPost(post.id)}
-                        title={post.pinned ? "고정 해제" : "상단 고정"}
-                        aria-label={post.pinned ? "고정 해제" : "상단 고정"}
+                        title={post.pinned ? BUTTON_TEXT.unpin : BUTTON_TEXT.pinTop}
+                        aria-label={post.pinned ? BUTTON_TEXT.unpin : BUTTON_TEXT.pinTop}
                         className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-foreground-500 transition hover:bg-background-200 hover:text-foreground-900"
                       >
                         <i className={post.pinned ? "ri-unpin-line" : "ri-pushpin-2-line"} />
@@ -184,8 +185,8 @@ export default function BoardPage() {
                         <button
                           type="button"
                           onClick={() => openEdit(post)}
-                          title="수정"
-                          aria-label="수정"
+                          title={BUTTON_TEXT.edit}
+                          aria-label={BUTTON_TEXT.edit}
                           className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-foreground-500 transition hover:bg-background-200 hover:text-foreground-900"
                         >
                           <i className="ri-edit-line" />
@@ -193,8 +194,8 @@ export default function BoardPage() {
                         <button
                           type="button"
                           onClick={() => setDeleteId(post.id)}
-                          title="삭제"
-                          aria-label="삭제"
+                          title={BUTTON_TEXT.delete}
+                          aria-label={BUTTON_TEXT.delete}
                           className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-foreground-500 transition hover:bg-background-200 hover:text-rose-600"
                         >
                           <i className="ri-delete-bin-line" />
@@ -220,8 +221,8 @@ export default function BoardPage() {
         width="max-w-xl"
         footer={
           <>
-            <button type="button" className="btn-outline" onClick={() => setFormOpen(false)}>취소</button>
-            <button type="button" className="btn-primary" onClick={submit}><i className="ri-save-line" /> 저장</button>
+            <button type="button" className="btn-outline" onClick={() => setFormOpen(false)}>{BUTTON_TEXT.cancel}</button>
+            <button type="button" className="btn-primary" onClick={submit}><i className="ri-save-line" /> {BUTTON_TEXT.save}</button>
           </>
         }
       >
@@ -236,7 +237,7 @@ export default function BoardPage() {
                   form.type === type ? "border-primary-300 bg-primary-50 text-primary-700" : "border-background-300 bg-background-50 text-foreground-600"
                 }`}
               >
-                {type === "notice" ? "공지" : "자료 공유"}
+                {type === "notice" ? BUTTON_TEXT.categoryNotice : BUTTON_TEXT.categoryShare}
               </button>
             ))}
           </div>
@@ -285,7 +286,7 @@ export default function BoardPage() {
             {detailPost && isPm && detailPost.type === "notice" && (
               <button type="button" className="btn-outline" onClick={() => togglePinPost(detailPost.id)}>
                 <i className={detailPost.pinned ? "ri-unpin-line" : "ri-pushpin-2-line"} />
-                {detailPost.pinned ? "고정 해제" : "상단 고정"}
+                {detailPost.pinned ? BUTTON_TEXT.unpin : BUTTON_TEXT.pinTop}
               </button>
             )}
             {detailPost && canManageDetail && (
@@ -298,14 +299,14 @@ export default function BoardPage() {
                     openEdit(detailPost);
                   }}
                 >
-                  <i className="ri-edit-line" /> 수정
+                  <i className="ri-edit-line" /> {BUTTON_TEXT.edit}
                 </button>
                 <button type="button" className="btn-outline text-rose-600" onClick={() => setDeleteId(detailPost.id)}>
-                  <i className="ri-delete-bin-line" /> 삭제
+                  <i className="ri-delete-bin-line" /> {BUTTON_TEXT.delete}
                 </button>
               </>
             )}
-            <button type="button" className="btn-primary whitespace-nowrap" onClick={() => setDetailId(null)}>닫기</button>
+            <button type="button" className="btn-primary whitespace-nowrap" onClick={() => setDetailId(null)}>{BUTTON_TEXT.close}</button>
           </>
         }
       >
@@ -373,8 +374,8 @@ export default function BoardPage() {
         onClose={() => setDeleteId(null)}
         footer={
           <>
-            <button type="button" className="btn-outline" onClick={() => setDeleteId(null)}>취소</button>
-            <button type="button" className="btn-primary" onClick={confirmDelete}>삭제</button>
+            <button type="button" className="btn-outline" onClick={() => setDeleteId(null)}>{BUTTON_TEXT.cancel}</button>
+            <button type="button" className="btn-primary" onClick={confirmDelete}>{BUTTON_TEXT.delete}</button>
           </>
         }
       >

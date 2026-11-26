@@ -14,6 +14,7 @@ import StepApprover from "@/features/project/components/create/StepApprover";
 import InputSummary from "@/features/project/components/create/InputSummary";
 import { STEP_META, TOTAL_STEPS, type ProjectFormState } from "@/features/project/types";
 import type { RoleKey, User } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 const UNSAVED_MESSAGE = "저장하지 않은 프로젝트 정보가 있습니다.";
 
@@ -263,7 +264,7 @@ function ProjectCreateWizard() {
           <button
             type="button"
             onClick={handleClose}
-            aria-label="닫기"
+            aria-label={BUTTON_TEXT.close}
             className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-foreground-500 hover:bg-background-200 hover:text-foreground-900"
           >
             <i className="ri-close-line text-[17px]" aria-hidden="true" />
@@ -335,7 +336,7 @@ function ProjectCreateWizard() {
               onClick={step === 1 ? handleClose : goPrev}
             >
               <i className={step === 1 ? "ri-close-line" : "ri-arrow-left-line"} aria-hidden="true" />
-              {step === 1 ? "취소" : "이전"}
+              {step === 1 ? BUTTON_TEXT.cancel : BUTTON_TEXT.previous}
             </button>
             <button
               type="button"
@@ -345,11 +346,11 @@ function ProjectCreateWizard() {
               {step === TOTAL_STEPS ? (
                 <>
                   <i className="ri-add-circle-line" aria-hidden="true" />
-                  프로젝트 생성
+                  {BUTTON_TEXT.createProject}
                 </>
               ) : (
                 <>
-                  다음 단계
+                  {BUTTON_TEXT.nextStep}
                   <i className="ri-arrow-right-line" aria-hidden="true" />
                 </>
               )}
@@ -378,7 +379,7 @@ function ProjectCreateWizard() {
                 className="btn-outline whitespace-nowrap"
                 onClick={() => setLeaveConfirm(false)}
               >
-                계속 작성
+                {BUTTON_TEXT.keepWriting}
               </button>
               <button
                 type="button"
@@ -389,7 +390,7 @@ function ProjectCreateWizard() {
                   navigate("/projects");
                 }}
               >
-                나가기
+                {BUTTON_TEXT.leave}
               </button>
             </div>
           </div>

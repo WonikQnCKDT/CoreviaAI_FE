@@ -18,12 +18,26 @@ interface UserHistoryDialogProps {
   onClose: () => void;
 }
 
+// 서버 값 → 문구. 읽을 때마다 현재 언어 문구를 쓰도록 getter로 둔다.
 const ROLE_VALUE_TEXT: Record<string, string> = {
-  SYSTEM_ADMIN: SYSTEM_ROLE_TEXT.admin,
-  EXECUTIVE: SYSTEM_ROLE_TEXT.exec,
-  USER: SYSTEM_ROLE_TEXT.user,
+  get SYSTEM_ADMIN() {
+    return SYSTEM_ROLE_TEXT.admin;
+  },
+  get EXECUTIVE() {
+    return SYSTEM_ROLE_TEXT.exec;
+  },
+  get USER() {
+    return SYSTEM_ROLE_TEXT.user;
+  },
 };
-const STATUS_VALUE_TEXT: Record<string, string> = { ACTIVE: STATUS_TEXT.active, INACTIVE: STATUS_TEXT.inactive };
+const STATUS_VALUE_TEXT: Record<string, string> = {
+  get ACTIVE() {
+    return STATUS_TEXT.active;
+  },
+  get INACTIVE() {
+    return STATUS_TEXT.inactive;
+  },
+};
 
 /** 변경 전후 값을 사람이 읽을 수 있는 글자로 바꾼다. */
 const describeValue = function ({

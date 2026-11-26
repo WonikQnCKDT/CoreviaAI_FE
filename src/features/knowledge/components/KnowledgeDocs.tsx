@@ -8,6 +8,7 @@ import type { KnowledgeDoc, Visibility } from "@/types";
 import { VISIBILITY_LABEL } from "@/utils/ui";
 import { formatDate } from "@/utils/date";
 import { canViewKnowledge } from "@/utils/business";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface DocForm {
   title: string;
@@ -142,7 +143,7 @@ export default function KnowledgeDocs() {
             <option value="members">멤버 전용</option>
           </select>
         </div>
-        <button type="button" className="btn-primary ml-auto py-1.5" onClick={openNew}><i className="ri-add-line" /> 문서 작성</button>
+        <button type="button" className="btn-primary ml-auto py-1.5" onClick={openNew}><i className="ri-add-line" /> {BUTTON_TEXT.writeDoc}</button>
       </div>
 
       {filtered.length === 0 ? (
@@ -153,9 +154,9 @@ export default function KnowledgeDocs() {
             description={visibleDocs.length === 0 ? "첫 지식 문서를 작성해 조직 지식을 축적해 보세요." : "검색어나 필터를 변경해 주세요."}
             action={
               visibleDocs.length === 0 ? (
-                <button type="button" className="btn-primary" onClick={openNew}><i className="ri-add-line" /> 문서 작성</button>
+                <button type="button" className="btn-primary" onClick={openNew}><i className="ri-add-line" /> {BUTTON_TEXT.writeDoc}</button>
               ) : (
-                <button type="button" className="btn-outline" onClick={() => { setQuery(""); setDeptFilter("all"); setVisibilityFilter("all"); }}>필터 초기화</button>
+                <button type="button" className="btn-outline" onClick={() => { setQuery(""); setDeptFilter("all"); setVisibilityFilter("all"); }}>{BUTTON_TEXT.resetFilters}</button>
               )
             }
           />
@@ -224,7 +225,7 @@ export default function KnowledgeDocs() {
                   <i className="ri-link" /> 원본 열기
                 </Link>
               )}
-              {canEditFocused && <button type="button" className="btn-primary" onClick={() => openEdit(focused)}><i className="ri-edit-line" /> 수정</button>}
+              {canEditFocused && <button type="button" className="btn-primary" onClick={() => openEdit(focused)}><i className="ri-edit-line" /> {BUTTON_TEXT.edit}</button>}
             </>
           ) : null
         }
@@ -272,8 +273,8 @@ export default function KnowledgeDocs() {
         width="max-w-2xl"
         footer={
           <>
-            <button type="button" className="btn-outline" onClick={() => setEditOpen(false)}>취소</button>
-            <button type="button" className="btn-primary" onClick={submit}><i className="ri-save-line" /> 저장</button>
+            <button type="button" className="btn-outline" onClick={() => setEditOpen(false)}>{BUTTON_TEXT.cancel}</button>
+            <button type="button" className="btn-primary" onClick={submit}><i className="ri-save-line" /> {BUTTON_TEXT.save}</button>
           </>
         }
       >

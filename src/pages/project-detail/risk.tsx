@@ -10,6 +10,7 @@ import { addDays, formatDate, TODAY } from "@/utils/date";
 import { STAGE_LABEL, riskLevel } from "@/utils/ui";
 import { affectedMilestones, impactOf, riskFactors, topRippleTasks } from "@/features/risk/utils/risk";
 import { PRIORITY_LABEL } from "@/utils/ui";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 export default function RiskPage() {
   const { projectId } = useParams();
@@ -274,7 +275,7 @@ export default function RiskPage() {
                         </div>
                         {suggestion.status === "pending" && (
                           <div className="flex flex-wrap items-center gap-1.5">
-                            <button type="button" className="btn-primary py-1.5 text-[11px]" onClick={() => decide(suggestion, "approved")} disabled={!isPm}><i className="ri-check-line" /> 승인</button>
+                            <button type="button" className="btn-primary py-1.5 text-[11px]" onClick={() => decide(suggestion, "approved")} disabled={!isPm}><i className="ri-check-line" /> {BUTTON_TEXT.approve}</button>
                             <button
                               type="button"
                               className="btn-outline py-1.5 text-[11px]"
@@ -285,9 +286,9 @@ export default function RiskPage() {
                                 setEditEndDate(suggestion.proposed.endDate || "");
                               }}
                             >
-                              <i className="ri-edit-line" /> 수정 후 승인
+                              <i className="ri-edit-line" /> {BUTTON_TEXT.approveWithEdit}
                             </button>
-                            <button type="button" className="btn-ghost py-1.5 text-[11px] text-rose-600" onClick={() => decide(suggestion, "rejected")} disabled={!isPm}><i className="ri-close-line" /> 거절</button>
+                            <button type="button" className="btn-ghost py-1.5 text-[11px] text-rose-600" onClick={() => decide(suggestion, "rejected")} disabled={!isPm}><i className="ri-close-line" /> {BUTTON_TEXT.reject}</button>
                           </div>
                         )}
                       </div>
@@ -311,8 +312,8 @@ export default function RiskPage() {
         onClose={() => setEditTarget(null)}
         footer={
           <>
-            <button type="button" className="btn-outline" onClick={() => setEditTarget(null)}>취소</button>
-            <button type="button" className="btn-primary" onClick={saveEditedApproval}>수정 후 승인</button>
+            <button type="button" className="btn-outline" onClick={() => setEditTarget(null)}>{BUTTON_TEXT.cancel}</button>
+            <button type="button" className="btn-primary" onClick={saveEditedApproval}>{BUTTON_TEXT.approveWithEdit}</button>
           </>
         }
       >

@@ -11,6 +11,7 @@ import {
   interpretCreateDepartmentFailure,
   interpretUpdateDepartmentFailure,
 } from "@/features/admin/utils/adminDepartmentFailure";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 export type DepartmentFormMode =
   | { kind: "create"; parentId: number | null }
@@ -123,7 +124,7 @@ const DepartmentFormDialog = function ({ mode, departments, tree, onClose, onSav
                 {ADMIN_TEXT.saving}
               </>
             ) : creating ? (
-              "추가"
+              BUTTON_TEXT.add
             ) : (
               ADMIN_TEXT.save
             )}

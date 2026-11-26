@@ -14,6 +14,8 @@ import {
 import { projectColor } from "@/utils/ui";
 import InfoTip from "@/components/ui/InfoTip";
 import ScheduleEditorModal, { type ScheduleFormValue } from "@/features/mywork/components/ScheduleEditorModal";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { VIEW_MODE_TEXT } from "@/shared/i18n/catalog/menu";
 
 type ViewMode = "month" | "week" | "day";
 
@@ -30,9 +32,9 @@ interface DayEvent {
 }
 
 const VIEWS: { key: ViewMode; label: string }[] = [
-  { key: "month", label: "월" },
-  { key: "week", label: "주" },
-  { key: "day", label: "일" },
+  { key: "month", get label() { return VIEW_MODE_TEXT.month; } },
+  { key: "week", get label() { return VIEW_MODE_TEXT.week; } },
+  { key: "day", get label() { return VIEW_MODE_TEXT.day; } },
 ];
 
 const ROW_H = 44;
@@ -279,7 +281,7 @@ export default function CalendarTab() {
               type="button"
               onClick={() => openCreate(date, hour)}
               aria-label={`${formatDate(date)} ${hourText(hour)}에 일정 추가`}
-              title="클릭하면 이 시간에 일정을 추가합니다"
+              title={BUTTON_TEXT.hintAddScheduleAtTime}
               className="h-full w-full cursor-copy hover:bg-primary-50/70"
             />
           </div>
@@ -294,13 +296,13 @@ export default function CalendarTab() {
       <div className="card px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            <button type="button" className="btn-outline" onClick={() => shift(-1)} aria-label="이전 기간" title="이전 기간">
+            <button type="button" className="btn-outline" onClick={() => shift(-1)} aria-label={BUTTON_TEXT.previousPeriod} title={BUTTON_TEXT.previousPeriod}>
               <i className="ri-arrow-left-s-line" />
             </button>
             <button type="button" className="btn-outline whitespace-nowrap" onClick={() => setCursor(TODAY)}>
-              오늘
+              {BUTTON_TEXT.today}
             </button>
-            <button type="button" className="btn-outline" onClick={() => shift(1)} aria-label="다음 기간" title="다음 기간">
+            <button type="button" className="btn-outline" onClick={() => shift(1)} aria-label={BUTTON_TEXT.nextPeriod} title={BUTTON_TEXT.nextPeriod}>
               <i className="ri-arrow-right-s-line" />
             </button>
             <p className="ml-1 text-[14px] font-semibold text-foreground-950">{headerLabel()}</p>
@@ -324,11 +326,11 @@ export default function CalendarTab() {
             </div>
             <button
               type="button"
-              aria-label="캘린더 사용 방법"
+              aria-label={BUTTON_TEXT.calendarHelp}
               title={
                 view === "month"
-                  ? "날짜 칸을 클릭하면 그 날짜로 일정이 열립니다. 날짜 숫자를 누르면 일간 보기로 이동합니다."
-                  : "빈 시간대를 클릭하면 그 날짜·시간으로 일정이 열립니다. 등록된 일정을 누르면 수정할 수 있습니다."
+                  ? BUTTON_TEXT.hintCalendarMonth
+                  : BUTTON_TEXT.hintCalendarTime
               }
               className="flex h-8 w-8 cursor-help items-center justify-center rounded-md border border-background-300 text-foreground-500 hover:bg-background-100 hover:text-foreground-800"
             >
@@ -336,7 +338,7 @@ export default function CalendarTab() {
             </button>
             <button type="button" className="btn-primary whitespace-nowrap" onClick={() => openCreate(cursor)}>
               <i className="ri-calendar-event-line" aria-hidden="true" />
-              개인 일정 추가
+              {BUTTON_TEXT.addPersonalSchedule}
             </button>
           </div>
         </div>
@@ -372,7 +374,7 @@ export default function CalendarTab() {
                     type="button"
                     onClick={() => openCreate(date)}
                     aria-label={`${formatDate(date)}에 일정 추가`}
-                    title="클릭하면 이 날짜로 일정을 추가합니다"
+                    title={BUTTON_TEXT.hintAddScheduleOnDate}
                     className="absolute inset-0 z-0 flex cursor-copy items-end justify-end p-1 text-foreground-300 hover:bg-primary-50/50 hover:text-primary-500"
                   >
                     <i className="ri-add-line text-[13px] opacity-0 transition group-hover:opacity-100" aria-hidden="true" />
@@ -386,7 +388,7 @@ export default function CalendarTab() {
                           setCursor(date);
                           setView("day");
                         }}
-                        title="이 날짜의 일간 보기"
+                        title={BUTTON_TEXT.openDayView}
                         className={`pointer-events-auto flex h-5 min-w-5 cursor-pointer items-center justify-center rounded-full px-1 text-[11px] hover:ring-1 hover:ring-primary-300 ${
                           isToday
                             ? "bg-primary-500 font-semibold text-background-50"
@@ -431,7 +433,7 @@ export default function CalendarTab() {
                         setCursor(date);
                         setView("day");
                       }}
-                      title="이 날짜의 일간 보기"
+                      title={BUTTON_TEXT.openDayView}
                       className={`flex cursor-pointer items-center justify-between border-l border-background-200 px-2 py-2 ${
                         isToday ? "bg-primary-50" : "bg-background-100 hover:bg-background-200/60"
                       }`}

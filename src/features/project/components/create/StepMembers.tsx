@@ -3,6 +3,7 @@ import Avatar from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { ROLE_LABEL } from "@/utils/ui";
 import type { RoleKey, User } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface StepMembersProps {
   users: User[];
@@ -100,7 +101,7 @@ export default function StepMembers({ users, pmId, members, actors, onToggle, on
                   <button
                     type="button"
                     onClick={() => onToggle(user.id)}
-                    aria-label={`${user.name} ${selected ? "초대 해제" : "초대"}`}
+                    aria-label={`${user.name} ${selected ? BUTTON_TEXT.cancelInvite : BUTTON_TEXT.invite}`}
                     aria-pressed={Boolean(selected)}
                     className={`flex h-4 w-4 shrink-0 cursor-pointer items-center justify-center rounded border ${
                       selected ? "border-primary-500 bg-primary-500 text-background-50" : "border-background-400"

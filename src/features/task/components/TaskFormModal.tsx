@@ -7,6 +7,7 @@ import { addDays, TODAY } from "@/utils/date";
 import { ROLE_LABEL, STAGE_LABEL } from "@/utils/ui";
 import AssigneeMultiSelect from "@/features/task/components/AssigneeMultiSelect";
 import type { Priority, StageKey } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface TaskFormModalProps {
   open: boolean;
@@ -101,11 +102,11 @@ export default function TaskFormModal({ open, onClose, projectId, stage, parentI
       footer={
         <>
           <button type="button" className="btn-outline" onClick={onClose}>
-            취소
+            {BUTTON_TEXT.cancel}
           </button>
           <button type="button" className="btn-primary" onClick={submit}>
             <i className="ri-add-line" />
-            업무 추가
+            {BUTTON_TEXT.addTask}
           </button>
         </>
       }

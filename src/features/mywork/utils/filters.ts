@@ -1,22 +1,17 @@
+import { TASK_FILTER_LABEL } from "@/shared/i18n/catalog/status";
+import { TASK_FILTER_HINT } from "@/shared/i18n/catalog/status";
 export type TaskFilter = "open" | "today" | "soon" | "late" | "done" | "all";
 
 export const TASK_FILTERS: { key: TaskFilter; label: string }[] = [
-  { key: "open", label: "진행 중" },
-  { key: "today", label: "오늘" },
-  { key: "soon", label: "마감 임박" },
-  { key: "late", label: "지연" },
-  { key: "done", label: "완료" },
-  { key: "all", label: "전체" },
+  { key: "open", get label() { return TASK_FILTER_LABEL.open; } },
+  { key: "today", get label() { return TASK_FILTER_LABEL.today; } },
+  { key: "soon", get label() { return TASK_FILTER_LABEL.soon; } },
+  { key: "late", get label() { return TASK_FILTER_LABEL.late; } },
+  { key: "done", get label() { return TASK_FILTER_LABEL.done; } },
+  { key: "all", get label() { return TASK_FILTER_LABEL.all; } },
 ];
 
-export const FILTER_DESCRIPTION: Record<TaskFilter, string> = {
-  open: "완료되지 않은 업무",
-  today: "오늘 마감인 미완료 업무",
-  soon: "3일 이내 마감 예정",
-  late: "마감일이 지난 미완료 업무",
-  done: "완료 처리한 업무",
-  all: "완료 포함 전체 업무",
-};
+export const FILTER_DESCRIPTION: Record<TaskFilter, string> = TASK_FILTER_HINT;
 
 const STORAGE_KEY = "corevia-mywork-task-filter";
 

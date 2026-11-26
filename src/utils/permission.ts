@@ -1,11 +1,8 @@
 import type { Issue, Project, RoleKey, Task, User } from "@/types";
 import { isAssignedTo } from "@/utils/assignee";
 
-export const SYSTEM_ROLE_LABEL = {
-  user: "일반 사용자",
-  exec: "경영진",
-  admin: "시스템 관리자",
-} as const;
+/** 시스템 역할 문구는 다국어 라벨 카탈로그에 있다. 기존 import 경로를 유지하려고 다시 내보낸다. */
+export { SYSTEM_ROLE_LABEL } from "@/shared/i18n/catalog/status";
 
 export function isSystemAdmin(user: User | undefined | null): boolean {
   return Boolean(user && user.systemRole === "admin");

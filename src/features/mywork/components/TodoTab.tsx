@@ -10,6 +10,7 @@ import { assigneeIdsOf, isAssignedTo } from "@/utils/assignee";
 import TeamPeers from "@/features/mywork/components/TeamPeers";
 import { TASK_FILTERS, type TaskFilter } from "@/features/mywork/utils/filters";
 import type { Task } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface TodoTabProps {
   onAddTask: () => void;
@@ -122,11 +123,11 @@ export default function TodoTab({ onAddTask, filter, onFilterChange }: TodoTabPr
             action={
               filter === "open" ? (
                 <button type="button" className="btn-outline whitespace-nowrap" onClick={onAddTask}>
-                  <i className="ri-add-line" /> 할 일 추가
+                  <i className="ri-add-line" /> {BUTTON_TEXT.addTodo}
                 </button>
               ) : (
                 <button type="button" className="btn-outline whitespace-nowrap" onClick={() => onFilterChange("open")}>
-                  <i className="ri-close-line" /> 필터 해제
+                  <i className="ri-close-line" /> {BUTTON_TEXT.clearFilter}
                 </button>
               )
             }
@@ -160,8 +161,8 @@ export default function TodoTab({ onAddTask, filter, onFilterChange }: TodoTabPr
                           {task.personal && (
                             <button
                               type="button"
-                              aria-label={done ? "완료 취소" : "완료 처리"}
-                              title={done ? "완료 취소" : "완료 처리"}
+                              aria-label={done ? BUTTON_TEXT.undoDone : BUTTON_TEXT.markDone}
+                              title={done ? BUTTON_TEXT.undoDone : BUTTON_TEXT.markDone}
                               onClick={(event) => {
                                 event.stopPropagation();
                                 setTaskStatus(task.id, done ? "todo" : "done");

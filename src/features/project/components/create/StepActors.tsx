@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/Badge";
 import type { RoleKey } from "@/types";
 import { ACTOR_CARDS } from "@/features/project/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface StepActorsProps {
   actors: RoleKey[];
@@ -33,7 +34,7 @@ export default function StepActors({ actors, onToggle, error, submitted }: StepA
               <span className="flex items-center justify-between gap-2">
                 <span className="flex items-center gap-1.5 text-[12.5px] font-semibold text-foreground-900">
                   {actor.title}
-                  {actor.required && <Badge className="border-primary-200 bg-background-50 text-primary-700">필수</Badge>}
+                  {actor.required && <Badge className="border-primary-200 bg-background-50 text-primary-700">{BUTTON_TEXT.required}</Badge>}
                 </span>
                 <span
                   className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${

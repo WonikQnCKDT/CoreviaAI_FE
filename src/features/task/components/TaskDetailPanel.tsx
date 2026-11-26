@@ -14,6 +14,7 @@ import Modal from "@/components/ui/Modal";
 import InfoTip from "@/components/ui/InfoTip";
 import { EFFORT_TOOLTIP, effortDetailText } from "@/features/task/utils/effort";
 import { clearUnsavedGuard, setUnsavedGuard } from "@/utils/navGuard";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 function stamp(iso: string): string {
   const d = new Date(iso);
@@ -209,7 +210,7 @@ export default function TaskDetailPanel() {
     <div className="fixed inset-0 z-50 flex justify-end">
       <button
         type="button"
-        aria-label="업무 상세 닫기"
+        aria-label={BUTTON_TEXT.closeTaskDetail}
         onClick={requestClose}
         className="absolute inset-0 cursor-default bg-foreground-950/25"
       />
@@ -310,7 +311,7 @@ export default function TaskDetailPanel() {
           <button
             type="button"
             onClick={requestClose}
-            aria-label="닫기"
+            aria-label={BUTTON_TEXT.close}
             className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-foreground-500 hover:bg-background-200 hover:text-foreground-900"
           >
             <i className="ri-close-line text-lg" />
@@ -579,7 +580,7 @@ export default function TaskDetailPanel() {
                   ))}
                 </div>
                 <button type="button" className="btn-primary" onClick={handleComment} disabled={!commentDraft.trim()}>
-                  코멘트 등록
+                  {BUTTON_TEXT.addComment}
                 </button>
               </div>
             </div>
@@ -650,10 +651,10 @@ export default function TaskDetailPanel() {
                   setDeleteConfirm(false);
                 }}
               >
-                삭제
+                {BUTTON_TEXT.delete}
               </button>
               <button type="button" className="btn-ghost" onClick={() => setDeleteConfirm(false)}>
-                취소
+                {BUTTON_TEXT.cancel}
               </button>
             </div>
           ) : (
@@ -663,7 +664,7 @@ export default function TaskDetailPanel() {
               onClick={() => setDeleteConfirm(true)}
             >
               <i className="ri-delete-bin-line" />
-              업무 삭제
+              {BUTTON_TEXT.deleteTask}
             </button>
           )}
           <div className="flex items-center gap-2">
@@ -680,12 +681,12 @@ export default function TaskDetailPanel() {
             {task.status !== "done" ? (
               <button type="button" className="btn-primary" onClick={() => setTaskStatus(task.id, "done")}>
                 <i className="ri-check-line" />
-                완료 처리
+                {BUTTON_TEXT.markDone}
               </button>
             ) : (
               <button type="button" className="btn-outline" onClick={() => setTaskStatus(task.id, "progress")}>
                 <i className="ri-arrow-go-back-line" />
-                완료 취소
+                {BUTTON_TEXT.undoDone}
               </button>
             )}
           </div>
@@ -699,7 +700,7 @@ export default function TaskDetailPanel() {
         onClose={() => setHistoryOpen(false)}
         footer={
           <button type="button" className="btn-outline whitespace-nowrap" onClick={() => setHistoryOpen(false)}>
-            닫기
+            {BUTTON_TEXT.close}
           </button>
         }
       >
@@ -753,7 +754,7 @@ export default function TaskDetailPanel() {
         footer={
           <>
             <button type="button" className="btn-outline whitespace-nowrap" onClick={() => setCloseConfirm(false)}>
-              계속 작성
+              {BUTTON_TEXT.keepWriting}
             </button>
             <button
               type="button"
@@ -765,7 +766,7 @@ export default function TaskDetailPanel() {
                 closeTask();
               }}
             >
-              닫기
+              {BUTTON_TEXT.close}
             </button>
           </>
         }

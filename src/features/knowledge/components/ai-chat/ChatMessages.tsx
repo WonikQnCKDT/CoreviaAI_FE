@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChatConversation, ChatMessage } from "@/features/knowledge/utils/knowledgeChat";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 const EXAMPLE_QUESTIONS = [
   "멤버 전용 프로젝트의 외부 협력사 초대 기준은?",
@@ -147,7 +148,7 @@ export default function ChatMessages({ conversation, loading, onRetry, onOpenSou
                         onClick={() => onRetry(message.id)}
                         className="flex cursor-pointer items-center gap-1 rounded border border-rose-200 bg-background-50 px-1.5 py-[1px] text-[10px] text-rose-700 hover:bg-rose-50"
                       >
-                        <i className="ri-refresh-line" /> 재시도
+                        <i className="ri-refresh-line" /> {BUTTON_TEXT.retryShort}
                       </button>
                     ) : (
                       <>
@@ -158,7 +159,7 @@ export default function ChatMessages({ conversation, loading, onRetry, onOpenSou
                           className="flex cursor-pointer items-center gap-1 rounded px-1 py-[1px] text-[10px] text-foreground-500 hover:bg-background-200 hover:text-foreground-800"
                         >
                           <i className={copiedId === message.id ? "ri-check-line" : "ri-file-copy-line"} />
-                          {copiedId === message.id ? "복사됨" : "복사"}
+                          {copiedId === message.id ? BUTTON_TEXT.copied : BUTTON_TEXT.copy}
                         </button>
                       </>
                     )}

@@ -7,31 +7,48 @@ import AdminAudit from "@/features/admin/components/AdminAudit";
 import ServerUsersPanel from "@/features/admin/components/ServerUsersPanel";
 import ServerDepartmentsPanel from "@/features/admin/components/ServerDepartmentsPanel";
 import ServerCodesPanel from "@/features/admin/components/ServerCodesPanel";
+import ServerLabelsPanel from "@/features/admin/components/ServerLabelsPanel";
 import { useAuth } from "@/features/auth/authContext";
 import { canUseSystemAdmin } from "@/utils/permission";
+import { ADMIN_TAB_TEXT } from "@/shared/i18n/catalog/menu";
 
-type TabKey = "users" | "departments" | "codes" | "risk" | "audit";
+type TabKey = "users" | "departments" | "codes" | "labels" | "risk" | "audit";
 
 interface TabItem {
   key: TabKey;
-  label: string;
+  readonly label: string;
   icon: string;
-  hint: string;
+  readonly hint: string;
 }
 
+type AdminTabName = keyof typeof ADMIN_TAB_TEXT;
+
+/** 탭 항목. 문구는 읽을 때마다 현재 언어로 바꾼다(모듈을 불러올 때 고정하지 않는다). */
+const tabItem = (key: TabKey, label: AdminTabName, icon: string, hint: AdminTabName): TabItem => ({
+  key,
+  icon,
+  get label() {
+    return ADMIN_TAB_TEXT[label];
+  },
+  get hint() {
+    return ADMIN_TAB_TEXT[hint];
+  },
+});
+
 const DEMO_TABS: TabItem[] = [
-  { key: "users", label: "사용자 · 조직", icon: "ri-team-line", hint: "계정·부서·역할" },
-  { key: "risk", label: "AI · 리스크 설정", icon: "ri-equalizer-line", hint: "임계값·가중치·이력" },
-  { key: "audit", label: "보안 · 접속 로그", icon: "ri-file-shield-2-line", hint: "읽기 전용 감사 로그" },
+  tabItem("users", "usersAndOrg", "ri-team-line", "hintUsers"),
+  tabItem("risk", "risk", "ri-equalizer-line", "hintRisk"),
+  tabItem("audit", "audit", "ri-file-shield-2-line", "hintAudit"),
 ];
 
-// api 모드: 사용자·부서·공통 코드는 서버 API, 나머지 탭은 아직 데모 데이터
+// api 모드: 사용자·부서·공통 코드·다국어 라벨은 서버 API, 나머지 탭은 아직 데모 데이터
 const API_TABS: TabItem[] = [
-  { key: "users", label: "사용자", icon: "ri-team-line", hint: "계정·부서·역할" },
-  { key: "departments", label: "부서", icon: "ri-organization-chart", hint: "조직 트리" },
-  { key: "codes", label: "공통 코드", icon: "ri-list-settings-line", hint: "정렬 순서" },
-  { key: "risk", label: "AI · 리스크 설정", icon: "ri-equalizer-line", hint: "데모 데이터" },
-  { key: "audit", label: "보안 · 접속 로그", icon: "ri-file-shield-2-line", hint: "데모 데이터" },
+  tabItem("users", "users", "ri-team-line", "hintUsers"),
+  tabItem("departments", "departments", "ri-organization-chart", "hintDepartments"),
+  tabItem("codes", "codes", "ri-list-settings-line", "hintCodes"),
+  tabItem("labels", "labels", "ri-translate-2", "hintLabels"),
+  tabItem("risk", "risk", "ri-equalizer-line", "hintDemoData"),
+  tabItem("audit", "audit", "ri-file-shield-2-line", "hintDemoData"),
 ];
 
 export default function AdminPage() {
@@ -57,17 +74,17 @@ export default function AdminPage() {
         <div>
           <p className="text-[12px] text-foreground-500">
             {isApi
-              ? "시스템 관리자 전용 · 사용자·부서·공통 코드 변경은 서버에 바로 반영되고 감사 로그에 기록됩니다"
+              ? "시스템 관리자 전용 · 사용자·부서·공통 코드·다국어 라벨 변경은 서버에 바로 반영되고 감사 로그에 기록됩니다"
               : "시스템 관리자 전용 · 변경 사항은 데모 저장소에만 반영됩니다"}
           </p>
         </div>
         <span className="rounded border border-primary-200 bg-primary-50 px-2.5 py-1 text-[11px] font-medium text-primary-700">
           <i className="ri-shield-check-line mr-1" aria-hidden="true" />
-          시스템 관리자
+          {ADMIN_TAB_TEXT.adminOnly}
         </span>
       </div>
 
-      <div role="tablist" aria-label="시스템 관리" className="flex flex-wrap items-center gap-1 border-b border-background-300">
+      <div role="tablist" aria-label={ADMIN_TAB_TEXT.nav} className="flex flex-wrap items-center gap-1 border-b border-background-300">
         {tabs.map((item) => (
           <button
             key={item.key}
@@ -90,6 +107,7 @@ export default function AdminPage() {
       {tab === "users" && (isApi ? <ServerUsersPanel /> : <AdminUsers />)}
       {tab === "departments" && isApi && <ServerDepartmentsPanel />}
       {tab === "codes" && isApi && <ServerCodesPanel />}
+      {tab === "labels" && isApi && <ServerLabelsPanel />}
       {tab === "risk" && <AdminRiskSettings />}
       {tab === "audit" && <AdminAudit />}
     </div>

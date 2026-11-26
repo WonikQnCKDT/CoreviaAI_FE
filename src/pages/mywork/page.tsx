@@ -12,14 +12,16 @@ import { isAssignedTo } from "@/utils/assignee";
 import { approvalRequestsForUser } from "@/features/gate/utils/gate";
 import { loadTaskFilter, saveTaskFilter, type TaskFilter } from "@/features/mywork/utils/filters";
 import { useScrollMemory } from "@/hooks/useScrollMemory";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { MYWORK_TAB_TEXT } from "@/shared/i18n/catalog/menu";
 
 type TabKey = "todo" | "approval" | "calendar" | "journal";
 
 const TABS: { key: TabKey; label: string; icon: string }[] = [
-  { key: "todo", label: "TODO", icon: "ri-checkbox-multiple-line" },
-  { key: "approval", label: "승인 요청", icon: "ri-shield-check-line" },
-  { key: "calendar", label: "캘린더", icon: "ri-calendar-line" },
-  { key: "journal", label: "업무일지", icon: "ri-file-text-line" },
+  { key: "todo", icon: "ri-checkbox-multiple-line", get label() { return MYWORK_TAB_TEXT.todo; } },
+  { key: "approval", icon: "ri-shield-check-line", get label() { return MYWORK_TAB_TEXT.approval; } },
+  { key: "calendar", icon: "ri-calendar-line", get label() { return MYWORK_TAB_TEXT.calendar; } },
+  { key: "journal", icon: "ri-file-text-line", get label() { return MYWORK_TAB_TEXT.journal; } },
 ];
 
 const TAB_STORAGE_KEY = "corevia-mywork-tab";
@@ -138,7 +140,7 @@ export default function MyWorkPage() {
         items={tabItems}
         activeKey={tab}
         onChange={(key) => setTab(key as TabKey)}
-        ariaLabel="내 업무 보기"
+        ariaLabel={MYWORK_TAB_TEXT.views}
         meta={
           <>
             <button
@@ -150,11 +152,11 @@ export default function MyWorkPage() {
               }}
             >
               <i className="ri-edit-2-line" />
-              업무일지 작성
+              {BUTTON_TEXT.writeJournal}
             </button>
             <button type="button" className="btn-primary whitespace-nowrap" onClick={() => setAddOpen(true)}>
               <i className="ri-add-line" />
-              할 일 추가
+              {BUTTON_TEXT.addTodo}
             </button>
           </>
         }

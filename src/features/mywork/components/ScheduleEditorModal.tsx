@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Modal from "@/components/ui/Modal";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 export interface ScheduleFormValue {
   title: string;
@@ -76,10 +77,10 @@ export default function ScheduleEditorModal({
                 <span className="flex flex-wrap items-center gap-2">
                   <span className="text-[11.5px] text-foreground-600">이 일정을 삭제할까요?</span>
                   <button type="button" className="btn-outline whitespace-nowrap text-rose-600" onClick={onDelete}>
-                    삭제
+                    {BUTTON_TEXT.delete}
                   </button>
                   <button type="button" className="btn-ghost whitespace-nowrap" onClick={() => setDeleteConfirm(false)}>
-                    취소
+                    {BUTTON_TEXT.cancel}
                   </button>
                 </span>
               ) : (
@@ -88,16 +89,16 @@ export default function ScheduleEditorModal({
                   className="btn-ghost whitespace-nowrap text-rose-600 hover:bg-rose-50"
                   onClick={() => setDeleteConfirm(true)}
                 >
-                  <i className="ri-delete-bin-line" aria-hidden="true" /> 일정 삭제
+                  <i className="ri-delete-bin-line" aria-hidden="true" /> {BUTTON_TEXT.deleteSchedule}
                 </button>
               )}
             </div>
           )}
           <button type="button" className="btn-outline whitespace-nowrap" onClick={onClose}>
-            취소
+            {BUTTON_TEXT.cancel}
           </button>
           <button type="button" className="btn-primary whitespace-nowrap" onClick={submit}>
-            <i className="ri-save-line" aria-hidden="true" /> {mode === "edit" ? "수정 저장" : "일정 저장"}
+            <i className="ri-save-line" aria-hidden="true" /> {mode === "edit" ? BUTTON_TEXT.saveChanges : BUTTON_TEXT.saveSchedule}
           </button>
         </>
       }

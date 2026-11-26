@@ -9,6 +9,7 @@ import GateApproverPanel from "@/features/gate/components/GateApproverPanel";
 import { ROLE_LABEL } from "@/utils/ui";
 import { canEditProject, isSystemAdmin } from "@/utils/permission";
 import { gateApproverCandidates } from "@/features/gate/utils/gate";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 export default function ProjectSettingsPage() {
   const { projectId } = useParams();
@@ -143,7 +144,7 @@ export default function ProjectSettingsPage() {
                   disabled={pmCandidates.length === 0}
                   className="btn-outline mt-2 w-full justify-center whitespace-nowrap disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <i className="ri-user-shared-line" aria-hidden="true" /> PM 위임
+                  <i className="ri-user-shared-line" aria-hidden="true" /> {BUTTON_TEXT.delegatePm}
                 </button>
                 {pmCandidates.length === 0 && (
                   <p className="mt-1.5 text-[10.5px] leading-4 text-foreground-500">
@@ -227,10 +228,10 @@ export default function ProjectSettingsPage() {
         footer={
           <>
             <button type="button" className="btn-outline whitespace-nowrap" onClick={() => setConfirmOpen(false)}>
-              취소
+              {BUTTON_TEXT.cancel}
             </button>
             <button type="button" className="btn-primary whitespace-nowrap" onClick={confirmPmChange}>
-              위임 실행
+              {BUTTON_TEXT.executeDelegation}
             </button>
           </>
         }

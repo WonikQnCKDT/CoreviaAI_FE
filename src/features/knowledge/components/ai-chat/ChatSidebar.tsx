@@ -1,5 +1,6 @@
 import type { ChatConversation } from "@/features/knowledge/utils/knowledgeChat";
 import { conversationPreview } from "@/features/knowledge/utils/knowledgeChat";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface ChatSidebarProps {
   conversations: ChatConversation[];
@@ -29,9 +30,9 @@ export default function ChatSidebar({
           <button
             type="button"
             onClick={onToggleCollapse}
-            aria-label="대화 기록 펼치기"
+            aria-label={BUTTON_TEXT.expandChatHistory}
             aria-expanded={false}
-            title="대화 기록 펼치기"
+            title={BUTTON_TEXT.expandChatHistory}
             className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-foreground-500 hover:bg-background-100 hover:text-foreground-900"
           >
             <i className="ri-arrow-right-s-line text-[16px]" aria-hidden="true" />
@@ -42,8 +43,8 @@ export default function ChatSidebar({
           <button
             type="button"
             onClick={onCreate}
-            aria-label="새 대화"
-            title="새 대화"
+            aria-label={BUTTON_TEXT.newChat}
+            title={BUTTON_TEXT.newChat}
             className="flex h-8 w-full cursor-pointer items-center justify-center rounded-md bg-primary-500 text-background-50 hover:bg-primary-600"
           >
             <i className="ri-add-line text-[16px]" aria-hidden="true" />
@@ -98,9 +99,9 @@ export default function ChatSidebar({
         <button
           type="button"
           onClick={onToggleCollapse}
-          aria-label="대화 기록 접기"
+          aria-label={BUTTON_TEXT.collapseChatHistory}
           aria-expanded
-          title="대화 기록 접기"
+          title={BUTTON_TEXT.collapseChatHistory}
           className="absolute right-0 top-[18px] z-10 hidden h-6 w-6 translate-x-1/2 cursor-pointer items-center justify-center rounded-full border border-background-300 bg-background-50 text-foreground-500 shadow-sm transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600 lg:flex"
         >
           <i className="ri-arrow-left-s-line text-[15px]" aria-hidden="true" />
@@ -110,13 +111,13 @@ export default function ChatSidebar({
       <div className="flex items-center gap-1.5 border-b border-background-200 px-3 py-2.5">
         <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-foreground-900">대화 기록</span>
         <button type="button" className="btn-primary shrink-0 whitespace-nowrap px-2 py-1 text-[11.5px]" onClick={onCreate}>
-          <i className="ri-add-line" /> 새 대화
+          <i className="ri-add-line" /> {BUTTON_TEXT.newChat}
         </button>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
-            aria-label="대화 기록 닫기"
+            aria-label={BUTTON_TEXT.closeChatHistory}
             className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-foreground-500 hover:bg-background-200 lg:hidden"
           >
             <i className="ri-close-line" />

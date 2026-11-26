@@ -16,10 +16,12 @@ import ConfirmDialog, { type ConfirmPhase } from "@/features/admin/components/Co
 import UserFormDialog, { type UserFormMode } from "@/features/admin/components/UserFormDialog";
 import UserHistoryDialog from "@/features/admin/components/UserHistoryDialog";
 import PasswordResetDialog from "@/features/admin/components/PasswordResetDialog";
-import { ADMIN_TEXT, STATUS_TEXT, SYSTEM_ROLE_TEXT } from "@/features/admin/i18n/ko";
+import { ADMIN_NOTICE_TEXT, ADMIN_TEXT, STATUS_TEXT, SYSTEM_ROLE_TEXT } from "@/features/admin/i18n/ko";
 import { formatDateTime } from "@/features/admin/utils/adminFormat";
 import { interpretAccountChangeFailure } from "@/features/admin/utils/adminUserFailure";
 import type { SystemRole } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { formatLabel } from "@/shared/i18n/store";
 
 const ROLES: SystemRole[] = ["user", "exec", "admin"];
 const SEARCH_DELAY_MS = 300;
@@ -127,8 +129,8 @@ const ServerUsersPanel = function () {
       setNotice({
         text:
           pending.kind === "role"
-            ? `${user.name} 사용자의 역할을 ${SYSTEM_ROLE_TEXT[result.data.systemRole]}(으)로 바꿨습니다. 대상 사용자는 다시 로그인해야 합니다.`
-            : `${user.name} 계정을 ${STATUS_TEXT[result.data.status]} 상태로 바꿨습니다.`,
+            ? formatLabel(ADMIN_NOTICE_TEXT.userRoleChanged, { name: user.name, role: SYSTEM_ROLE_TEXT[result.data.systemRole] })
+            : formatLabel(ADMIN_NOTICE_TEXT.userStatusChanged, { name: user.name, status: STATUS_TEXT[result.data.status] }),
       });
       return;
     }
@@ -147,7 +149,7 @@ const ServerUsersPanel = function () {
       return;
     }
     replaceItem(sameUser(user.id), user);
-    setNotice({ text: `${user.name} 사용자 정보를 저장했습니다.` });
+    setNotice({ text: formatLabel(ADMIN_NOTICE_TEXT.userSaved, { name: user.name }) });
   };
 
   /* ===== 화면 ===== */
@@ -268,10 +270,10 @@ const ServerUsersPanel = function () {
                     <td className="td">
                       <div className="flex flex-wrap items-center gap-1">
                         <button type="button" className="btn-ghost px-2 py-1 text-xs" onClick={() => setFormMode({ kind: "edit", user })}>
-                          수정
+                          {BUTTON_TEXT.edit}
                         </button>
                         <button type="button" className="btn-ghost px-2 py-1 text-xs" onClick={() => setHistoryUser(user)}>
-                          이력
+                          {BUTTON_TEXT.history}
                         </button>
                         <button
                           type="button"
@@ -281,7 +283,7 @@ const ServerUsersPanel = function () {
                             setResetTarget({ name, serverUserId: id });
                           }}
                         >
-                          비밀번호 초기화
+                          {BUTTON_TEXT.resetPassword}
                         </button>
                         <button
                           type="button"
@@ -290,7 +292,7 @@ const ServerUsersPanel = function () {
                           className="btn-outline px-2 py-1 text-xs"
                           onClick={() => openChange({ kind: "status", user, status: active ? "inactive" : "active" })}
                         >
-                          {active ? "비활성화" : "활성화"}
+                          {active ? BUTTON_TEXT.deactivate : BUTTON_TEXT.activate}
                         </button>
                       </div>
                     </td>
@@ -409,7 +411,7 @@ const ServerUsersPanel = function () {
               ? ADMIN_TEXT.deactivateConfirmTitle
               : ADMIN_TEXT.activateConfirmTitle
         }
-        confirmLabel={pendingIsDanger ? "비활성화" : "변경"}
+        confirmLabel={pendingIsDanger ? BUTTON_TEXT.deactivate : BUTTON_TEXT.change}
         tone={pendingIsDanger ? "danger" : "default"}
         state={confirmState}
         onConfirm={confirmChange}

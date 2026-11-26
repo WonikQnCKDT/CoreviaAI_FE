@@ -4,13 +4,14 @@ import GlossaryTab from "@/features/knowledge/components/GlossaryTab";
 import AiQuestionTab from "@/features/knowledge/components/AiQuestionTab";
 import InfoTip from "@/components/ui/InfoTip";
 import TabBar from "@/components/ui/TabBar";
+import { KNOWLEDGE_TAB_TEXT } from "@/shared/i18n/catalog/menu";
 
 type TabKey = "docs" | "glossary" | "qa";
 
 const TABS: { key: TabKey; label: string; icon: string }[] = [
-  { key: "docs", label: "지식 문서", icon: "ri-book-read-line" },
-  { key: "glossary", label: "용어집", icon: "ri-book-2-line" },
-  { key: "qa", label: "AI 질문", icon: "ri-question-answer-line" },
+  { key: "docs", icon: "ri-book-read-line", get label() { return KNOWLEDGE_TAB_TEXT.docs; } },
+  { key: "glossary", icon: "ri-book-2-line", get label() { return KNOWLEDGE_TAB_TEXT.glossary; } },
+  { key: "qa", icon: "ri-question-answer-line", get label() { return KNOWLEDGE_TAB_TEXT.qa; } },
 ];
 
 const HELP_TEXT =
@@ -32,7 +33,7 @@ export default function KnowledgePage() {
         items={TABS.map((tab) => ({ key: tab.key, label: tab.label, icon: tab.icon }))}
         activeKey={active}
         onChange={(key) => changeTab(key as TabKey)}
-        ariaLabel="지식 허브 보기"
+        ariaLabel={KNOWLEDGE_TAB_TEXT.views}
         meta={
           <span className="flex items-center gap-1.5 text-[11px] text-foreground-500">
             <span className="whitespace-nowrap">데모 데이터 · 조회 권한이 있는 문서만 표시</span>

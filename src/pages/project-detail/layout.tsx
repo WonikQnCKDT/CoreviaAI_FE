@@ -4,45 +4,45 @@ import { useDemoStore } from "@/stores/DemoStore";
 import EmptyState from "@/components/ui/EmptyState";
 import { canEditProject, isProjectMember, isSystemAdmin } from "@/utils/permission";
 import { PROJECT_TEXT, useServerProjectDetail } from "@/features/project/hooks/useServerProjects";
+import { PROJECT_MENU_TEXT } from "@/shared/i18n/catalog/menu";
 
 interface TabItem {
-  label: string;
+  readonly label: string;
   basePath: string;
-  children?: { label: string; path: string }[];
+  children?: { readonly label: string; path: string }[];
 }
 
+/** 메뉴 항목. 문구는 읽을 때마다 현재 언어로 바꾼다(모듈을 불러올 때 고정하지 않는다). */
+const item = (name: keyof typeof PROJECT_MENU_TEXT, path: string) => ({
+  path,
+  get label() {
+    return PROJECT_MENU_TEXT[name];
+  },
+});
+
+const group = (name: keyof typeof PROJECT_MENU_TEXT, basePath: string, children?: { readonly label: string; path: string }[]): TabItem => ({
+  basePath,
+  children,
+  get label() {
+    return PROJECT_MENU_TEXT[name];
+  },
+});
+
+const OVERVIEW_BASE = "";
+const COLLAB_BASE = "collab/meeting";
+
 const TABS: TabItem[] = [
-  {
-    label: "개요",
-    basePath: "",
-    children: [
-      { label: "개요", path: "" },
-      { label: "누락 의심 업무", path: "missing" },
-    ],
-  },
-  {
-    label: "업무 계획",
-    basePath: "wbs",
-    children: [
-      { label: "WBS", path: "wbs" },
-      { label: "간트", path: "gantt" },
-      { label: "칸반", path: "kanban" },
-      { label: "AI WBS 초안", path: "wbs/draft" },
-    ],
-  },
-  { label: "이슈·결함", basePath: "issues" },
-  {
-    label: "협업 문서",
-    basePath: "collab/meeting",
-    children: [
-      { label: "회의록", path: "collab/meeting" },
-      { label: "게시판", path: "collab/board" },
-      { label: "산출물·검수", path: "collab/deliverables" },
-    ],
-  },
-  { label: "AI 리스크", basePath: "risk" },
-  { label: "주간 리포트", basePath: "report" },
-  { label: "멤버·설정", basePath: "settings" },
+  group("overview", OVERVIEW_BASE, [item("overview", ""), item("missing", "missing")]),
+  group("workPlan", "wbs", [item("wbs", "wbs"), item("gantt", "gantt"), item("kanban", "kanban"), item("wbsDraft", "wbs/draft")]),
+  group("issues", "issues"),
+  group("collab", COLLAB_BASE, [
+    item("meeting", "collab/meeting"),
+    item("board", "collab/board"),
+    item("deliverables", "collab/deliverables"),
+  ]),
+  group("risk", "risk"),
+  group("report", "report"),
+  group("settings", "settings"),
 ];
 
 export default function ProjectDetailLayout() {
@@ -116,10 +116,11 @@ export default function ProjectDetailLayout() {
   const visibleTabs = TABS.filter((tab) => tab.basePath !== "settings" || canSeeSettings);
   // 업무 계획의 세부 보기는 각 화면 안의 보기 전환으로 옮겼습니다.
   // 나머지 그룹은 큰 박스 없이 얇은 선만 있는 짧은 링크 줄로 구분합니다.
+  // 표시 문구는 언어마다 달라지므로 그룹은 경로로 구분한다.
   const subItems =
-    activeGroup?.label === "개요"
+    activeGroup?.basePath === OVERVIEW_BASE
       ? activeGroup.children?.filter((child) => child.path !== "")
-      : activeGroup?.label === "협업 문서"
+      : activeGroup?.basePath === COLLAB_BASE
         ? activeGroup.children
         : undefined;
 
@@ -128,14 +129,14 @@ export default function ProjectDetailLayout() {
       <div className="border-b border-background-300">
         <nav
           ref={navRef}
-          aria-label="프로젝트 메뉴"
+          aria-label={PROJECT_MENU_TEXT.nav}
           className="relative flex items-center gap-0.5 overflow-x-auto px-0.5"
         >
           {visibleTabs.map((tab) => {
-            const active = activeGroup?.label === tab.label;
+            const active = activeGroup?.basePath === tab.basePath;
             return (
               <Link
-                key={tab.label}
+                key={tab.basePath || "overview"}
                 ref={active ? activeRef : undefined}
                 to={tab.basePath ? `/projects/${project.id}/${tab.basePath}` : `/projects/${project.id}`}
                 aria-current={active ? "page" : undefined}

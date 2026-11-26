@@ -3,15 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { useDemoStore } from "@/stores/DemoStore";
 import { hasShownLoginNotice, markLoginNoticeShown } from "@/features/notification/utils/notificationNotice";
 import type { NotificationType } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { NOTIFICATION_TEXT, NOTIFICATION_TYPE_LABEL } from "@/shared/i18n/catalog/notification";
+import { formatLabel } from "@/shared/i18n/store";
 
 const NOTI_STYLE: Record<NotificationType, { icon: string; className: string; label: string }> = {
-  assign: { icon: "ri-user-add-line", className: "bg-primary-50 text-primary-600", label: "배정" },
-  mention: { icon: "ri-at-line", className: "bg-accent-50 text-accent-700", label: "멘션" },
-  status: { icon: "ri-refresh-line", className: "bg-secondary-100 text-secondary-600", label: "상태" },
-  due: { icon: "ri-time-line", className: "bg-amber-50 text-amber-600", label: "마감" },
-  deliverable: { icon: "ri-file-check-line", className: "bg-emerald-50 text-emerald-600", label: "검수" },
-  missing: { icon: "ri-question-line", className: "bg-amber-50 text-amber-700", label: "누락" },
-  risk: { icon: "ri-alert-line", className: "bg-rose-50 text-rose-600", label: "리스크" },
+  assign: { icon: "ri-user-add-line", className: "bg-primary-50 text-primary-600", get label() { return NOTIFICATION_TYPE_LABEL.assign; } },
+  mention: { icon: "ri-at-line", className: "bg-accent-50 text-accent-700", get label() { return NOTIFICATION_TYPE_LABEL.mention; } },
+  status: { icon: "ri-refresh-line", className: "bg-secondary-100 text-secondary-600", get label() { return NOTIFICATION_TYPE_LABEL.status; } },
+  due: { icon: "ri-time-line", className: "bg-amber-50 text-amber-600", get label() { return NOTIFICATION_TYPE_LABEL.due; } },
+  deliverable: { icon: "ri-file-check-line", className: "bg-emerald-50 text-emerald-600", get label() { return NOTIFICATION_TYPE_LABEL.deliverable; } },
+  missing: { icon: "ri-question-line", className: "bg-amber-50 text-amber-700", get label() { return NOTIFICATION_TYPE_LABEL.missing; } },
+  risk: { icon: "ri-alert-line", className: "bg-rose-50 text-rose-600", get label() { return NOTIFICATION_TYPE_LABEL.risk; } },
 };
 
 export default function NotificationBell() {
@@ -67,7 +70,7 @@ export default function NotificationBell() {
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[12.5px] font-medium leading-5 text-foreground-950">
-                확인하지 않은 알림 {noticeCount}건이 있습니다
+                {formatLabel(NOTIFICATION_TEXT.unreadNotice, { count: noticeCount })}
               </p>
               <div className="mt-2 flex items-center gap-2">
                 <button
@@ -79,21 +82,21 @@ export default function NotificationBell() {
                   }}
                   className="cursor-pointer whitespace-nowrap rounded-md bg-primary-500 px-2.5 py-1 text-[11.5px] font-medium text-background-50 hover:bg-primary-600"
                 >
-                  알림 보기
+                  {BUTTON_TEXT.viewNotifications}
                 </button>
                 <button
                   type="button"
                   onClick={() => setNoticeCount(null)}
                   className="cursor-pointer whitespace-nowrap rounded-md px-2 py-1 text-[11.5px] text-foreground-600 hover:bg-background-100"
                 >
-                  나중에
+                  {BUTTON_TEXT.later}
                 </button>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setNoticeCount(null)}
-              aria-label="안내 닫기"
+              aria-label={BUTTON_TEXT.closeNotice}
               className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-foreground-400 hover:bg-background-100 hover:text-foreground-700"
             >
               <i className="ri-close-line text-[13px]" aria-hidden="true" />
@@ -105,7 +108,7 @@ export default function NotificationBell() {
       <div className="relative">
         <button
           type="button"
-          aria-label="알림"
+          aria-label={BUTTON_TEXT.notifications}
           onClick={() => {
             setOpen((prev) => !prev);
             setNoticeCount(null);
@@ -124,14 +127,15 @@ export default function NotificationBell() {
           <>
             <button
               type="button"
-              aria-label="알림 닫기"
+              aria-label={BUTTON_TEXT.closeNotifications}
               className="fixed inset-0 z-30 cursor-default"
               onClick={() => setOpen(false)}
             />
             <div className="absolute right-0 z-40 mt-2 w-[360px] overflow-hidden rounded-xl border border-background-300 bg-background-50 shadow-panel">
               <div className="flex items-center justify-between border-b border-background-200 px-4 py-3">
                 <p className="text-[13px] font-semibold text-foreground-950">
-                  알림 <span className="text-[11px] font-normal text-foreground-500">읽지 않음 {unread}건</span>
+                  {NOTIFICATION_TEXT.title}{" "}
+                  <span className="text-[11px] font-normal text-foreground-500">{formatLabel(NOTIFICATION_TEXT.unreadCount, { count: unread })}</span>
                 </p>
                 <button
                   type="button"
@@ -139,14 +143,14 @@ export default function NotificationBell() {
                   disabled={unread === 0}
                   className="cursor-pointer whitespace-nowrap text-[11.5px] font-medium text-primary-600 hover:text-primary-700 disabled:cursor-not-allowed disabled:text-foreground-400"
                 >
-                  모두 읽음
+                  {BUTTON_TEXT.markAllRead}
                 </button>
               </div>
 
               <ul className="max-h-[360px] overflow-y-auto">
                 {notificationStatus === "loading" || notificationStatus === "idle" ? (
                   <li className="space-y-2 px-4 py-4" aria-live="polite">
-                    <span className="sr-only">알림을 불러오는 중입니다.</span>
+                    <span className="sr-only">{NOTIFICATION_TEXT.loading}</span>
                     {[0, 1, 2].map((row) => (
                       <span key={row} className="flex gap-2.5">
                         <span className="h-7 w-7 shrink-0 animate-pulse rounded-full bg-background-200" />
@@ -163,14 +167,14 @@ export default function NotificationBell() {
                       <i className="ri-error-warning-line text-[16px]" aria-hidden="true" />
                     </span>
                     <p className="mt-2.5 text-[12px] leading-5 text-foreground-800">
-                      {notificationError || "알림을 불러오지 못했습니다."}
+                      {notificationError || NOTIFICATION_TEXT.loadFailed}
                     </p>
                     <button
                       type="button"
                       onClick={() => loadNotifications()}
                       className="mt-2.5 cursor-pointer whitespace-nowrap rounded-md border border-background-300 bg-background-50 px-2.5 py-1 text-[11.5px] font-medium text-foreground-700 hover:bg-background-100"
                     >
-                      다시 시도
+                      {BUTTON_TEXT.retry}
                     </button>
                   </li>
                 ) : notifications.length === 0 ? (
@@ -178,9 +182,9 @@ export default function NotificationBell() {
                     <span className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-background-100 text-foreground-400">
                       <i className="ri-notification-off-line text-[16px]" aria-hidden="true" />
                     </span>
-                    <p className="mt-2.5 text-[12px] leading-5 text-foreground-600">알림이 없습니다.</p>
+                    <p className="mt-2.5 text-[12px] leading-5 text-foreground-600">{NOTIFICATION_TEXT.empty}</p>
                     <p className="mt-1 text-[11px] leading-4 text-foreground-500">
-                      업무 배정·검수 요청이 생기면 이곳에 표시됩니다.
+                      {NOTIFICATION_TEXT.emptyHint}
                     </p>
                   </li>
                 ) : (
@@ -211,10 +215,10 @@ export default function NotificationBell() {
                             <span className="mt-0.5 block text-[11.5px] leading-4 text-foreground-600">{item.body}</span>
                             {item.evidence && (
                               <span className="mt-1 block rounded border border-rose-100 bg-rose-50/60 px-1.5 py-1 text-[10.5px] leading-4 text-rose-700">
-                                근거 · {item.evidence}
+                                {formatLabel(NOTIFICATION_TEXT.evidence, { text: item.evidence })}
                               </span>
                             )}
-                            <span className="mt-1 block text-[10px] text-foreground-400">{style.label} 알림</span>
+                            <span className="mt-1 block text-[10px] text-foreground-400">{formatLabel(NOTIFICATION_TEXT.typeSuffix, { type: style.label })}</span>
                           </span>
                         </button>
                       </li>
@@ -224,7 +228,7 @@ export default function NotificationBell() {
               </ul>
 
               <div className="border-t border-background-200 bg-background-100 px-4 py-2 text-center text-[11px] text-foreground-500">
-                데모 알림 · 예약 실행·실시간 발송 미연결
+                {NOTIFICATION_TEXT.demoFooter}
               </div>
             </div>
           </>

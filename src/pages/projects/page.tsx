@@ -13,27 +13,25 @@ import { projectProgress } from "@/features/task/utils/taskTree";
 import { canCreateProject, isSystemAdmin } from "@/utils/permission";
 import { PROJECT_TEXT, useServerProjectList } from "@/features/project/hooks/useServerProjects";
 import type { Health } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { PROJECT_SORT_LABEL } from "@/shared/i18n/catalog/status";
+import { PROJECT_FOCUS_LABEL } from "@/shared/i18n/catalog/status";
 
 type SortKey = "risk" | "progressDesc" | "progressAsc" | "endDate" | "name";
 type FocusKey = "all" | "ongoing" | "late" | "done";
 
-const FOCUS_LABEL: Record<FocusKey, string> = {
-  all: "전체 프로젝트",
-  ongoing: "진행 중",
-  late: "지연",
-  done: "완료",
-};
+const FOCUS_LABEL: Record<FocusKey, string> = PROJECT_FOCUS_LABEL;
 
 function readFocus(value: string | null): FocusKey {
   return value === "ongoing" || value === "late" || value === "done" ? value : "all";
 }
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: "risk", label: "리스크 높은 순" },
-  { key: "endDate", label: "종료일 임박 순" },
-  { key: "progressDesc", label: "진척률 높은 순" },
-  { key: "progressAsc", label: "진척률 낮은 순" },
-  { key: "name", label: "프로젝트명 순" },
+  { key: "risk", get label() { return PROJECT_SORT_LABEL.risk; } },
+  { key: "endDate", get label() { return PROJECT_SORT_LABEL.endDate; } },
+  { key: "progressDesc", get label() { return PROJECT_SORT_LABEL.progressDesc; } },
+  { key: "progressAsc", get label() { return PROJECT_SORT_LABEL.progressAsc; } },
+  { key: "name", get label() { return PROJECT_SORT_LABEL.name; } },
 ];
 
 export default function ProjectsPage() {
@@ -128,17 +126,17 @@ export default function ProjectsPage() {
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" className="btn-outline" onClick={resetFilters}>
             <i className="ri-refresh-line" />
-            필터 초기화
+            {BUTTON_TEXT.resetFilters}
           </button>
           {allowCreate ? (
             <button type="button" className="btn-primary" onClick={() => navigate("/projects/new")}>
               <i className="ri-add-line" />
-              프로젝트 생성
+              {BUTTON_TEXT.createProject}
             </button>
           ) : (
-            <button type="button" className="btn-outline" disabled title="프로젝트는 일반 사용자만 만들 수 있습니다">
+            <button type="button" className="btn-outline" disabled title={BUTTON_TEXT.hintCreateProjectUserOnly}>
               <i className="ri-lock-line" />
-              생성 권한 없음
+              {BUTTON_TEXT.noCreatePermission}
             </button>
           )}
         </div>
@@ -175,7 +173,7 @@ export default function ProjectsPage() {
             onClick={() => setFocus("all")}
             className="cursor-pointer font-medium text-primary-600 hover:text-primary-700"
           >
-            해제
+            {BUTTON_TEXT.release}
           </button>
         </p>
       )}
@@ -261,7 +259,7 @@ export default function ProjectsPage() {
             description="검색어나 필터 조건을 변경해 다시 시도해 주세요."
             action={
               <button type="button" className="btn-outline" onClick={resetFilters}>
-                필터 초기화
+                {BUTTON_TEXT.resetFilters}
               </button>
             }
           />

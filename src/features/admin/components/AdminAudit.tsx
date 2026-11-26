@@ -3,15 +3,10 @@ import { useDemoStore } from "@/stores/DemoStore";
 import EmptyState from "@/components/ui/EmptyState";
 import { TODAY } from "@/utils/date";
 import type { AuditType } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { AUDIT_TYPE_LABEL } from "@/shared/i18n/catalog/status";
 
-const TYPE_LABEL: Record<AuditType, string> = {
-  login_success: "로그인 성공",
-  login_fail: "로그인 실패",
-  permission: "권한·설정 변경",
-  download: "다운로드",
-  ai: "AI 요청",
-  approval: "승인",
-};
+const TYPE_LABEL: Record<AuditType, string> = AUDIT_TYPE_LABEL;
 
 const TYPE_CLASS: Record<AuditType, string> = {
   login_success: "border-emerald-200 bg-emerald-50 text-emerald-700",
@@ -130,7 +125,7 @@ export default function AdminAudit() {
             </select>
           </div>
           <button type="button" className="btn-outline" onClick={reset}>
-            <i className="ri-refresh-line" /> 초기화
+            <i className="ri-refresh-line" /> {BUTTON_TEXT.reset}
           </button>
           <span className="ml-auto text-[11.5px] text-foreground-500">총 {logs.length}건</span>
         </div>
@@ -142,7 +137,7 @@ export default function AdminAudit() {
             description="기간·사용자·유형 필터를 변경해 다시 확인해 주세요."
             action={
               <button type="button" className="btn-outline" onClick={reset}>
-                필터 초기화
+                {BUTTON_TEXT.resetFilters}
               </button>
             }
           />

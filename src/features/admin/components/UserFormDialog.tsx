@@ -13,6 +13,7 @@ import {
   type UserFormField,
 } from "@/features/admin/utils/adminUserFailure";
 import type { SystemRole } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 export type UserFormMode = { kind: "create" } | { kind: "edit"; user: AdminUser };
 
@@ -176,7 +177,7 @@ const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale 
                 {ADMIN_TEXT.saving}
               </>
             ) : creating ? (
-              "추가"
+              BUTTON_TEXT.add
             ) : (
               ADMIN_TEXT.save
             )}

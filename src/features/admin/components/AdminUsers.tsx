@@ -6,6 +6,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import PasswordResetDialog from "@/features/admin/components/PasswordResetDialog";
 import { SYSTEM_ROLE_LABEL } from "@/utils/permission";
 import type { SystemRole, User } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 const SYSTEM_ROLES: SystemRole[] = ["user", "exec", "admin"];
 
@@ -79,7 +80,7 @@ export default function AdminUsers() {
           </p>
         </div>
         <button type="button" className="btn-primary" onClick={() => setAddOpen(true)}>
-          <i className="ri-user-add-line" /> 사용자 추가
+          <i className="ri-user-add-line" /> {BUTTON_TEXT.addUser}
         </button>
       </div>
 
@@ -147,7 +148,7 @@ export default function AdminUsers() {
                   setActiveFilter("all");
                 }}
               >
-                필터 초기화
+                {BUTTON_TEXT.resetFilters}
               </button>
             }
           />
@@ -216,7 +217,7 @@ export default function AdminUsers() {
                             className="btn-ghost px-2 py-1 text-[11px]"
                             onClick={() => setResetTarget(user)}
                           >
-                            비밀번호 초기화
+                            {BUTTON_TEXT.resetPassword}
                           </button>
                           <button
                             type="button"
@@ -224,10 +225,10 @@ export default function AdminUsers() {
                             className="btn-outline px-2 py-1 text-[11px]"
                             onClick={() => {
                               updateUser(user.id, { active: !user.active });
-                              setMessage(`${user.name} 계정을 ${user.active ? "비활성화" : "활성화"}했습니다.`);
+                              setMessage(`${user.name} 계정을 ${user.active ? BUTTON_TEXT.deactivate : BUTTON_TEXT.activate}했습니다.`);
                             }}
                           >
-                            {user.active ? "비활성화" : "활성화"}
+                            {user.active ? BUTTON_TEXT.deactivate : BUTTON_TEXT.activate}
                           </button>
                         </div>
                       </td>
@@ -255,10 +256,10 @@ export default function AdminUsers() {
         footer={
           <>
             <button type="button" className="btn-outline" onClick={() => setAddOpen(false)}>
-              취소
+              {BUTTON_TEXT.cancel}
             </button>
             <button type="button" className="btn-primary" onClick={submitNewUser}>
-              추가
+              {BUTTON_TEXT.add}
             </button>
           </>
         }

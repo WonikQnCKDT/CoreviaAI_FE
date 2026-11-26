@@ -3,6 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import BrandLogo from "@/components/ui/BrandLogo";
 import { useDemoStore } from "@/stores/DemoStore";
 import { canUseSystemAdmin, canViewPortfolio } from "@/utils/permission";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { MENU_TEXT } from "@/shared/i18n/catalog/menu";
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -26,14 +28,14 @@ export default function Sidebar({ mobileOpen, onClose, collapsed, onToggleCollap
   const isAdmin = canUseSystemAdmin(currentUser);
 
   const mainNav: NavEntry[] = [
-    { label: "내 업무", path: "/", icon: "ri-todo-line" },
-    { label: "프로젝트", path: "/projects", icon: "ri-folder-chart-line" },
-    { label: "지식 허브", path: "/knowledge", icon: "ri-book-read-line" },
-    ...(canPortfolio ? [{ label: "전체 현황", path: "/portfolio", icon: "ri-pie-chart-line" }] : []),
+    { label: MENU_TEXT.myWork, path: "/", icon: "ri-todo-line" },
+    { label: MENU_TEXT.projects, path: "/projects", icon: "ri-folder-chart-line" },
+    { label: MENU_TEXT.knowledge, path: "/knowledge", icon: "ri-book-read-line" },
+    ...(canPortfolio ? [{ label: MENU_TEXT.portfolio, path: "/portfolio", icon: "ri-pie-chart-line" }] : []),
   ];
 
   const adminNav: NavEntry[] = isAdmin
-    ? [{ label: "시스템 관리", path: "/admin", icon: "ri-settings-3-line" }]
+    ? [{ label: MENU_TEXT.admin, path: "/admin", icon: "ri-settings-3-line" }]
     : [];
 
   const isActive = (path: string) => {
@@ -76,7 +78,7 @@ export default function Sidebar({ mobileOpen, onClose, collapsed, onToggleCollap
       {mobileOpen && (
         <button
           type="button"
-          aria-label="메뉴 닫기"
+          aria-label={BUTTON_TEXT.closeMenu}
           onClick={onClose}
           className="fixed inset-0 z-40 cursor-pointer bg-foreground-950/30 lg:hidden"
         />
@@ -87,7 +89,7 @@ export default function Sidebar({ mobileOpen, onClose, collapsed, onToggleCollap
         } ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className={`flex h-16 items-center gap-2 border-b border-background-200 px-3 ${collapsed ? "lg:justify-center lg:px-0" : ""}`}>
-          <Link to="/" className="flex min-w-0 items-center gap-2.5" onClick={onClose} aria-label="CoreviaAI 홈">
+          <Link to="/" className="flex min-w-0 items-center gap-2.5" onClick={onClose} aria-label={MENU_TEXT.home}>
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-500 text-background-50">
               <BrandLogo className="h-[18px] w-auto" />
             </span>
@@ -98,7 +100,7 @@ export default function Sidebar({ mobileOpen, onClose, collapsed, onToggleCollap
           <button
             type="button"
             onClick={onClose}
-            aria-label="메뉴 닫기"
+            aria-label={BUTTON_TEXT.closeMenu}
             className="ml-auto flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-foreground-500 hover:bg-background-100 lg:hidden"
           >
             <i className="ri-close-line" aria-hidden="true" />
@@ -108,9 +110,9 @@ export default function Sidebar({ mobileOpen, onClose, collapsed, onToggleCollap
         {!collapsed && onResizeStart && (
           <div
             role="separator"
-            aria-label="메뉴 폭 조절"
+            aria-label={MENU_TEXT.resizeMenu}
             aria-orientation="vertical"
-            title="드래그해서 메뉴 폭 조절"
+            title={MENU_TEXT.hintResizeMenu}
             onPointerDown={onResizeStart}
             className="group absolute inset-y-0 right-0 z-0 hidden w-1.5 cursor-col-resize items-center justify-center lg:flex"
           >
@@ -121,9 +123,9 @@ export default function Sidebar({ mobileOpen, onClose, collapsed, onToggleCollap
         <button
           type="button"
           onClick={onToggleCollapse}
-          aria-label={collapsed ? "메뉴 펼치기" : "메뉴 접기"}
+          aria-label={collapsed ? BUTTON_TEXT.expandMenu : BUTTON_TEXT.collapseMenu}
           aria-expanded={!collapsed}
-          title={collapsed ? "메뉴 펼치기" : "메뉴 접기"}
+          title={collapsed ? BUTTON_TEXT.expandMenu : BUTTON_TEXT.collapseMenu}
           className="absolute right-0 top-[22px] z-20 hidden h-6 w-6 translate-x-1/2 cursor-pointer items-center justify-center rounded-full border border-background-300 bg-background-50 text-foreground-500 shadow-sm transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600 lg:flex"
         >
           <i
@@ -133,7 +135,7 @@ export default function Sidebar({ mobileOpen, onClose, collapsed, onToggleCollap
         </button>
 
         <nav
-          aria-label="주요 메뉴"
+          aria-label={MENU_TEXT.mainNav}
           className={`flex-1 space-y-0.5 px-2 py-3 ${
             collapsed ? "overflow-y-auto lg:overflow-visible" : "overflow-y-auto"
           }`}
@@ -155,13 +157,13 @@ export default function Sidebar({ mobileOpen, onClose, collapsed, onToggleCollap
               }`}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden="true" />
-              데모 환경
+              {MENU_TEXT.demoEnvironment}
             </span>
             <Link
               to="/demo-settings"
               onClick={onClose}
-              title="데모 설정"
-              aria-label="데모 설정"
+              title={MENU_TEXT.demoSettings}
+              aria-label={MENU_TEXT.demoSettings}
               className={`group relative ml-auto flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-foreground-500 hover:bg-background-100 hover:text-foreground-900 ${
                 collapsed ? "lg:mx-auto" : ""
               }`}
@@ -172,7 +174,7 @@ export default function Sidebar({ mobileOpen, onClose, collapsed, onToggleCollap
                   role="tooltip"
                   className="pointer-events-none absolute left-full top-1/2 z-50 ml-2 hidden -translate-y-1/2 whitespace-nowrap rounded-md bg-foreground-950 px-2 py-1 text-[11.5px] font-medium text-background-50 opacity-0 shadow-panel transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 lg:block"
                 >
-                  데모 설정
+                  {MENU_TEXT.demoSettings}
                 </span>
               )}
             </Link>

@@ -14,6 +14,7 @@ import { PASSWORD_POLICY_TEXT } from "@/features/auth/utils/password";
 import { useAuth } from "@/features/auth/authContext";
 import { AUTH_TEXT } from "@/features/auth/i18n/ko";
 import type { Project, User } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 type FieldErrors = { account?: string; password?: string; form?: string };
 
@@ -210,8 +211,8 @@ export default function LoginPage() {
             </div>
             <button
               type="button"
-              aria-label="안내 닫기"
-              title="닫기"
+              aria-label={BUTTON_TEXT.closeNotice}
+              title={BUTTON_TEXT.close}
               onClick={() => setSessionNotice(null)}
               className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded text-amber-700 hover:bg-amber-100"
             >
@@ -283,8 +284,8 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 표시"}
-                title={showPassword ? "숨기기" : "표시"}
+                aria-label={showPassword ? BUTTON_TEXT.hidePassword : BUTTON_TEXT.showPassword}
+                title={showPassword ? BUTTON_TEXT.hide : BUTTON_TEXT.show}
                 className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded text-foreground-500 hover:bg-background-200 hover:text-foreground-800"
               >
                 <i className={showPassword ? "ri-eye-off-line" : "ri-eye-line"} aria-hidden="true" />
@@ -309,7 +310,7 @@ export default function LoginPage() {
               {!isApi && (
                 <button type="button" onClick={handleUnlock} className="btn-outline mt-2 w-full py-1.5 text-[12px]">
                   <i className="ri-lock-unlock-line" aria-hidden="true" />
-                  데모 계정 잠금 해제
+                  {BUTTON_TEXT.unlockDemoAccount}
                 </button>
               )}
             </div>
@@ -346,10 +347,10 @@ export default function LoginPage() {
             {submitting ? (
               <>
                 <i className="ri-loader-4-line animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                로그인 중
+                {BUTTON_TEXT.signingIn}
               </>
             ) : (
-              "로그인"
+              BUTTON_TEXT.signIn
             )}
           </button>
         </form>
