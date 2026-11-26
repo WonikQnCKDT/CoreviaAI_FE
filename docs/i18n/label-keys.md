@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (474개)
+## 등록 필요 (507개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -57,6 +57,37 @@
 | `admin.emptyUsersHint` | 검색어나 필터를 바꿔 다시 시도해 주세요. | admin |
 | `admin.error.concurrentModification` | 다른 관리자가 먼저 변경했습니다. 최신 내용을 불러왔으니 확인 후 다시 시도해 주세요. | admin.error |
 | `admin.error.sessionRevokeFailed` | 변경은 저장됐지만 대상 사용자의 세션을 끊지 못했습니다. 다시 시도하면 세션 종료를 다시 요청합니다. | admin.error |
+| `admin.errorLog.anonymous` | 로그인 전 | admin.errorLog |
+| `admin.errorLog.apiPath` | API 경로 | admin.errorLog |
+| `admin.errorLog.apiPathHint` | 앞부분 일치, 대소문자 구분 | admin.errorLog |
+| `admin.errorLog.apiPathTooLong` | API 경로는 300자 이하로 입력해 주세요. | admin.errorLog |
+| `admin.errorLog.description` | 서버에서 처리하지 못한 예외를 최신순으로 봅니다. 기록은 고칠 수 없고 1년 보관합니다. | admin.errorLog |
+| `admin.errorLog.detailTitle` | 에러 로그 상세 | admin.errorLog |
+| `admin.errorLog.empty` | 조건에 맞는 에러 로그가 없습니다 | admin.errorLog |
+| `admin.errorLog.emptyHint` | 기간이나 조건을 바꿔 다시 조회해 보세요. | admin.errorLog |
+| `admin.errorLog.errorType` | 예외 유형 | admin.errorLog |
+| `admin.errorLog.errorTypeHint` | 클래스 전체 이름과 정확히 일치 | admin.errorLog |
+| `admin.errorLog.errorTypeTooLong` | 예외 유형은 200자 이하로 입력해 주세요. | admin.errorLog |
+| `admin.errorLog.filterTitle` | 조회 조건 | admin.errorLog |
+| `admin.errorLog.fromDate` | 시작일 | admin.errorLog |
+| `admin.errorLog.invalidDate` | 날짜를 YYYY-MM-DD 형식으로 입력해 주세요. | admin.errorLog |
+| `admin.errorLog.invalidPeriod` | 시작일은 종료일보다 늦을 수 없습니다. | admin.errorLog |
+| `admin.errorLog.loadFailed` | 에러 로그를 불러오지 못했습니다 | admin.errorLog |
+| `admin.errorLog.maskedNote` | 메시지와 스택 트레이스의 비밀번호·토큰·이메일·전화번호 같은 값은 서버가 저장 전에 \*\*\*\* 로 가렸습니다. 요청 본문·헤더는 저장하지 않습니다. | admin.errorLog |
+| `admin.errorLog.message` | 메시지 | admin.errorLog |
+| `admin.errorLog.noMessage` | 메시지 없음 | admin.errorLog |
+| `admin.errorLog.noStackTrace` | 스택 트레이스가 없습니다 | admin.errorLog |
+| `admin.errorLog.notFound` | 에러 로그를 찾을 수 없습니다. 목록을 새로 불러와 주세요. | admin.errorLog |
+| `admin.errorLog.occurredAt` | 발생 시각 | admin.errorLog |
+| `admin.errorLog.openDetail` | 상세 보기 | admin.errorLog |
+| `admin.errorLog.periodNote` | 기간은 이 브라우저의 시간대 기준으로, 종료일 하루를 포함해 조회합니다. | admin.errorLog |
+| `admin.errorLog.request` | 요청 | admin.errorLog |
+| `admin.errorLog.search` | 조회 | admin.errorLog |
+| `admin.errorLog.stackTrace` | 스택 트레이스 | admin.errorLog |
+| `admin.errorLog.title` | 에러 로그 | admin.errorLog |
+| `admin.errorLog.toDate` | 종료일 | admin.errorLog |
+| `admin.errorLog.user` | 사용자 | admin.errorLog |
+| `admin.errorLog.userIdFallback` | 사용자 #{id} | admin.errorLog |
 | `admin.history` | 변경 이력 | admin |
 | `admin.history.action.PASSWORD_RESET` | 비밀번호 초기화 | admin.history.action |
 | `admin.history.action.PROJECT_CREATION_GRANTED` | 프로젝트 생성 권한 부여 (폐지된 기능) | admin.history.action |
@@ -345,10 +376,12 @@
 | `menu.admin.audit` | 보안 · 접속 로그 | menu.admin |
 | `menu.admin.codes` | 공통 코드 | menu.admin |
 | `menu.admin.departments` | 부서 | menu.admin |
+| `menu.admin.errorLogs` | 에러 로그 | menu.admin |
 | `menu.admin.hintAudit` | 읽기 전용 감사 로그 | menu.admin |
 | `menu.admin.hintCodes` | 정렬 순서 | menu.admin |
 | `menu.admin.hintDemoData` | 데모 데이터 | menu.admin |
 | `menu.admin.hintDepartments` | 조직 트리 | menu.admin |
+| `menu.admin.hintErrorLogs` | 미처리 예외 조회 | menu.admin |
 | `menu.admin.hintLabels` | 문구·번역 | menu.admin |
 | `menu.admin.hintRisk` | 임계값·가중치·이력 | menu.admin |
 | `menu.admin.hintUsers` | 계정·부서·역할 | menu.admin |

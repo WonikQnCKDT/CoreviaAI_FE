@@ -8,11 +8,12 @@ import ServerUsersPanel from "@/features/admin/components/ServerUsersPanel";
 import ServerDepartmentsPanel from "@/features/admin/components/ServerDepartmentsPanel";
 import ServerCodesPanel from "@/features/admin/components/ServerCodesPanel";
 import ServerLabelsPanel from "@/features/admin/components/ServerLabelsPanel";
+import ServerErrorLogsPanel from "@/features/admin/components/ServerErrorLogsPanel";
 import { useAuth } from "@/features/auth/authContext";
 import { canUseSystemAdmin } from "@/utils/permission";
 import { ADMIN_TAB_TEXT } from "@/shared/i18n/catalog/menu";
 
-type TabKey = "users" | "departments" | "codes" | "labels" | "risk" | "audit";
+type TabKey = "users" | "departments" | "codes" | "labels" | "errorLogs" | "risk" | "audit";
 
 interface TabItem {
   key: TabKey;
@@ -41,12 +42,13 @@ const DEMO_TABS: TabItem[] = [
   tabItem("audit", "audit", "ri-file-shield-2-line", "hintAudit"),
 ];
 
-// api 모드: 사용자·부서·공통 코드·다국어 라벨은 서버 API, 나머지 탭은 아직 데모 데이터
+// api 모드: 사용자·부서·공통 코드·다국어 라벨·에러 로그는 서버 API, 나머지 탭은 아직 데모 데이터
 const API_TABS: TabItem[] = [
   tabItem("users", "users", "ri-team-line", "hintUsers"),
   tabItem("departments", "departments", "ri-organization-chart", "hintDepartments"),
   tabItem("codes", "codes", "ri-list-settings-line", "hintCodes"),
   tabItem("labels", "labels", "ri-translate-2", "hintLabels"),
+  tabItem("errorLogs", "errorLogs", "ri-bug-line", "hintErrorLogs"),
   tabItem("risk", "risk", "ri-equalizer-line", "hintDemoData"),
   tabItem("audit", "audit", "ri-file-shield-2-line", "hintDemoData"),
 ];
@@ -108,6 +110,7 @@ export default function AdminPage() {
       {tab === "departments" && isApi && <ServerDepartmentsPanel />}
       {tab === "codes" && isApi && <ServerCodesPanel />}
       {tab === "labels" && isApi && <ServerLabelsPanel />}
+      {tab === "errorLogs" && isApi && <ServerErrorLogsPanel />}
       {tab === "risk" && <AdminRiskSettings />}
       {tab === "audit" && <AdminAudit />}
     </div>

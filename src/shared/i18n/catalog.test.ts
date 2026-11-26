@@ -30,7 +30,8 @@ const FS_MODULE = "node:fs";
 const loadFs = () => import(/* @vite-ignore */ FS_MODULE) as Promise<NodeFs>;
 const DOC_PATH = `${nodeProcess.cwd()}/docs/i18n/label-keys.md`;
 
-const escapeCell = (text: string) => text.replace(/\|/g, "\\|");
+/** 표 칸 안에서 Markdown으로 해석되는 글자(|, *)를 글자 그대로 보이게 한다. */
+const escapeCell = (text: string) => text.replace(/([|*])/g, "\\$1");
 
 const renderDoc = function (labels: LabelDefinition[]) {
   const seeded = labels.filter(({ key }) => SEEDED_PREFIXES.some((prefix) => key.startsWith(prefix)));

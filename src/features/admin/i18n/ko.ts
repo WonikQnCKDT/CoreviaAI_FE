@@ -134,6 +134,42 @@ export const ADMIN_LABEL_TEXT = defineLabels("admin.label", {
   textOnlyNote: "문구는 HTML로 해석하지 않고 글자 그대로 표시합니다. 변경 이력은 감사 로그에 남습니다.",
 });
 
+/** 에러 로그 화면 문구 (02-5) */
+export const ADMIN_ERROR_LOG_TEXT = defineLabels("admin.errorLog", {
+  title: "에러 로그",
+  description: "서버에서 처리하지 못한 예외를 최신순으로 봅니다. 기록은 고칠 수 없고 1년 보관합니다.",
+  filterTitle: "조회 조건",
+  fromDate: "시작일",
+  toDate: "종료일",
+  errorType: "예외 유형",
+  errorTypeHint: "클래스 전체 이름과 정확히 일치",
+  apiPath: "API 경로",
+  apiPathHint: "앞부분 일치, 대소문자 구분",
+  search: "조회",
+  occurredAt: "발생 시각",
+  request: "요청",
+  message: "메시지",
+  user: "사용자",
+  anonymous: "로그인 전",
+  noMessage: "메시지 없음",
+  noStackTrace: "스택 트레이스가 없습니다",
+  stackTrace: "스택 트레이스",
+  detailTitle: "에러 로그 상세",
+  openDetail: "상세 보기",
+  loadFailed: "에러 로그를 불러오지 못했습니다",
+  empty: "조건에 맞는 에러 로그가 없습니다",
+  emptyHint: "기간이나 조건을 바꿔 다시 조회해 보세요.",
+  notFound: "에러 로그를 찾을 수 없습니다. 목록을 새로 불러와 주세요.",
+  invalidDate: "날짜를 YYYY-MM-DD 형식으로 입력해 주세요.",
+  invalidPeriod: "시작일은 종료일보다 늦을 수 없습니다.",
+  errorTypeTooLong: "예외 유형은 200자 이하로 입력해 주세요.",
+  apiPathTooLong: "API 경로는 300자 이하로 입력해 주세요.",
+  maskedNote:
+    "메시지와 스택 트레이스의 비밀번호·토큰·이메일·전화번호 같은 값은 서버가 저장 전에 **** 로 가렸습니다. 요청 본문·헤더는 저장하지 않습니다.",
+  periodNote: "기간은 이 브라우저의 시간대 기준으로, 종료일 하루를 포함해 조회합니다.",
+  userIdFallback: "사용자 #{id}",
+});
+
 /**
  * 서버 메시지 대신 FE가 조치 안내를 붙여 보여 줄 상황 문구.
  * 오류 본문에 code가 없어(API 공통 규약 6절) 상황은 호출한 API와 HTTP status로 정한다(utils/adminUserFailure.ts).
