@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (577개)
+## 등록 필요 (701개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -591,6 +591,130 @@
 | `status.visibility.company` | 전사 공개 | status.visibility |
 | `status.visibility.department` | 부서 공개 | status.visibility |
 | `status.visibility.members` | 멤버 전용 | status.visibility |
+| `wbs.draft.aiBadge` | AI 초안 | wbs.draft |
+| `wbs.draft.aiFailed` | AI 초안을 만들지 못했습니다. 잠시 후 다시 시도해 주세요. | wbs.draft |
+| `wbs.draft.aiTimeout` | AI 응답 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요. | wbs.draft |
+| `wbs.draft.aiUnavailable` | AI 기능을 지금 사용할 수 없습니다(서버 준비 중이거나 일시 장애). 잠시 후 다시 시도해 주세요. | wbs.draft |
+| `wbs.draft.alreadyApplied` | 이미 반영한 초안입니다. WBS 화면에서 결과를 확인해 주세요. | wbs.draft |
+| `wbs.draft.applied` | 작업 {tasks}건·마일스톤 {milestones}건을 WBS에 반영했습니다. | wbs.draft |
+| `wbs.draft.apply` | 선택 항목 반영 | wbs.draft |
+| `wbs.draft.applying` | 반영 중 | wbs.draft |
+| `wbs.draft.assumptions` | 가정 | wbs.draft |
+| `wbs.draft.atRisk` | 위험 있음 | wbs.draft |
+| `wbs.draft.constraints` | 제약조건 (선택, 한 줄에 하나) | wbs.draft |
+| `wbs.draft.constraintsInvalid` | 제약조건은 최대 20개, 각 200자 이하로 입력해 주세요. | wbs.draft |
+| `wbs.draft.description` | 프로젝트 목적이나 요구사항을 입력하면 AI가 WBS 초안을 만듭니다. 초안은 WBS에 바로 들어가지 않고, PM이 고른 항목만 반영됩니다. | wbs.draft |
+| `wbs.draft.expired` | 초안이 만료되었거나 사용할 수 없습니다. 초안을 다시 만들어 주세요. | wbs.draft |
+| `wbs.draft.expiresAt` | {time}까지 반영할 수 있습니다. | wbs.draft |
+| `wbs.draft.feasibility` | 실현 가능성 | wbs.draft |
+| `wbs.draft.feasible` | 실현 가능 | wbs.draft |
+| `wbs.draft.generate` | 초안 만들기 | wbs.draft |
+| `wbs.draft.generating` | AI가 초안을 만드는 중입니다 | wbs.draft |
+| `wbs.draft.goWbs` | WBS로 이동 | wbs.draft |
+| `wbs.draft.infeasible` | 실현 어려움 | wbs.draft |
+| `wbs.draft.inputRequired` | 프로젝트 목적이나 요구사항 중 하나 이상 입력해 주세요. | wbs.draft |
+| `wbs.draft.instruction` | 추가 지시 (선택) | wbs.draft |
+| `wbs.draft.instructionTooLong` | 추가 지시는 1000자 이하로 입력해 주세요. | wbs.draft |
+| `wbs.draft.insufficientInfo` | 정보 부족 | wbs.draft |
+| `wbs.draft.milestoneDateRequired` | 선택한 마일스톤 '{name}'의 목표일을 입력해 주세요. | wbs.draft |
+| `wbs.draft.milestonesSection` | 마일스톤 ({count}) | wbs.draft |
+| `wbs.draft.nothingSelected` | 반영할 항목을 하나 이상 선택해 주세요. | wbs.draft |
+| `wbs.draft.pmOnly` | AI 초안 생성과 반영은 프로젝트 PM만 할 수 있습니다. | wbs.draft |
+| `wbs.draft.purpose` | 프로젝트 목적 | wbs.draft |
+| `wbs.draft.purposeTooLong` | 프로젝트 목적은 2000자 이하로 입력해 주세요. | wbs.draft |
+| `wbs.draft.questions` | 확인할 질문 | wbs.draft |
+| `wbs.draft.reason` | 근거 | wbs.draft |
+| `wbs.draft.requirements` | 요구사항 (선택) | wbs.draft |
+| `wbs.draft.requirementsTooLong` | 요구사항은 20000자 이하로 입력해 주세요. | wbs.draft |
+| `wbs.draft.reviewNote` | AI가 만든 결과입니다. 반드시 검토한 뒤 반영할 항목만 고르세요. | wbs.draft |
+| `wbs.draft.selectAll` | 전체 선택 | wbs.draft |
+| `wbs.draft.selectNone` | 전체 해제 | wbs.draft |
+| `wbs.draft.subtaskCount` | 하위작업 {count}개 | wbs.draft |
+| `wbs.draft.suggestions` | 제안 | wbs.draft |
+| `wbs.draft.targetDate` | 목표일 | wbs.draft |
+| `wbs.draft.taskDateOrder` | 선택한 작업 '{name}'의 시작일이 종료일보다 늦습니다. | wbs.draft |
+| `wbs.draft.taskDateRequired` | 선택한 작업 '{name}'의 시작일·종료일을 입력해 주세요. | wbs.draft |
+| `wbs.draft.taskNameRequired` | 선택한 작업의 이름을 입력해 주세요. | wbs.draft |
+| `wbs.draft.tasksSection` | 작업 ({count}) | wbs.draft |
+| `wbs.draft.title` | AI WBS 초안 | wbs.draft |
+| `wbs.draft.warnings` | 주의 | wbs.draft |
+| `wbs.draft.waterfallOnly` | AI WBS 초안은 단계가 있는 폭포수 프로젝트에서만 쓸 수 있습니다. | wbs.draft |
+| `wbs.form.assignee` | 담당자 (선택) | wbs.form |
+| `wbs.form.assigneeNone` | 미배정 | wbs.form |
+| `wbs.form.assigneePmOnly` | 담당자 배정은 PM만 할 수 있습니다. | wbs.form |
+| `wbs.form.assigneeSelfOnly` | 담당자는 비우거나 본인만 지정할 수 있습니다. | wbs.form |
+| `wbs.form.cancel` | 취소 | wbs.form |
+| `wbs.form.createSubtaskTitle` | '{name}' 하위작업 추가 | wbs.form |
+| `wbs.form.createTitle` | 작업 추가 | wbs.form |
+| `wbs.form.dateOrder` | 시작일은 종료일보다 늦을 수 없습니다. | wbs.form |
+| `wbs.form.dateRequired` | 시작일과 종료일을 입력해 주세요. | wbs.form |
+| `wbs.form.derivedNote` | 하위작업이 있는 작업의 기간은 하위작업 기간으로 정해져 직접 바꿀 수 없습니다. | wbs.form |
+| `wbs.form.description` | 설명 (선택) | wbs.form |
+| `wbs.form.descriptionTooLong` | 설명은 2000자 이하로 입력해 주세요. | wbs.form |
+| `wbs.form.editTitle` | 작업 수정 | wbs.form |
+| `wbs.form.effort` | 예상 공수 (인일, 선택) | wbs.form |
+| `wbs.form.effortInvalid` | 예상 공수는 0.1~99999.9인일, 소수 첫째 자리까지 입력해 주세요. | wbs.form |
+| `wbs.form.endDate` | 종료일 | wbs.form |
+| `wbs.form.name` | 작업명 | wbs.form |
+| `wbs.form.nameRequired` | 작업명을 입력해 주세요. | wbs.form |
+| `wbs.form.nameTooLong` | 작업명은 200자 이하로 입력해 주세요. | wbs.form |
+| `wbs.form.phase` | 단계 | wbs.form |
+| `wbs.form.phaseInherited` | 하위작업은 상위 작업의 단계를 따릅니다. | wbs.form |
+| `wbs.form.progressDoneNote` | 완료 상태의 작업은 진척률이 100이어야 합니다. | wbs.form |
+| `wbs.form.progressInvalid` | 진척률은 0~100 사이의 정수로 입력해 주세요. | wbs.form |
+| `wbs.form.progressLabel` | 진척률 (0~100%) | wbs.form |
+| `wbs.form.progressTitle` | '{name}' 진척률 | wbs.form |
+| `wbs.form.startDate` | 시작일 | wbs.form |
+| `wbs.form.submit` | 저장 | wbs.form |
+| `wbs.form.submitting` | 저장 중 | wbs.form |
+| `wbs.server.addSubtask` | 하위작업 추가 | wbs.server |
+| `wbs.server.addTask` | 작업 추가 | wbs.server |
+| `wbs.server.aiDraftLink` | AI WBS 초안 | wbs.server |
+| `wbs.server.aiSource` | AI 초안 | wbs.server |
+| `wbs.server.columnActions` | 관리 | wbs.server |
+| `wbs.server.columnAssignee` | 담당자 | wbs.server |
+| `wbs.server.columnEffort` | 예상 공수 | wbs.server |
+| `wbs.server.columnName` | 작업명 | wbs.server |
+| `wbs.server.columnPeriod` | 기간 | wbs.server |
+| `wbs.server.columnStatus` | 상태 | wbs.server |
+| `wbs.server.concurrent` | 다른 사용자가 먼저 수정했습니다. 최신 WBS를 다시 불러왔으니 확인한 뒤 다시 시도해 주세요. | wbs.server |
+| `wbs.server.confirmDelete` | '{name}'을(를) 삭제할까요? 되돌릴 수 없습니다. | wbs.server |
+| `wbs.server.created` | '{name}'을(를) 등록했습니다. | wbs.server |
+| `wbs.server.delete` | 삭제 | wbs.server |
+| `wbs.server.deleted` | '{name}'을(를) 삭제했습니다. | wbs.server |
+| `wbs.server.derivedProgress` | 하위작업 공수 가중 평균 | wbs.server |
+| `wbs.server.derivedSchedule` | 하위작업 기간으로 산출 | wbs.server |
+| `wbs.server.edit` | 수정 | wbs.server |
+| `wbs.server.editProgress` | 진척률 수정 | wbs.server |
+| `wbs.server.empty` | 등록된 작업이 없습니다. | wbs.server |
+| `wbs.server.emptyHintPm` | 단계별로 작업을 추가하거나 AI 초안으로 시작하세요. | wbs.server |
+| `wbs.server.emptyHintViewer` | PM이 작업을 등록하면 여기에 표시됩니다. | wbs.server |
+| `wbs.server.forbidden` | 이 작업을 할 권한이 없습니다. 권한이 바뀌었을 수 있어 WBS를 새로 불러왔습니다. | wbs.server |
+| `wbs.server.inUse` | 하위작업·선후행 관계·마일스톤 연결이 있는 작업은 삭제할 수 없습니다. 연결을 먼저 정리해 주세요. | wbs.server |
+| `wbs.server.invalid` | 입력값을 확인해 주세요. | wbs.server |
+| `wbs.server.limitExceeded` | 프로젝트 WBS 항목은 최대 2,000개까지 등록할 수 있습니다. | wbs.server |
+| `wbs.server.loadFailed` | WBS를 불러오지 못했습니다. | wbs.server |
+| `wbs.server.loading` | WBS를 불러오는 중입니다 | wbs.server |
+| `wbs.server.memberNote` | 본인이 담당한 작업만 수정하고 그 아래 하위작업을 추가할 수 있습니다. | wbs.server |
+| `wbs.server.milestoneNote` | 선후행 관계·마일스톤 편집은 아직 서버와 연결하지 않았습니다. | wbs.server |
+| `wbs.server.moved` | 순서를 바꿨습니다. | wbs.server |
+| `wbs.server.moveDown` | 아래로 | wbs.server |
+| `wbs.server.moveUp` | 위로 | wbs.server |
+| `wbs.server.network` | 서버에 연결하지 못했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요. | wbs.server |
+| `wbs.server.noEffort` | 공수 미입력 | wbs.server |
+| `wbs.server.noPhase` | 단계 미지정 | wbs.server |
+| `wbs.server.notFound` | 대상 작업이나 단계를 찾을 수 없습니다. WBS를 새로 불러왔습니다. | wbs.server |
+| `wbs.server.personDays` | {value}인일 | wbs.server |
+| `wbs.server.progress` | 진척률 | wbs.server |
+| `wbs.server.progressSaved` | 진척률을 {value}%로 저장했습니다. | wbs.server |
+| `wbs.server.retry` | 다시 시도 | wbs.server |
+| `wbs.server.serverError` | 서버 오류로 처리하지 못했습니다. 잠시 후 다시 시도해 주세요. | wbs.server |
+| `wbs.server.timeout` | 응답이 늦어 요청을 멈췄습니다. 잠시 후 다시 시도해 주세요. | wbs.server |
+| `wbs.server.unassigned` | 미배정 | wbs.server |
+| `wbs.server.unavailable` | 이 프로젝트에서는 WBS를 사용할 수 없습니다. 기능 구성에서 WBS를 끈 프로젝트이거나 볼 수 없는 프로젝트입니다. | wbs.server |
+| `wbs.server.unknown` | 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요. | wbs.server |
+| `wbs.server.updated` | '{name}'을(를) 수정했습니다. | wbs.server |
+| `wbs.server.viewerNote` | 현재 역할로는 WBS를 조회만 할 수 있습니다. | wbs.server |
 
 ## BE에 이미 시드됨 (7개, V9 공통 코드 라벨)
 

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useDemoStore } from "@/stores/DemoStore";
+import { useAuth } from "@/features/auth/authContext";
+import ServerWbsDraft from "@/features/wbs/components/ServerWbsDraft";
 import { Badge } from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
 import { STAGES, STAGE_LABEL } from "@/utils/ui";
@@ -13,7 +15,7 @@ interface DraftState {
   milestones: DraftWbsMilestone[];
 }
 
-export default function WbsDraftPage() {
+function DemoWbsDraftPage() {
   const { projectId } = useParams();
   const { projects, currentUser, tasks, applyWbsDraft } = useDemoStore();
   const project = projects.find((p) => p.id === projectId);
@@ -232,4 +234,17 @@ export default function WbsDraftPage() {
       )}
     </div>
   );
+}
+
+/**
+ * api 모드의 서버 프로젝트는 서버 WBS API(04. WBS·일정)로 그린다. 데모 업무를 서버 프로젝트에 섞지 않는다.
+ * 데모 모드·프론트 데모 프로젝트는 기존 데모 화면을 그대로 쓴다.
+ */
+export default function WbsDraftPage() {
+  const { mode } = useAuth();
+  const { projectId } = useParams();
+  const { projects } = useDemoStore();
+  const project = projects.find((p) => p.id === projectId);
+  if (mode === "api" && project?.serverId !== undefined) return <ServerWbsDraft project={{ ...project, serverId: project.serverId }} />;
+  return <DemoWbsDraftPage />;
 }

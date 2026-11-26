@@ -1,6 +1,6 @@
 # 백엔드에 필요한 API (FE 요청)
 
-> 상태: Draft · 작성: FE · 기준: BE `develop` (50f96d2), Confluence 03. 프로젝트 (API) v9
+> 상태: Draft · 작성: FE · 기준: BE `develop` (50f96d2), Confluence 03. 프로젝트 (API) v9 · 04. WBS·일정 (API) v12
 > FE가 화면을 실제 데이터로 연결하려면 필요하지만 지금 BE에 없는 API를 정리한다. 이 문서는 요청서이며 계약이 아니다.
 
 ## 1. 일반 사용자용 부서 목록
@@ -40,3 +40,24 @@ api 모드에서는 위 두 변경이 서버에 반영되지 않으므로 비활
 | 지금 FE 동작 | 401이면 재발급을 한 번 시도해 그 결과(성공/거절/판정 불가)로 판단한다. 403이면 `GET /api/auth/me`의 `mustChangePassword`로 비밀번호 변경 강제 여부를 확인한다. 메시지 문구로는 분기하지 않는다. |
 | 영향 | 만료가 아닌 401(로그인 안 함 등)에도 재발급 요청이 한 번 더 간다. 403마다 계정 조회가 한 번 더 간다. 같은 status 안의 여러 오류(예: 비밀번호 변경의 400 세 가지)는 입력칸을 고르지 못하고 서버 메시지를 폼 오류로 보인다. |
 | 제안 | `error`에 `code`(ErrorCode 이름)를 추가하면 FE가 추가 요청 없이 정확히 분기할 수 있다. 추가하지 않기로 하면 공통 규약 3절 표의 "ErrorCode" 열이 문서 분류일 뿐이라는 점을 명시해 주세요. |
+
+## 5. (검토 요청) 04. WBS·일정 명세와 BE 구현의 차이
+
+FE는 BE 구현(DTO)을 기준으로 연결했다. 명세를 구현에 맞춰 고쳐 주세요.
+
+| 항목 | 명세(v12) | BE develop 50f96d2 | FE 동작 |
+| --- | --- | --- | --- |
+| AI 초안 응답 `stages[]` | `stageCode`(WaterfallPhaseType) | `phaseId`·`phaseName`(`ProposedStage`) | `phaseId`를 읽고, 프로젝트에 없는 단계면 첫 단계로 둔다 |
+| 단계 저장 | 공통 사항 "단계 미저장(`wbs_tasks.phase_id` 제거)" | 11-23 추가분대로 `phaseId`를 요청·응답·저장 | `phaseId`를 보낸다(하위작업은 보내지 않음, 상위 상속) |
+| 트리 항목 필드 | `taskType`·`priority`·`phaseId` 없음 | 응답에 있음 | `phaseId`로 단계별로 묶어 보인다 |
+
+## 6. (참고) WBS 화면에서 아직 서버와 연결하지 않은 기능
+
+| 화면 | 이유 | 관련 |
+| --- | --- | --- |
+| WBS › 선후행 관계·마일스톤 편집 | BE API(`.../predecessors`, `.../milestones`)는 있으나 04 API 명세 페이지에 계약이 없어 이번 범위에서 뺐다. api 모드 WBS 화면에 "아직 연결하지 않음"을 표시한다 | FR-WBS-03(SCRUM-118)·FR-WBS-04(SCRUM-108) |
+| 간트·칸반 | api 모드에서도 데모 업무를 보여 준다(보드 API `.../board`는 FR-TSK-02 범위) | FR-WBS-02·FR-TSK-02 |
+| WBS › 드래그 이동 | 위·아래 한 칸 이동 버튼으로 같은 이동 API(`PUT .../position`)를 쓴다. 다른 작업 아래로 옮기기(계층 변경)는 화면에 없다 | FR-WBS-01 |
+
+오류 본문에 code가 없어(4절) 같은 status 안의 여러 오류는 API별로 가장 가능성 높은 뜻으로 안내한다. 예: AI 초안 반영의 404는 `AI_DRAFT_EXPIRED`·`FEATURE_DISABLED`·`PHASES_NOT_AVAILABLE`을 구분하지 못해 "초안 만료, 다시 만들어 주세요"로 안내한다.
+

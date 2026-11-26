@@ -1,6 +1,8 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useDemoStore } from "@/stores/DemoStore";
+import { useAuth } from "@/features/auth/authContext";
+import ServerWbsView from "@/features/wbs/components/ServerWbsView";
 import AssigneeStack from "@/components/ui/AssigneeStack";
 import { assigneeIdsOf } from "@/utils/assignee";
 import ProgressBar from "@/components/ui/ProgressBar";
@@ -22,7 +24,7 @@ interface FormContext {
   parentName?: string;
 }
 
-export default function WbsPage() {
+function DemoWbsPage() {
   const { projectId } = useParams();
   const { projects, tasks, users, openTask, moveTask, setTaskStatus } = useDemoStore();
   const project = projects.find((p) => p.id === projectId);
@@ -522,4 +524,17 @@ export default function WbsPage() {
       )}
     </div>
   );
+}
+
+/**
+ * api 모드의 서버 프로젝트는 서버 WBS API(04. WBS·일정)로 그린다. 데모 업무를 서버 프로젝트에 섞지 않는다.
+ * 데모 모드·프론트 데모 프로젝트는 기존 데모 화면을 그대로 쓴다.
+ */
+export default function WbsPage() {
+  const { mode } = useAuth();
+  const { projectId } = useParams();
+  const { projects } = useDemoStore();
+  const project = projects.find((p) => p.id === projectId);
+  if (mode === "api" && project?.serverId !== undefined) return <ServerWbsView project={{ ...project, serverId: project.serverId }} />;
+  return <DemoWbsPage />;
 }
