@@ -6,10 +6,11 @@ import AdminRiskSettings from "@/features/admin/components/AdminRiskSettings";
 import AdminAudit from "@/features/admin/components/AdminAudit";
 import ServerUsersPanel from "@/features/admin/components/ServerUsersPanel";
 import ServerDepartmentsPanel from "@/features/admin/components/ServerDepartmentsPanel";
+import ServerCodesPanel from "@/features/admin/components/ServerCodesPanel";
 import { useAuth } from "@/features/auth/authContext";
 import { canUseSystemAdmin } from "@/utils/permission";
 
-type TabKey = "users" | "departments" | "risk" | "audit";
+type TabKey = "users" | "departments" | "codes" | "risk" | "audit";
 
 interface TabItem {
   key: TabKey;
@@ -24,10 +25,11 @@ const DEMO_TABS: TabItem[] = [
   { key: "audit", label: "보안 · 접속 로그", icon: "ri-file-shield-2-line", hint: "읽기 전용 감사 로그" },
 ];
 
-// api 모드: 사용자·부서는 서버 API, 나머지 탭은 아직 데모 데이터
+// api 모드: 사용자·부서·공통 코드는 서버 API, 나머지 탭은 아직 데모 데이터
 const API_TABS: TabItem[] = [
   { key: "users", label: "사용자", icon: "ri-team-line", hint: "계정·부서·역할" },
   { key: "departments", label: "부서", icon: "ri-organization-chart", hint: "조직 트리" },
+  { key: "codes", label: "공통 코드", icon: "ri-list-settings-line", hint: "정렬 순서" },
   { key: "risk", label: "AI · 리스크 설정", icon: "ri-equalizer-line", hint: "데모 데이터" },
   { key: "audit", label: "보안 · 접속 로그", icon: "ri-file-shield-2-line", hint: "데모 데이터" },
 ];
@@ -55,7 +57,7 @@ export default function AdminPage() {
         <div>
           <p className="text-[12px] text-foreground-500">
             {isApi
-              ? "시스템 관리자 전용 · 사용자·부서 변경은 서버에 바로 반영되고 감사 로그에 기록됩니다"
+              ? "시스템 관리자 전용 · 사용자·부서·공통 코드 변경은 서버에 바로 반영되고 감사 로그에 기록됩니다"
               : "시스템 관리자 전용 · 변경 사항은 데모 저장소에만 반영됩니다"}
           </p>
         </div>
@@ -87,6 +89,7 @@ export default function AdminPage() {
 
       {tab === "users" && (isApi ? <ServerUsersPanel /> : <AdminUsers />)}
       {tab === "departments" && isApi && <ServerDepartmentsPanel />}
+      {tab === "codes" && isApi && <ServerCodesPanel />}
       {tab === "risk" && <AdminRiskSettings />}
       {tab === "audit" && <AdminAudit />}
     </div>

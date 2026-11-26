@@ -65,6 +65,26 @@ export const ADMIN_TEXT = {
   showInactive: "비활성 부서 보기",
 } as const;
 
+/** 공통 코드 화면 문구 (02-3) */
+export const ADMIN_CODE_TEXT = {
+  title: "공통 코드",
+  description: "상태값을 코드로 관리합니다. 관리자는 그룹 안 표시 순서만 바꿀 수 있습니다.",
+  groupsLabel: "코드 그룹",
+  loadGroupsFailed: "코드 그룹을 불러오지 못했습니다",
+  emptyGroups: "등록된 코드 그룹이 없습니다",
+  emptyGroupsHint: "코드 그룹은 서버 마이그레이션으로만 추가됩니다.",
+  selectGroup: "왼쪽에서 코드 그룹을 고르세요",
+  loadCodesFailed: "코드를 불러오지 못했습니다",
+  emptyCodes: "이 그룹에는 코드가 없습니다",
+  inUse: "사용",
+  notInUse: "사용 안 함",
+  sortOrderRequired: "정렬 순서를 입력해 주세요.",
+  sortOrderRange: "정렬 순서는 0 이상 9999 이하의 정수로 입력해 주세요.",
+  fixedNote:
+    "코드 값·라벨 키·사용 여부는 바꿀 수 없습니다(서버 마이그레이션으로만 변경). 표시 텍스트는 다국어 라벨에서 라벨 키로 관리합니다. 정렬 순서를 바꾸면 감사 로그에 기록됩니다.",
+  lastWriteWins: "다른 관리자가 같은 코드의 순서를 동시에 바꾸면 나중에 저장한 값이 남습니다.",
+} as const;
+
 /**
  * 서버 메시지 대신 FE가 조치 안내를 붙여 보여 줄 상황 문구.
  * 오류 본문에 code가 없어(API 공통 규약 6절) 상황은 호출한 API와 HTTP status로 정한다(utils/adminUserFailure.ts).
