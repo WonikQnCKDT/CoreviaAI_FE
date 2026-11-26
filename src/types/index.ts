@@ -10,7 +10,8 @@ export type RoleKey = "pm" | "biz" | "dev" | "qa";
 
 export type Visibility = "company" | "department" | "members";
 
-export type MethodKey = "waterfall" | "agile";
+/** 운영 방식. none = 단계 없음(업무 목록으로 운영), waterfall = 폭포수, agile = 애자일(MVP 선택 비활성) */
+export type MethodKey = "none" | "waterfall" | "agile";
 
 /** 시스템 역할과 프로젝트 역할은 분리해서 관리합니다. */
 export type SystemRole = "user" | "exec" | "admin";

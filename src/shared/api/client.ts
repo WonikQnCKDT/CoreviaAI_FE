@@ -9,7 +9,14 @@ import { emitAuthEvent } from "@/shared/api/authEvents";
  */
 
 export type ApiFailure =
-  | { kind: "http"; status: number; code: string | null; message: string | null }
+  | {
+      kind: "http";
+      status: number;
+      code: string | null;
+      message: string | null;
+      /** 기능 명세가 정한 업무 오류의 조치용 보조 데이터(공통 규약 2절). 서버가 보낸 경우에만 있다. */
+      data?: unknown;
+    }
   | { kind: "network" }
   | { kind: "timeout" }
   | { kind: "aborted" };
@@ -80,7 +87,12 @@ const send = async function <T>({
       return { ok: true, data: (envelope?.response ?? null) as T };
     }
     const { code = null, message = null } = envelope?.error ?? {};
-    return { ok: false, failure: { kind: "http", status: response.status, code, message } };
+    // success=false여도 response에 조치용 데이터가 올 수 있다(예: 멤버 제외 409의 재배정 업무 목록). 있을 때만 담는다.
+    const data = envelope?.response ?? null;
+    return {
+      ok: false,
+      failure: { kind: "http", status: response.status, code, message, ...(data !== null ? { data } : {}) },
+    };
   } catch {
     if (timedOut) return { ok: false, failure: { kind: "timeout" } };
     if (signal?.aborted) return { ok: false, failure: { kind: "aborted" } };

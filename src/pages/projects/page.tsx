@@ -16,6 +16,7 @@ import type { Health } from "@/types";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 import { PROJECT_SORT_LABEL } from "@/shared/i18n/catalog/status";
 import { PROJECT_FOCUS_LABEL } from "@/shared/i18n/catalog/status";
+import { METHODOLOGY_LABEL } from "@/shared/i18n/catalog/status";
 
 type SortKey = "risk" | "progressDesc" | "progressAsc" | "endDate" | "name";
 type FocusKey = "all" | "ongoing" | "late" | "done";
@@ -301,7 +302,7 @@ export default function ProjectsPage() {
                         <span className="text-[12px]">{pmUser?.name}</span>
                       </span>
                     </td>
-                    <td className="td text-[12px]">{project.method === "agile" ? "애자일" : "폭포수"}</td>
+                    <td className="td text-[12px]">{METHODOLOGY_LABEL[project.method]}</td>
                     <td className="td">
                       {project.serverId !== undefined && !project.serverStageKnown ? (
                         // 목록 API에는 단계 정보가 없어, 상세에서 단계를 받기 전에는 표시하지 않는다.

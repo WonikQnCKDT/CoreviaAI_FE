@@ -67,6 +67,7 @@ import type { AuthAccount } from "@/features/auth/api/authApi";
 import type {
   ServerProjectDetail,
   ServerProjectPhase,
+  ServerProjectMember,
   ServerProjectSummary,
 } from "@/features/project/api/projectApi";
 import { mergeServerDetail, mergeServerSummary } from "@/features/project/utils/serverProject";
@@ -404,7 +405,11 @@ interface DemoStoreValue extends DemoState {
   /** 서버 프로젝트 목록을 화면 프로젝트로 연결합니다. 목록에서 빠진(볼 수 없게 된) 서버 프로젝트는 지웁니다. */
   syncServerProjects: (summaries: ServerProjectSummary[]) => void;
   /** 서버 프로젝트 상세·폭포수 단계를 화면 프로젝트에 반영합니다. */
-  syncServerProjectDetail: (input: { detail: ServerProjectDetail; phases: ServerProjectPhase[] | null }) => void;
+  syncServerProjectDetail: (input: {
+    detail: ServerProjectDetail;
+    phases: ServerProjectPhase[] | null;
+    members: ServerProjectMember[] | null;
+  }) => void;
   /** 볼 수 없게 된(404) 서버 프로젝트를 화면에서 지웁니다. */
   removeServerProject: (serverId: number) => void;
   switchDemoUser: (userId: string) => void;
@@ -1955,10 +1960,18 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const syncServerProjectDetail = useCallback(
-    ({ detail, phases }: { detail: ServerProjectDetail; phases: ServerProjectPhase[] | null }) => {
+    ({
+      detail,
+      phases,
+      members,
+    }: {
+      detail: ServerProjectDetail;
+      phases: ServerProjectPhase[] | null;
+      members: ServerProjectMember[] | null;
+    }) => {
       setState((prev) => {
         const existing = prev.projects.find((p) => p.serverId === detail.id);
-        const { project, users } = mergeServerDetail({ detail, phases, existing, users: prev.users });
+        const { project, users } = mergeServerDetail({ detail, phases, members, existing, users: prev.users });
         const projects = existing ? prev.projects.map((p) => (p.serverId === detail.id ? project : p)) : [project, ...prev.projects];
         return { ...prev, users, projects };
       });

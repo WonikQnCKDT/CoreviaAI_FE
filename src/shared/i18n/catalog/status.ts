@@ -5,6 +5,7 @@ import type {
   IssueKind,
   IssueSeverity,
   IssueStatus,
+  MethodKey,
   Priority,
   RoleKey,
   StageKey,
@@ -73,6 +74,12 @@ export const ACTIVITY_ISSUE_LABEL: Record<string, string> = defineLabels("status
   open: "접수",
   progress: "처리중",
   resolved: "해결",
+});
+
+export const METHODOLOGY_LABEL: Record<MethodKey, string> = defineLabels("status.methodology", {
+  none: "단계 없음",
+  waterfall: "폭포수",
+  agile: "애자일",
 });
 
 export const RECORD_STATUS_LABEL = defineLabels("status.record", {

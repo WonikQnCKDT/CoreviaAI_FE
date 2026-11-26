@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDemoStore } from "@/stores/DemoStore";
 import { useAuth } from "@/features/auth/authContext";
-import { fetchAllProjects, fetchProjectDetail, fetchProjectPhases } from "@/features/project/api/projectApi";
+import { fetchAllProjectMembers, fetchAllProjects, fetchProjectDetail, fetchProjectPhases } from "@/features/project/api/projectApi";
 import { AUTH_TEXT } from "@/features/auth/i18n/ko";
 import type { ApiFailure } from "@/shared/api/client";
 
@@ -70,9 +70,11 @@ export const useServerProjectList = function () {
 };
 
 /**
- * api 모드: 상세와 폭포수 단계를 동시에 받아 화면 프로젝트에 반영한다.
- * - 404 PROJECT_NOT_FOUND: 없거나 볼 수 없는 프로젝트 → notFound
- * - 404 PHASES_NOT_AVAILABLE: 폭포수가 아닌 프로젝트 → 단계 없이 진행
+ * api 모드: 상세·단계·멤버를 동시에 받아 화면 프로젝트에 반영한다(03 v9: 상세에는 멤버·단계가 없다).
+ * - 상세 404 PROJECT_NOT_FOUND: 없거나 볼 수 없는 프로젝트 → notFound
+ * - 단계: 단계가 없으면 빈 배열. 상세가 성공했는데 단계가 404면 단계 없음으로 본다(이전 계약의 PHASES_NOT_AVAILABLE)
+ * - 멤버: 받지 못하면 오류로 본다(멤버 권한 판단에 필요)
+ * 오류 본문에는 code가 없어(공통 규약 6절) status로만 판단한다.
  * routeProjectId가 숫자가 아니면 프론트 데모 프로젝트라 서버를 부르지 않는다.
  */
 export const useServerProjectDetail = function (routeProjectId: string | undefined) {
@@ -94,8 +96,12 @@ export const useServerProjectDetail = function (routeProjectId: string | undefin
     setState({ phase: "loading" });
     const { signal } = controller;
 
-    Promise.all([fetchProjectDetail({ projectId: serverId, signal }), fetchProjectPhases({ projectId: serverId, signal })]).then(
-      ([detailResult, phasesResult]) => {
+    Promise.all([
+      fetchProjectDetail({ projectId: serverId, signal }),
+      fetchProjectPhases({ projectId: serverId, signal }),
+      fetchAllProjectMembers({ projectId: serverId, signal }),
+    ]).then(
+      ([detailResult, phasesResult, membersResult]) => {
         if (signal.aborted) return;
         if (detailResult.ok === false) {
           const { failure } = detailResult;
@@ -112,13 +118,18 @@ export const useServerProjectDetail = function (routeProjectId: string | undefin
           phases = phasesResult.data;
         } else {
           const { failure } = phasesResult;
-          const notWaterfall = failure.kind === "http" && failure.code === "PHASES_NOT_AVAILABLE";
-          if (!notWaterfall) {
+          const noPhases = failure.kind === "http" && failure.status === 404;
+          if (!noPhases) {
             setState({ phase: "error", message: failureMessage(failure) });
             return;
           }
+          phases = [];
         }
-        syncServerProjectDetail({ detail: detailResult.data, phases });
+        if (membersResult.ok === false) {
+          setState({ phase: "error", message: failureMessage(membersResult.failure) });
+          return;
+        }
+        syncServerProjectDetail({ detail: detailResult.data, phases, members: membersResult.data });
         setState({ phase: "ready" });
       },
     );

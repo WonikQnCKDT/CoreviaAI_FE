@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (507개)
+## 등록 필요 (510개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -480,6 +480,9 @@
 | `status.issueSeverity.high` | 높음 | status.issueSeverity |
 | `status.issueSeverity.low` | 낮음 | status.issueSeverity |
 | `status.issueSeverity.medium` | 보통 | status.issueSeverity |
+| `status.methodology.agile` | 애자일 | status.methodology |
+| `status.methodology.none` | 단계 없음 | status.methodology |
+| `status.methodology.waterfall` | 폭포수 | status.methodology |
 | `status.priority.high` | 높음 | status.priority |
 | `status.priority.low` | 낮음 | status.priority |
 | `status.priority.normal` | 보통 | status.priority |
