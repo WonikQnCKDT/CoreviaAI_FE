@@ -56,6 +56,28 @@ export const descendantIds = function (items: AdminDepartment[], rootId: number)
   return found;
 };
 
+/**
+ * 상위 부서로 고를 수 있는 부서.
+ * 활성 부서만 새로 고를 수 있고, 수정할 때는 자기 자신과 하위 부서를 뺀다.
+ * 수정 중인 부서의 지금 상위와 폼에서 고른 상위는 비활성이어도 남긴다. select 값이 선택지에 없으면
+ * 화면에는 '최상위'로 보이는데 실제로는 그 부서 ID가 전송되기 때문이다(예: 저장 중 상위가 비활성화된 경우).
+ */
+export const selectableParents = function ({
+  tree,
+  items,
+  editing,
+  selectedId,
+}: {
+  tree: DepartmentNode[];
+  items: AdminDepartment[];
+  editing: AdminDepartment | null;
+  selectedId: number | null;
+}): DepartmentNode[] {
+  const blocked = editing ? descendantIds(items, editing.id) : new Set<number>();
+  const kept = new Set([editing?.parentId, selectedId].filter((id): id is number => id !== null && id !== undefined));
+  return tree.filter(({ department: { id, status } }) => !blocked.has(id) && (status === "active" || kept.has(id)));
+};
+
 export const useDepartments = function () {
   const [state, setState] = useState<DepartmentsState>({ phase: "loading" });
   const controllerRef = useRef<AbortController | null>(null);

@@ -26,14 +26,6 @@ export const failureStatus = function (failure: ApiFailure): number | null {
   return failure.kind === "http" ? failure.status : null;
 };
 
-/**
- * 서버가 오류 본문에 code를 주지 않아 지금은 항상 null이다.
- * 부서 화면(DepartmentFormDialog·ServerDepartmentsPanel)이 아직 쓰고 있어 남겨 둔다. 새 코드에서는 failureStatus를 쓴다.
- */
-export const failureCode = function (failure: ApiFailure): string | null {
-  return failure.kind === "http" ? failure.code : null;
-};
-
 const pageLocale = function () {
   if (typeof document === "undefined") return "ko-KR";
   return document.documentElement.lang || "ko-KR";

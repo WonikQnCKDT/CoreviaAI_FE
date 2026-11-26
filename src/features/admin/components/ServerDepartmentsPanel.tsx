@@ -5,9 +5,11 @@ import { useDepartments } from "@/features/admin/hooks/useDepartments";
 import ConfirmDialog, { type ConfirmPhase } from "@/features/admin/components/ConfirmDialog";
 import DepartmentFormDialog, { type DepartmentFormMode } from "@/features/admin/components/DepartmentFormDialog";
 import { ADMIN_TEXT, STATUS_TEXT } from "@/features/admin/i18n/ko";
-import { adminErrorMessage, failureCode, formatCount } from "@/features/admin/utils/adminFormat";
+import { formatCount } from "@/features/admin/utils/adminFormat";
+import { interpretDepartmentStatusFailure } from "@/features/admin/utils/adminDepartmentFailure";
 
-type Notice = { tone: "info" | "error"; text: string } | null;
+/** 변경 성공 안내. 실패는 확인 창·입력 창 안에서 보여 준다. */
+type Notice = { text: string } | null;
 
 /** api 모드 부서 관리. 모든 페이지를 받아 트리로 보여준다. */
 const ServerDepartmentsPanel = function () {
@@ -37,11 +39,12 @@ const ServerDepartmentsPanel = function () {
       upsert(result.data);
       setStatusTarget(null);
       setConfirmState({ phase: "idle" });
-      setNotice({ tone: "info", text: `${result.data.name} 부서를 ${STATUS_TEXT[result.data.status]} 상태로 바꿨습니다.` });
+      setNotice({ text: `${result.data.name} 부서를 ${STATUS_TEXT[result.data.status]} 상태로 바꿨습니다.` });
       return;
     }
-    if (failureCode(result.failure) === "DEPARTMENT_NOT_FOUND") reload();
-    setConfirmState({ phase: "failed", message: adminErrorMessage(result.failure) });
+    const { message, stale } = interpretDepartmentStatusFailure(result.failure);
+    if (stale) reload();
+    setConfirmState({ phase: "failed", message });
   };
 
   const renderBody = () => {
@@ -180,7 +183,7 @@ const ServerDepartmentsPanel = function () {
 
       {notice && (
         <div
-          role={notice.tone === "error" ? "alert" : "status"}
+          role="status"
           className="flex items-start justify-between gap-2 rounded-lg border border-background-300 bg-background-50 px-3.5 py-2.5 text-xs leading-5 text-foreground-700"
         >
           <span>{notice.text}</span>
@@ -205,7 +208,7 @@ const ServerDepartmentsPanel = function () {
         onSaved={({ department, created }) => {
           setFormMode(null);
           upsert(department);
-          setNotice({ tone: "info", text: `${department.name} 부서를 ${created ? "추가" : "저장"}했습니다.` });
+          setNotice({ text: `${department.name} 부서를 ${created ? "추가" : "저장"}했습니다.` });
         }}
         onStale={reload}
       />
