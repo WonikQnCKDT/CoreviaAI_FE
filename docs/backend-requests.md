@@ -31,3 +31,12 @@
 | 멤버·설정 › 게이트 승인자 지정 | 승인자 변경 API가 아직 없음 | FR-PRJ-05, SCRUM-133 |
 
 api 모드에서는 위 두 변경이 서버에 반영되지 않으므로 비활성으로 두고 이유를 표시한다(브라우저 안에서만 바뀌는 가짜 성공을 막기 위해).
+
+## 4. (검토 요청) 오류 응답의 오류 코드
+
+| 항목 | 내용 |
+| --- | --- |
+| 관찰한 사실 | BE 오류 응답은 `{ success, response, error: { message, status } }`만 준다(`ApiResponse.ApiError`, `SecurityErrorResponseWriter`). `JsonAuthenticationEntryPoint` 주석과 공통 규약 3절 표는 "FE는 EXPIRED_TOKEN이면 refresh"라고 하지만 응답에 코드가 없어 FE는 EXPIRED_TOKEN·UNAUTHORIZED·INVALID_TOKEN·SESSION_EXPIRED(모두 401)와 PASSWORD_CHANGE_REQUIRED·ACCOUNT_DISABLED·PROJECT_PM_ONLY(모두 403)를 구분할 수 없다. |
+| 지금 FE 동작 | 401이면 재발급을 한 번 시도해 그 결과(성공/거절/판정 불가)로 판단한다. 403이면 `GET /api/auth/me`의 `mustChangePassword`로 비밀번호 변경 강제 여부를 확인한다. 메시지 문구로는 분기하지 않는다. |
+| 영향 | 만료가 아닌 401(로그인 안 함 등)에도 재발급 요청이 한 번 더 간다. 403마다 계정 조회가 한 번 더 간다. 같은 status 안의 여러 오류(예: 비밀번호 변경의 400 세 가지)는 입력칸을 고르지 못하고 서버 메시지를 폼 오류로 보인다. |
+| 제안 | `error`에 `code`(ErrorCode 이름)를 추가하면 FE가 추가 요청 없이 정확히 분기할 수 있다. 추가하지 않기로 하면 공통 규약 3절 표의 "ErrorCode" 열이 문서 분류일 뿐이라는 점을 명시해 주세요. |
