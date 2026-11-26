@@ -12,6 +12,8 @@ import StepActors from "@/features/project/components/create/StepActors";
 import StepMembers from "@/features/project/components/create/StepMembers";
 import StepApprover from "@/features/project/components/create/StepApprover";
 import InputSummary from "@/features/project/components/create/InputSummary";
+import ServerProjectCreateWizard from "@/features/project/components/create/ServerProjectCreateWizard";
+import { useAuth } from "@/features/auth/authContext";
 import { STEP_META, TOTAL_STEPS, type ProjectFormState } from "@/features/project/types";
 import type { RoleKey, User } from "@/types";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
@@ -402,6 +404,7 @@ function ProjectCreateWizard() {
 
 export default function ProjectCreatePage() {
   const { currentUser } = useDemoStore();
+  const { mode } = useAuth();
   if (!canCreateProject(currentUser)) {
     return (
       <NoAccess
@@ -411,5 +414,6 @@ export default function ProjectCreatePage() {
       />
     );
   }
-  return <ProjectCreateWizard />;
+  // api 모드는 서버 생성 선택지와 생성 API를 쓰는 화면, 데모 모드는 샘플 데이터로 시연하는 기존 단계형 화면
+  return mode === "api" ? <ServerProjectCreateWizard /> : <ProjectCreateWizard />;
 }

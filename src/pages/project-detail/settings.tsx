@@ -10,10 +10,14 @@ import { ROLE_LABEL } from "@/utils/ui";
 import { canEditProject, isSystemAdmin } from "@/utils/permission";
 import { gateApproverCandidates } from "@/features/gate/utils/gate";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { useAuth } from "@/features/auth/authContext";
+import { PROJECT_SETTINGS_TEXT } from "@/features/project/i18n/ko";
+import { SERVER_DIRECTORY } from "@/features/project/utils/serverCreate";
 
 export default function ProjectSettingsPage() {
   const { projectId } = useParams();
   const { projects, users, currentUser, changeProjectPm } = useDemoStore();
+  const { mode } = useAuth();
   const [nextPmId, setNextPmId] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pmMessage, setPmMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
@@ -33,9 +37,11 @@ export default function ProjectSettingsPage() {
   }
 
   const isPm = canEditProject(project, currentUser);
+  // 서버 프로젝트는 이 화면의 데모 변경(PM 위임·승인자 지정)이 서버에 반영되지 않으므로 막고 이유를 보여 준다.
+  const serverManaged = mode === "api" && project.serverId !== undefined;
   // PM을 잃은 프로젝트를 정리할 수 있도록 시스템 관리자에게도 PM 변경 권한을 엽니다.
   const isAdmin = isSystemAdmin(currentUser);
-  const canDelegatePm = isPm || isAdmin;
+  const canDelegatePm = (isPm || isAdmin) && !serverManaged;
   const pm = users.find((u) => u.id === project.pmId);
   const assignable = gateApproverCandidates(project, users);
   // 위임 대상은 현재 PM을 제외한 프로젝트 멤버 중 활성 계정입니다.
@@ -91,7 +97,10 @@ export default function ProjectSettingsPage() {
             <span className="text-[10.5px] text-foreground-500">5단계 · 승인자 {assignable.length}명 후보</span>
           </div>
           <div className="mt-3">
-            <GateApproverPanel project={project} editable={isPm} showBulk />
+            <GateApproverPanel project={project} editable={isPm && !serverManaged} showBulk />
+            {serverManaged && (
+              <p className="mt-2 text-[10.5px] leading-4 text-foreground-500">{PROJECT_SETTINGS_TEXT.approverNotConnected}</p>
+            )}
           </div>
         </section>
 
@@ -154,7 +163,7 @@ export default function ProjectSettingsPage() {
               </>
             ) : (
               <p className="mt-1 text-[10.5px] leading-4 text-foreground-600">
-                PM 변경은 현재 PM 또는 시스템 관리자만 수행할 수 있습니다.
+                {serverManaged ? PROJECT_SETTINGS_TEXT.pmChangeNotConnected : "PM 변경은 현재 PM 또는 시스템 관리자만 수행할 수 있습니다."}
               </p>
             )}
             {pmMessage && (
@@ -183,6 +192,24 @@ export default function ProjectSettingsPage() {
           </div>
         </aside>
       </div>
+
+      {serverManaged && (
+        <section className="card px-4 py-3" aria-labelledby="member-invite-title">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h4 id="member-invite-title" className="text-[13px] font-semibold text-foreground-950">
+              {PROJECT_SETTINGS_TEXT.inviteTitle}
+            </h4>
+            <button type="button" className="btn-outline whitespace-nowrap" disabled aria-describedby="member-invite-reason">
+              <i className="ri-user-add-line" aria-hidden="true" /> {PROJECT_SETTINGS_TEXT.inviteTitle}
+            </button>
+          </div>
+          <p id="member-invite-reason" className="mt-2 flex items-start gap-1.5 text-[11px] leading-5 text-foreground-600">
+            <i className="ri-information-line mt-0.5 shrink-0" aria-hidden="true" />
+            {/* 초대 API(POST .../members)는 있지만 초대할 사용자를 찾을 검색 API가 없다. PM이 아니면 그 이유를 먼저 보여 준다. */}
+            <span>{isPm ? SERVER_DIRECTORY.users.reason() : PROJECT_SETTINGS_TEXT.pmOnlyInvite}</span>
+          </p>
+        </section>
+      )}
 
       <section className="card overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-background-200 px-4 py-3">

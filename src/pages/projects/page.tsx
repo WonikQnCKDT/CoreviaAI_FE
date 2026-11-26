@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useDemoStore } from "@/stores/DemoStore";
 import { Badge } from "@/components/ui/Badge";
 import RiskScoreBadge from "@/components/ui/RiskScoreBadge";
@@ -17,6 +17,9 @@ import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 import { PROJECT_SORT_LABEL } from "@/shared/i18n/catalog/status";
 import { PROJECT_FOCUS_LABEL } from "@/shared/i18n/catalog/status";
 import { METHODOLOGY_LABEL } from "@/shared/i18n/catalog/status";
+import type { ProjectCreatedState } from "@/features/project/components/create/ServerProjectCreateWizard";
+import { PROJECT_CREATE_TEXT } from "@/features/project/i18n/ko";
+import { formatLabel } from "@/shared/i18n/store";
 
 type SortKey = "risk" | "progressDesc" | "progressAsc" | "endDate" | "name";
 type FocusKey = "all" | "ongoing" | "late" | "done";
@@ -37,7 +40,11 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { projects: allProjects, tasks, users, currentUser } = useDemoStore();
+  // api 모드 생성 화면이 서버 생성 성공 뒤에만 넘겨 주는 안내. 이 화면은 들어올 때 서버 목록을 다시 받는다.
+  const created = (location.state as Partial<ProjectCreatedState> | null)?.projectCreated ?? null;
+  const dismissCreated = () => navigate(location.pathname + location.search, { replace: true, state: null });
   // api 모드: 서버 목록(GET /api/projects)을 받아 화면 프로젝트로 연결하고, 서버 프로젝트만 보여준다.
   const { isApi, state: listState, reload: reloadList } = useServerProjectList();
   const projects = useMemo(
@@ -117,6 +124,25 @@ export default function ProjectsPage() {
 
   return (
     <div className="space-y-4">
+      {created && (
+        <div
+          role="status"
+          className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-[12px] text-emerald-800"
+        >
+          <span>
+            <i className="ri-checkbox-circle-line mr-1" aria-hidden="true" />
+            {formatLabel(PROJECT_CREATE_TEXT.created, { name: created.name })}
+          </span>
+          <span className="flex items-center gap-3">
+            <Link to={`/projects/${created.id}`} className="font-medium underline underline-offset-2">
+              {PROJECT_CREATE_TEXT.openCreated}
+            </Link>
+            <button type="button" className="underline underline-offset-2" onClick={dismissCreated}>
+              {BUTTON_TEXT.close}
+            </button>
+          </span>
+        </div>
+      )}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-[12px] text-foreground-500">

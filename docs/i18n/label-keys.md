@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (510개)
+## 등록 필요 (577개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -454,6 +454,73 @@
 | `notification.typeSuffix` | {type} 알림 | notification |
 | `notification.unreadCount` | 읽지 않음 {count}건 | notification |
 | `notification.unreadNotice` | 확인하지 않은 알림 {count}건이 있습니다 | notification |
+| `project.create.actorsHint` | PM은 필수 액터라 해제할 수 없습니다. | project.create |
+| `project.create.actorsRequired` | PM 액터는 반드시 포함되어야 합니다. | project.create |
+| `project.create.actorsSection` | 액터 | project.create |
+| `project.create.approverSection` | 게이트 승인자 (선택) | project.create |
+| `project.create.basicSection` | 기본 정보 | project.create |
+| `project.create.blockedTitle` | 다음 필수 항목을 선택할 수 없어 만들 수 없습니다 | project.create |
+| `project.create.cancel` | 취소 | project.create |
+| `project.create.checkCode` | 중복 확인 | project.create |
+| `project.create.checkingCode` | 확인 중 | project.create |
+| `project.create.code` | 프로젝트 코드 | project.create |
+| `project.create.codeAvailable` | {code}는 사용할 수 있습니다. 최종 판정은 만들 때 한 번 더 합니다. | project.create |
+| `project.create.codeFormat` | 프로젝트 코드는 영문·숫자로 시작하는 영문·숫자·하이픈(-) 2~20자로 입력해 주세요. | project.create |
+| `project.create.codeHint` | 영문·숫자로 시작하는 영문·숫자·하이픈 2~20자. 대문자로 저장됩니다. | project.create |
+| `project.create.codeRequired` | 프로젝트 코드를 입력해 주세요. | project.create |
+| `project.create.codeTaken` | {code}는 이미 사용 중입니다. | project.create |
+| `project.create.codeTakenGeneric` | 이미 사용 중인 프로젝트 코드입니다. | project.create |
+| `project.create.created` | {name} 프로젝트를 만들었습니다. | project.create |
+| `project.create.departmentsSection` | 주관 부서 (선택) | project.create |
+| `project.create.description` | 입력한 내용으로 서버에 프로젝트를 만듭니다. 만든 사람이 첫 PM이 됩니다. | project.create |
+| `project.create.endDate` | 종료일 (선택) | project.create |
+| `project.create.featuresHint` | 선택한 운영 방식에서 쓸 수 있는 기능만 고를 수 있습니다. | project.create |
+| `project.create.featuresSection` | 기능 구성 | project.create |
+| `project.create.forbidden` | 이 계정은 프로젝트를 만들 수 없습니다. 활성 일반 사용자만 만들 수 있습니다. | project.create |
+| `project.create.loadingOptions` | 생성 선택지를 불러오는 중입니다 | project.create |
+| `project.create.membersSection` | 멤버 초대 (선택) | project.create |
+| `project.create.methodology` | 운영 방식 | project.create |
+| `project.create.name` | 프로젝트명 | project.create |
+| `project.create.namePlaceholder` | 예) 사내 업무포털 고도화 | project.create |
+| `project.create.nameRequired` | 프로젝트명을 입력해 주세요. | project.create |
+| `project.create.nameTooLong` | 프로젝트명은 100자 이하로 입력해 주세요. | project.create |
+| `project.create.noDepartmentType` | 부서 유형 — SW 부서 유형이 활성 상태가 아닙니다. | project.create |
+| `project.create.noMethodology` | 운영 방식 — 고를 수 있는(활성) 운영 방식이 없습니다. | project.create |
+| `project.create.noPmActor` | 액터 — 필수 PM 액터를 고를 수 없습니다. | project.create |
+| `project.create.noTemplate` | 템플릿 — 서버가 고를 수 있는 템플릿을 주지 않았습니다. | project.create |
+| `project.create.omittedNote` | 선택 항목이라 비운 채로 만들 수 있습니다. | project.create |
+| `project.create.openCreated` | 프로젝트 열기 | project.create |
+| `project.create.optionsFailed` | 생성 선택지(템플릿·운영 방식·액터·기능)를 불러오지 못했습니다. 필수 항목이라 이 정보 없이는 만들 수 없습니다. | project.create |
+| `project.create.periodHint` | 기간은 비워 두고 만든 뒤 입력할 수 있습니다. | project.create |
+| `project.create.periodInvalid` | 시작일은 종료일보다 늦을 수 없습니다. | project.create |
+| `project.create.pmSection` | PM | project.create |
+| `project.create.pmSelf` | {name} (나) — 만든 사람이 첫 PM이 됩니다. | project.create |
+| `project.create.startDate` | 시작일 (선택) | project.create |
+| `project.create.structureSection` | 템플릿·운영 방식 | project.create |
+| `project.create.submit` | 프로젝트 만들기 | project.create |
+| `project.create.submitting` | 만드는 중 | project.create |
+| `project.create.template` | 템플릿 | project.create |
+| `project.create.title` | 새 프로젝트 | project.create |
+| `project.create.visibility` | 공개 범위 | project.create |
+| `project.directory.approverUnavailable` | 게이트 승인자는 초대한 멤버 중에서 고르므로, 멤버 초대를 할 수 없는 지금은 지정할 수 없습니다. | project.directory |
+| `project.directory.departmentsUnavailable` | 주관 부서를 고를 수 있는 부서 조회 API가 아직 없어 부서 없이 만듭니다. 서버에 일반 사용자용 부서 목록 API가 생기면 선택할 수 있습니다. | project.directory |
+| `project.directory.usersUnavailable` | 초대할 사용자를 찾는 사용자 검색 API가 아직 없어 멤버 초대를 할 수 없습니다. 서버에 일반 사용자용 사용자 검색 API가 생기면 초대할 수 있습니다. | project.directory |
+| `project.feature.board` | 게시판 | project.feature |
+| `project.feature.deliverable` | 산출물·게이트 | project.feature |
+| `project.feature.file` | 파일 | project.feature |
+| `project.feature.git` | Git 연동 | project.feature |
+| `project.feature.issue` | 이슈 | project.feature |
+| `project.feature.kanban` | 칸반 | project.feature |
+| `project.feature.meeting` | 회의록 | project.feature |
+| `project.feature.wbs` | WBS·간트 | project.feature |
+| `project.settings.approverNotConnected` | 게이트 승인자 변경은 서버 API가 아직 없어 이 화면에서 바꿀 수 없습니다(FR-PRJ-05). | project.settings |
+| `project.settings.inviteDisabled` | 초대 기능 사용 불가 | project.settings |
+| `project.settings.inviteTitle` | 멤버 초대 | project.settings |
+| `project.settings.pmChangeNotConnected` | 서버 프로젝트의 PM 추가·해제는 멤버 역할 변경으로 합니다. 이 화면은 아직 서버와 연결되지 않아 바꿀 수 없습니다(이전 위임 API는 서버에서 없어졌습니다). | project.settings |
+| `project.settings.pmOnlyInvite` | 멤버 초대는 프로젝트 PM만 할 수 있습니다. | project.settings |
+| `project.settings.serverMembers` | 서버 멤버 목록 기준 | project.settings |
+| `project.template.empty` | 빈 템플릿 | project.template |
+| `project.template.itProject` | IT 프로젝트 템플릿 | project.template |
 | `status.activityIssue.open` | 접수 | status.activityIssue |
 | `status.activityIssue.progress` | 처리중 | status.activityIssue |
 | `status.activityIssue.resolved` | 해결 | status.activityIssue |
