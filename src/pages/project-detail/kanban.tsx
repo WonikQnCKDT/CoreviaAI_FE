@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useDemoStore } from "@/stores/DemoStore";
+import { useAuth } from "@/features/auth/authContext";
+import ServerKanbanView from "@/features/board/components/ServerKanbanView";
 import AssigneeStack from "@/components/ui/AssigneeStack";
 import { assigneeIdsOf } from "@/utils/assignee";
 import ProgressBar from "@/components/ui/ProgressBar";
@@ -21,7 +23,7 @@ const COLUMNS: { key: TaskStatus; label: string; icon: string; accent: string }[
   { key: "done", icon: "ri-checkbox-circle-line", accent: "bg-emerald-500", get label() { return TASK_STATUS_LABEL.done; } },
 ];
 
-export default function KanbanPage() {
+function DemoKanbanPage() {
   const { projectId } = useParams();
   const { projects, tasks, users, currentUser, openTask, setTaskStatus, setKanbanWip } = useDemoStore();
   const project = projects.find((p) => p.id === projectId);
@@ -310,4 +312,17 @@ export default function KanbanPage() {
       </Modal>
     </div>
   );
+}
+
+/**
+ * api 모드의 서버 프로젝트는 서버 칸반 API(05. 업무·보드)로 그린다. 데모 업무를 서버 프로젝트에 섞지 않는다.
+ * 데모 모드·프론트 데모 프로젝트는 기존 데모 화면을 그대로 쓴다.
+ */
+export default function KanbanPage() {
+  const { mode } = useAuth();
+  const { projectId } = useParams();
+  const { projects } = useDemoStore();
+  const project = projects.find((p) => p.id === projectId);
+  if (mode === "api" && project?.serverId !== undefined) return <ServerKanbanView project={{ ...project, serverId: project.serverId }} />;
+  return <DemoKanbanPage />;
 }

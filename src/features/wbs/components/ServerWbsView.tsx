@@ -13,6 +13,7 @@ import {
   type WbsItem,
   type WbsTaskFields,
 } from "@/features/wbs/api/wbsApi";
+import ServerTaskDetailDialog from "@/features/board/components/ServerTaskDetailDialog";
 import WbsProgressDialog from "@/features/wbs/components/WbsProgressDialog";
 import WbsTaskFormDialog, { type WbsFormTarget } from "@/features/wbs/components/WbsTaskFormDialog";
 import { useServerWbs } from "@/features/wbs/hooks/useServerWbs";
@@ -48,6 +49,7 @@ export default function ServerWbsView({ project }: { project: Project & { server
   const [formTarget, setFormTarget] = useState<WbsFormTarget | null>(null);
   const [progressTarget, setProgressTarget] = useState<WbsItem | null>(null);
   const [dialogError, setDialogError] = useState("");
+  const [detailTaskId, setDetailTaskId] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
   const busyRef = useRef(false);
@@ -238,7 +240,14 @@ export default function ServerWbsView({ project }: { project: Project & { server
       <td className="td">
         <div className={`flex items-center gap-1.5 ${depth === 1 ? "pl-6" : ""}`}>
           {depth === 1 && <i className="ri-corner-down-right-line text-foreground-400" aria-hidden="true" />}
-          <span className={depth === 0 ? "font-medium text-foreground-950" : "text-foreground-800"}>{item.name}</span>
+          <button
+            type="button"
+            className={`text-left hover:underline ${depth === 0 ? "font-medium text-foreground-950" : "text-foreground-800"}`}
+            aria-label={`${WBS_TEXT.openDetail}: ${item.name}`}
+            onClick={() => setDetailTaskId(item.id)}
+          >
+            {item.name}
+          </button>
           {item.source === "aiDraft" && <Badge className="border-violet-200 bg-violet-50 text-violet-700">{WBS_TEXT.aiSource}</Badge>}
         </div>
       </td>
@@ -337,6 +346,9 @@ export default function ServerWbsView({ project }: { project: Project & { server
           onClose={closeDialogs}
           onSubmit={submitForm}
         />
+      )}
+      {detailTaskId !== null && (
+        <ServerTaskDetailDialog projectId={projectId} taskId={detailTaskId} viewer={viewer} members={members} onClose={() => setDetailTaskId(null)} onChanged={reload} />
       )}
       {progressTarget && (
         <WbsProgressDialog item={progressTarget} submitting={busy} error={dialogError} onClose={closeDialogs} onSubmit={submitProgress} />

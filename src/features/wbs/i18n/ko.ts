@@ -16,6 +16,7 @@ export const WBS_TEXT = defineLabels("wbs.server", {
   addTask: "작업 추가",
   addSubtask: "하위작업 추가",
   edit: "수정",
+  openDetail: "업무 상세",
   delete: "삭제",
   moveUp: "위로",
   moveDown: "아래로",

@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (701개)
+## 등록 필요 (807개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -197,6 +197,59 @@
 | `auth.unknown` | 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요. | auth |
 | `auth.unreachableBody` | 로그인 상태를 확인할 수 없습니다. 네트워크와 서버 상태를 확인한 뒤 다시 시도해 주세요. | auth |
 | `auth.unreachableTitle` | 서버에 연결하지 못했습니다 | auth |
+| `board.column.add` | 추가 | board.column |
+| `board.column.added` | 컬럼을 추가했습니다. | board.column |
+| `board.column.addTitle` | 컬럼 추가 | board.column |
+| `board.column.cannotDelete` | 카드가 있는 컬럼이나 그 상태의 마지막 컬럼은 삭제할 수 없습니다. | board.column |
+| `board.column.close` | 닫기 | board.column |
+| `board.column.confirmDelete` | '{name}' 컬럼을 삭제할까요? | board.column |
+| `board.column.delete` | 삭제 | board.column |
+| `board.column.deleted` | 컬럼을 삭제했습니다. | board.column |
+| `board.column.description` | 컬럼 이름·WIP 한도·순서를 바꾸고 컬럼을 추가하거나 삭제합니다. 상태마다 컬럼이 하나 이상 있어야 합니다. | board.column |
+| `board.column.limitExceeded` | 컬럼은 프로젝트당 최대 20개입니다. | board.column |
+| `board.column.moveLeft` | 앞으로 | board.column |
+| `board.column.moveRight` | 뒤로 | board.column |
+| `board.column.name` | 이름 | board.column |
+| `board.column.nameControl` | 컬럼 이름에는 줄바꿈·탭 같은 제어 문자를 쓸 수 없습니다. | board.column |
+| `board.column.namePlaceholder` | 비우면 기본 이름 | board.column |
+| `board.column.nameTooLong` | 컬럼 이름은 50자 이하로 입력해 주세요. | board.column |
+| `board.column.reordered` | 컬럼 순서를 바꿨습니다. | board.column |
+| `board.column.save` | 저장 | board.column |
+| `board.column.saved` | 컬럼을 저장했습니다. | board.column |
+| `board.column.status` | 상태 | board.column |
+| `board.column.title` | 컬럼 관리 | board.column |
+| `board.column.wipInvalid` | WIP 한도는 1~999 사이의 정수로 입력하거나 비워 주세요. | board.column |
+| `board.column.wipLimit` | WIP 한도 | board.column |
+| `board.column.wipPlaceholder` | 없음 | board.column |
+| `board.server.assigneeAll` | 담당자 전체 | board.server |
+| `board.server.assigneeFilter` | 담당자 | board.server |
+| `board.server.cardCount` | {count}개 카드 | board.server |
+| `board.server.concurrent` | 다른 사용자가 먼저 바꿨습니다. 최신 보드를 다시 불러왔으니 확인한 뒤 다시 시도해 주세요. | board.server |
+| `board.server.dragHint` | 카드를 드래그하거나 '이동'에서 컬럼을 고르면 업무 상태가 바뀝니다. | board.server |
+| `board.server.emptyColumn` | 카드가 없습니다. | board.server |
+| `board.server.forbidden` | 이 작업을 할 권한이 없습니다. 권한이 바뀌었을 수 있어 보드를 새로 불러왔습니다. | board.server |
+| `board.server.invalid` | 입력값을 확인해 주세요. | board.server |
+| `board.server.loadFailed` | 칸반 보드를 불러오지 못했습니다. | board.server |
+| `board.server.loading` | 칸반 보드를 불러오는 중입니다 | board.server |
+| `board.server.manageColumns` | 컬럼 관리 | board.server |
+| `board.server.memberNote` | 본인이 담당한 카드만 옮길 수 있습니다. | board.server |
+| `board.server.moved` | '{name}'을(를) '{column}'(으)로 옮겼습니다. | board.server |
+| `board.server.moveTo` | 이동 | board.server |
+| `board.server.moveToLabel` | '{name}' 카드를 옮길 컬럼 | board.server |
+| `board.server.network` | 서버에 연결하지 못했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요. | board.server |
+| `board.server.notFound` | 카드나 컬럼을 찾을 수 없습니다. 보드를 새로 불러왔습니다. | board.server |
+| `board.server.openDetail` | 상세 보기 | board.server |
+| `board.server.retry` | 다시 시도 | board.server |
+| `board.server.serverError` | 서버 오류로 처리하지 못했습니다. 잠시 후 다시 시도해 주세요. | board.server |
+| `board.server.subtaskOf` | {name} 하위 | board.server |
+| `board.server.timeout` | 응답이 늦어 요청을 멈췄습니다. 잠시 후 다시 시도해 주세요. | board.server |
+| `board.server.unassigned` | 미배정 | board.server |
+| `board.server.unavailable` | 이 프로젝트에서는 칸반 보드를 사용할 수 없습니다. 기능 구성에서 칸반을 끈 프로젝트이거나 볼 수 없는 프로젝트입니다. | board.server |
+| `board.server.unknown` | 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요. | board.server |
+| `board.server.viewerNote` | 현재 역할로는 칸반 보드를 조회만 할 수 있습니다. | board.server |
+| `board.server.wipExceeded` | WIP 한도 초과 | board.server |
+| `board.server.wipLimit` | WIP {count} | board.server |
+| `board.server.wipWarning` | '{column}' 컬럼이 WIP 한도를 넘었습니다. 이동은 반영되었습니다. | board.server |
 | `button.acknowledged` | 확인했습니다 | button |
 | `button.activate` | 활성화 | button |
 | `button.add` | 추가 | button |
@@ -591,6 +644,58 @@
 | `status.visibility.company` | 전사 공개 | status.visibility |
 | `status.visibility.department` | 부서 공개 | status.visibility |
 | `status.visibility.members` | 멤버 전용 | status.visibility |
+| `task.server.activityAssigned` | 담당자 배정 | task.server |
+| `task.server.activityBoardColumnChanged` | 컬럼 이동 | task.server |
+| `task.server.activityCreated` | 등록 | task.server |
+| `task.server.activityDateChanged` | 기간 변경 | task.server |
+| `task.server.activityDeleted` | 삭제 | task.server |
+| `task.server.activityDetailsChanged` | 내용 변경 | task.server |
+| `task.server.activityMoved` | 위치 이동 | task.server |
+| `task.server.activityOther` | 변경 | task.server |
+| `task.server.activityProgressChanged` | 진척률 변경 | task.server |
+| `task.server.activityStatusChanged` | 상태 변경 | task.server |
+| `task.server.activityUnassigned` | 담당자 해제 | task.server |
+| `task.server.assignee` | 담당자 | task.server |
+| `task.server.attributes` | 업무 속성 | task.server |
+| `task.server.close` | 닫기 | task.server |
+| `task.server.completionCriteria` | 완료 조건 (선택) | task.server |
+| `task.server.concurrent` | 다른 사용자가 먼저 수정했습니다. 최신 내용을 다시 불러왔으니 확인한 뒤 다시 시도해 주세요. | task.server |
+| `task.server.createdBy` | 등록 | task.server |
+| `task.server.criteriaTooLong` | 완료 조건은 2000자 이하로 입력해 주세요. | task.server |
+| `task.server.derived` | 하위작업 기간으로 산출 | task.server |
+| `task.server.description` | 설명 | task.server |
+| `task.server.effort` | 예상 공수 | task.server |
+| `task.server.forbidden` | 이 업무를 수정할 권한이 없습니다. 업무를 새로 불러왔습니다. | task.server |
+| `task.server.histories` | 변경 이력 | task.server |
+| `task.server.historiesEmpty` | 변경 이력이 없습니다. | task.server |
+| `task.server.historiesFailed` | 변경 이력을 불러오지 못했습니다. | task.server |
+| `task.server.loadFailed` | 업무를 불러오지 못했습니다. | task.server |
+| `task.server.loading` | 업무를 불러오는 중입니다 | task.server |
+| `task.server.more` | 더 보기 | task.server |
+| `task.server.none` | 없음 | task.server |
+| `task.server.notFound` | 업무를 찾을 수 없습니다. 삭제되었을 수 있습니다. | task.server |
+| `task.server.parent` | 상위 작업 | task.server |
+| `task.server.period` | 기간 | task.server |
+| `task.server.priority` | 우선순위 | task.server |
+| `task.server.priorityHigh` | 높음 | task.server |
+| `task.server.priorityLow` | 낮음 | task.server |
+| `task.server.priorityMedium` | 보통 | task.server |
+| `task.server.progress` | 진척률 | task.server |
+| `task.server.readOnly` | 현재 역할로는 업무 속성을 조회만 할 수 있습니다. | task.server |
+| `task.server.retry` | 다시 시도 | task.server |
+| `task.server.save` | 저장 | task.server |
+| `task.server.saved` | 업무 속성을 저장했습니다. | task.server |
+| `task.server.saving` | 저장 중 | task.server |
+| `task.server.source` | 출처 | task.server |
+| `task.server.sourceAi` | AI 초안 | task.server |
+| `task.server.sourceManual` | 직접 등록 | task.server |
+| `task.server.status` | 상태 | task.server |
+| `task.server.statusNote` | 상태는 칸반 보드에서 카드를 옮겨 바꿉니다. | task.server |
+| `task.server.system` | 시스템 | task.server |
+| `task.server.taskType` | 유형 | task.server |
+| `task.server.title` | 업무 상세 | task.server |
+| `task.server.typeDefect` | 결함 | task.server |
+| `task.server.typeTask` | 작업 | task.server |
 | `wbs.draft.aiBadge` | AI 초안 | wbs.draft |
 | `wbs.draft.aiFailed` | AI 초안을 만들지 못했습니다. 잠시 후 다시 시도해 주세요. | wbs.draft |
 | `wbs.draft.aiTimeout` | AI 응답 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요. | wbs.draft |
@@ -704,6 +809,7 @@
 | `wbs.server.noEffort` | 공수 미입력 | wbs.server |
 | `wbs.server.noPhase` | 단계 미지정 | wbs.server |
 | `wbs.server.notFound` | 대상 작업이나 단계를 찾을 수 없습니다. WBS를 새로 불러왔습니다. | wbs.server |
+| `wbs.server.openDetail` | 업무 상세 | wbs.server |
 | `wbs.server.personDays` | {value}인일 | wbs.server |
 | `wbs.server.progress` | 진척률 | wbs.server |
 | `wbs.server.progressSaved` | 진척률을 {value}%로 저장했습니다. | wbs.server |
