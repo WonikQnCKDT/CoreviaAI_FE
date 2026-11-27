@@ -4,9 +4,9 @@ import { Badge, StatusBadge } from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
 import TabBar from "@/components/ui/TabBar";
 import ApprovalTab from "@/features/mywork/components/ApprovalTab";
-import CalendarTab from "@/features/mywork/components/CalendarTab";
-import JournalTab from "@/features/mywork/components/JournalTab";
 import KpiCard from "@/features/mywork/components/KpiCard";
+import ServerCalendarTab from "@/features/mywork/components/ServerCalendarTab";
+import ServerJournalTab from "@/features/mywork/components/ServerJournalTab";
 import ServerTodoDialog from "@/features/mywork/components/ServerTodoDialog";
 import { createTodo, deleteTodo, updateTodo, type TodoInput, type TodoItem } from "@/features/mywork/api/todoApi";
 import { useServerTodos } from "@/features/mywork/hooks/useServerTodos";
@@ -45,7 +45,7 @@ const dueBadge = function (item: TodoItem) {
 /**
  * api 모드 내 업무(FR-PSN-01). 할 일 탭은 서버의 개인 TODO + 배정 업무 통합 목록을 그린다.
  * 변경은 서버 성공 응답 뒤에 목록을 다시 받아 반영한다. 배정 업무는 이 화면에서 상태를 바꾸지 않는다.
- * 승인·캘린더·업무일지 탭은 아직 서버와 연결하지 않아 기존 화면을 쓴다(06-2 범위).
+ * 캘린더·업무일지 탭은 06-2 API로 그린다. 승인 탭은 승인 원천이 BE에 없어 기존 화면을 쓴다.
  */
 export default function ServerMyWorkPage() {
   const { projects } = useDemoStore();
@@ -270,8 +270,8 @@ export default function ServerMyWorkPage() {
 
       {tab === "todo" && todoBody()}
       {tab === "approval" && <ApprovalTab />}
-      {tab === "calendar" && <CalendarTab />}
-      {tab === "journal" && <JournalTab focusRequest={0} />}
+      {tab === "calendar" && <ServerCalendarTab />}
+      {tab === "journal" && <ServerJournalTab />}
 
       {dialog && (
         <ServerTodoDialog
