@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (807개)
+## 등록 필요 (859개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -488,6 +488,58 @@
 | `menu.view.day` | 일 | menu.view |
 | `menu.view.month` | 월 | menu.view |
 | `menu.view.week` | 주 | menu.view |
+| `mywork.todo.add` | 할 일 추가 | mywork.todo |
+| `mywork.todo.addTitle` | 개인 할 일 추가 | mywork.todo |
+| `mywork.todo.cancel` | 취소 | mywork.todo |
+| `mywork.todo.completed` | '{name}'을(를) 완료했습니다. | mywork.todo |
+| `mywork.todo.concurrent` | 다른 요청과 겹쳐 처리하지 못했습니다. 목록을 새로 불러왔으니 다시 시도해 주세요. | mywork.todo |
+| `mywork.todo.confirmDelete` | '{name}'을(를) 삭제할까요? | mywork.todo |
+| `mywork.todo.createConflict` | 같은 등록 요청이 이미 처리되었거나 충돌했습니다. 목록을 새로 불러왔으니 확인한 뒤 다시 추가해 주세요. | mywork.todo |
+| `mywork.todo.created` | '{name}'을(를) 추가했습니다. | mywork.todo |
+| `mywork.todo.delete` | 삭제 | mywork.todo |
+| `mywork.todo.deleted` | '{name}'을(를) 삭제했습니다. | mywork.todo |
+| `mywork.todo.dueLabel` | 마감일 (선택) | mywork.todo |
+| `mywork.todo.dueToday` | 오늘 마감 | mywork.todo |
+| `mywork.todo.edit` | 수정 | mywork.todo |
+| `mywork.todo.editTitle` | 할 일 수정 | mywork.todo |
+| `mywork.todo.empty` | 표시할 항목이 없습니다. | mywork.todo |
+| `mywork.todo.emptyHint` | 개인 할 일을 추가하거나, 프로젝트에서 업무를 배정받으면 여기에 표시됩니다. | mywork.todo |
+| `mywork.todo.invalid` | 입력값을 확인해 주세요. | mywork.todo |
+| `mywork.todo.kpiDone` | 완료한 할 일 | mywork.todo |
+| `mywork.todo.kpiDoneHint` | 완료 처리한 개인 할 일입니다. 완료된 배정 업무는 목록에 나오지 않습니다. | mywork.todo |
+| `mywork.todo.kpiLate` | 지연 | mywork.todo |
+| `mywork.todo.kpiLateHint` | 마감일이 지난 미완료 항목입니다. 선택하면 해당 항목만 표시합니다. | mywork.todo |
+| `mywork.todo.kpiSoon` | 마감 임박 | mywork.todo |
+| `mywork.todo.kpiSoonHint` | 1~3일 안에 마감되는 항목입니다. 선택하면 해당 항목만 표시합니다. | mywork.todo |
+| `mywork.todo.kpiToday` | 오늘 할 일 | mywork.todo |
+| `mywork.todo.kpiTodayHint` | 오늘 마감인 할 일과 배정 업무입니다. 선택하면 해당 항목만 표시합니다. | mywork.todo |
+| `mywork.todo.loadFailed` | 할 일을 불러오지 못했습니다. | mywork.todo |
+| `mywork.todo.loading` | 할 일을 불러오는 중입니다 | mywork.todo |
+| `mywork.todo.markDone` | 완료로 표시 | mywork.todo |
+| `mywork.todo.markOpen` | 완료 해제 | mywork.todo |
+| `mywork.todo.network` | 서버에 연결하지 못했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요. | mywork.todo |
+| `mywork.todo.noDue` | 마감 없음 | mywork.todo |
+| `mywork.todo.notFound` | 할 일을 찾을 수 없습니다. 이미 삭제되었을 수 있어 목록을 새로 불러왔습니다. | mywork.todo |
+| `mywork.todo.openProject` | 프로젝트에서 보기 | mywork.todo |
+| `mywork.todo.overdue` | 지연 | mywork.todo |
+| `mywork.todo.refreshNote` | 1분마다 자동으로 새로 고칩니다. | mywork.todo |
+| `mywork.todo.reopened` | '{name}'의 완료를 해제했습니다. | mywork.todo |
+| `mywork.todo.retry` | 다시 시도 | mywork.todo |
+| `mywork.todo.save` | 저장 | mywork.todo |
+| `mywork.todo.saving` | 저장 중 | mywork.todo |
+| `mywork.todo.serverError` | 서버 오류로 처리하지 못했습니다. 잠시 후 다시 시도해 주세요. | mywork.todo |
+| `mywork.todo.sourcePersonal` | 개인 | mywork.todo |
+| `mywork.todo.sourceTask` | 배정 업무 | mywork.todo |
+| `mywork.todo.taskNote` | 배정 업무의 상태는 프로젝트의 칸반에서 바꿉니다. | mywork.todo |
+| `mywork.todo.timeout` | 응답이 늦어 요청을 멈췄습니다. 같은 내용으로 다시 저장하면 중복 없이 처리됩니다. | mywork.todo |
+| `mywork.todo.titleControl` | 할 일에는 줄바꿈·탭 같은 제어 문자를 쓸 수 없습니다. | mywork.todo |
+| `mywork.todo.titleLabel` | 할 일 | mywork.todo |
+| `mywork.todo.titlePlaceholder` | 예) 주간 보고서 작성 | mywork.todo |
+| `mywork.todo.titleRequired` | 할 일을 입력해 주세요. | mywork.todo |
+| `mywork.todo.titleTooLong` | 할 일은 200자 이하로 입력해 주세요. | mywork.todo |
+| `mywork.todo.truncated` | 항목이 많아 앞의 일부만 표시합니다. | mywork.todo |
+| `mywork.todo.unknown` | 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요. | mywork.todo |
+| `mywork.todo.updated` | '{name}'을(를) 수정했습니다. | mywork.todo |
 | `notification.demoFooter` | 데모 알림 · 예약 실행·실시간 발송 미연결 | notification |
 | `notification.empty` | 알림이 없습니다. | notification |
 | `notification.emptyHint` | 업무 배정·검수 요청이 생기면 이곳에 표시됩니다. | notification |

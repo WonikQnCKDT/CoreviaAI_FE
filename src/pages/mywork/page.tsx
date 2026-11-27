@@ -7,6 +7,8 @@ import AddTaskModal from "@/features/mywork/components/AddTaskModal";
 import KpiCard from "@/features/mywork/components/KpiCard";
 import TabBar from "@/components/ui/TabBar";
 import { useDemoStore } from "@/stores/DemoStore";
+import { useAuth } from "@/features/auth/authContext";
+import ServerMyWorkPage from "@/features/mywork/components/ServerMyWorkPage";
 import { diffDays, TODAY } from "@/utils/date";
 import { isAssignedTo } from "@/utils/assignee";
 import { approvalRequestsForUser } from "@/features/gate/utils/gate";
@@ -44,7 +46,7 @@ function saveTab(tab: TabKey) {
   }
 }
 
-export default function MyWorkPage() {
+function DemoMyWorkPage() {
   const { tasks, projects, deliverables, currentUser } = useDemoStore();
   const [tab, setTab] = useState<TabKey>(loadTab);
   const [addOpen, setAddOpen] = useState(false);
@@ -172,4 +174,13 @@ export default function MyWorkPage() {
       <AddTaskModal open={addOpen} onClose={() => setAddOpen(false)} />
     </div>
   );
+}
+
+/**
+ * api 모드는 서버 내 TODO API(06. 개인 업무)로 그린다. 데모 업무를 서버 계정의 할 일로 보이지 않게 한다.
+ * 데모 모드는 기존 화면을 그대로 쓴다.
+ */
+export default function MyWorkPage() {
+  const { mode } = useAuth();
+  return mode === "api" ? <ServerMyWorkPage /> : <DemoMyWorkPage />;
 }
