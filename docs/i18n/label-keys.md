@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (943개)
+## 등록 필요 (1018개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -424,6 +424,81 @@
 | `i18n.language.changing` | 언어를 바꾸는 중 | i18n.language |
 | `i18n.language.label` | 표시 언어 | i18n.language |
 | `i18n.language.savedButNotApplied` | 언어 설정은 저장했지만 문구를 불러오지 못했습니다. 새로고침하면 적용됩니다. | i18n.language |
+| `meeting.form.actionAssignee` | 담당자 | meeting.form |
+| `meeting.form.actionContent` | 할 일 | meeting.form |
+| `meeting.form.actionDue` | 기한 | meeting.form |
+| `meeting.form.actionItems` | 액션아이템 | meeting.form |
+| `meeting.form.actionRequired` | 액션아이템의 할 일을 입력하거나 그 줄을 삭제해 주세요. | meeting.form |
+| `meeting.form.actionTooLong` | 액션아이템은 하나에 1,000자 이하로 입력해 주세요. | meeting.form |
+| `meeting.form.addAction` | 액션아이템 추가 | meeting.form |
+| `meeting.form.cancel` | 취소 | meeting.form |
+| `meeting.form.content` | 내용 (선택) | meeting.form |
+| `meeting.form.contentTooLong` | 내용은 50,000자 이하로 입력해 주세요. | meeting.form |
+| `meeting.form.createTitle` | 회의록 작성 | meeting.form |
+| `meeting.form.date` | 회의 날짜 | meeting.form |
+| `meeting.form.dateRequired` | 회의 날짜와 시각을 입력해 주세요. | meeting.form |
+| `meeting.form.decisions` | 결정사항 (한 줄에 하나) | meeting.form |
+| `meeting.form.decisionTooLong` | 결정사항은 하나에 1,000자 이하로 입력해 주세요. | meeting.form |
+| `meeting.form.duplicateAttendee` | 같은 참석자를 두 번 넣을 수 없습니다. | meeting.form |
+| `meeting.form.editTitle` | 회의록 수정 | meeting.form |
+| `meeting.form.externals` | 외부 참석자 (선택, 한 줄에 한 명) | meeting.form |
+| `meeting.form.externalTooLong` | 외부 참석자 이름은 50자 이하로 입력해 주세요. | meeting.form |
+| `meeting.form.members` | 참석자 (프로젝트 멤버) | meeting.form |
+| `meeting.form.removeAction` | 삭제 | meeting.form |
+| `meeting.form.save` | 저장 | meeting.form |
+| `meeting.form.saving` | 저장 중 | meeting.form |
+| `meeting.form.time` | 시각 | meeting.form |
+| `meeting.form.title` | 제목 | meeting.form |
+| `meeting.form.titleRequired` | 제목을 입력해 주세요. | meeting.form |
+| `meeting.form.titleTooLong` | 제목은 200자 이하로 입력해 주세요. | meeting.form |
+| `meeting.form.tooMany` | 참석자·결정사항·액션아이템은 각각 100개까지 넣을 수 있습니다. | meeting.form |
+| `meeting.server.actionItems` | 액션아이템 | meeting.server |
+| `meeting.server.add` | 회의록 작성 | meeting.server |
+| `meeting.server.aiSource` | AI | meeting.server |
+| `meeting.server.attendees` | 참석자 | meeting.server |
+| `meeting.server.author` | 작성자 | meeting.server |
+| `meeting.server.clearSearch` | 검색 지우기 | meeting.server |
+| `meeting.server.concurrent` | 다른 사용자가 먼저 수정했습니다. 최신 내용을 다시 불러왔으니 확인한 뒤 다시 수정해 주세요. | meeting.server |
+| `meeting.server.confirmDelete` | '{name}' 회의록을 삭제할까요? 참석자·결정사항·액션아이템도 함께 삭제됩니다. | meeting.server |
+| `meeting.server.content` | 내용 | meeting.server |
+| `meeting.server.converted` | 업무 전환 | meeting.server |
+| `meeting.server.createConflict` | 같은 등록 요청이 이미 처리되었거나 충돌했습니다. 목록을 새로 불러왔으니 확인한 뒤 다시 작성해 주세요. | meeting.server |
+| `meeting.server.created` | '{name}' 회의록을 저장했습니다. | meeting.server |
+| `meeting.server.decisions` | 결정사항 | meeting.server |
+| `meeting.server.delete` | 삭제 | meeting.server |
+| `meeting.server.deleted` | '{name}' 회의록을 삭제했습니다. | meeting.server |
+| `meeting.server.description` | 회의 일시·참석자·내용·결정사항·액션아이템을 기록합니다. | meeting.server |
+| `meeting.server.detailFailed` | 회의록 내용을 불러오지 못했습니다. | meeting.server |
+| `meeting.server.dismissed` | 제외 | meeting.server |
+| `meeting.server.due` | 기한 {date} | meeting.server |
+| `meeting.server.edit` | 수정 | meeting.server |
+| `meeting.server.editorOnly` | 수정·삭제는 작성자 또는 PM만 할 수 있습니다. | meeting.server |
+| `meeting.server.empty` | 회의록이 없습니다. | meeting.server |
+| `meeting.server.emptySearch` | 검색 결과가 없습니다. | meeting.server |
+| `meeting.server.external` | 외부 | meeting.server |
+| `meeting.server.forbidden` | 이 회의록을 작성·수정할 권한이 없습니다. 새로 불러왔습니다. | meeting.server |
+| `meeting.server.heldAt` | 회의 일시 | meeting.server |
+| `meeting.server.invalid` | 입력값을 확인해 주세요. | meeting.server |
+| `meeting.server.loadFailed` | 회의록을 불러오지 못했습니다. | meeting.server |
+| `meeting.server.loading` | 회의록을 불러오는 중입니다 | meeting.server |
+| `meeting.server.memberOnly` | 회의록 작성은 프로젝트 멤버만 할 수 있습니다. | meeting.server |
+| `meeting.server.more` | 더 보기 | meeting.server |
+| `meeting.server.network` | 서버에 연결하지 못했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요. | meeting.server |
+| `meeting.server.none` | 없음 | meeting.server |
+| `meeting.server.notFound` | 회의록을 찾을 수 없습니다. 삭제되었을 수 있어 목록을 새로 불러왔습니다. | meeting.server |
+| `meeting.server.protected` | AI 정리 항목이나 업무로 전환된 액션아이템이 있어 이 화면에서 수정·삭제할 수 없습니다. | meeting.server |
+| `meeting.server.retry` | 다시 시도 | meeting.server |
+| `meeting.server.scopeNote` | 산출물·게시판·파일은 아직 서버 API가 없어 연결하지 않았습니다. | meeting.server |
+| `meeting.server.search` | 검색 | meeting.server |
+| `meeting.server.searchPlaceholder` | 제목·내용·결정사항·액션아이템 검색 | meeting.server |
+| `meeting.server.select` | 회의록을 선택하세요. | meeting.server |
+| `meeting.server.serverError` | 서버 오류로 처리하지 못했습니다. 잠시 후 다시 시도해 주세요. | meeting.server |
+| `meeting.server.timeout` | 응답이 늦어 요청을 멈췄습니다. 같은 내용으로 다시 저장하면 중복 없이 처리됩니다. | meeting.server |
+| `meeting.server.title` | 회의록 | meeting.server |
+| `meeting.server.unassigned` | 미배정 | meeting.server |
+| `meeting.server.unavailable` | 이 프로젝트에서는 회의록을 사용할 수 없습니다. 기능 구성에서 회의록을 끈 프로젝트이거나 볼 수 없는 프로젝트입니다. | meeting.server |
+| `meeting.server.unknown` | 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요. | meeting.server |
+| `meeting.server.updated` | '{name}' 회의록을 수정했습니다. | meeting.server |
 | `menu.admin` | 시스템 관리 | menu |
 | `menu.admin.adminOnly` | 시스템 관리자 | menu.admin |
 | `menu.admin.audit` | 보안 · 접속 로그 | menu.admin |

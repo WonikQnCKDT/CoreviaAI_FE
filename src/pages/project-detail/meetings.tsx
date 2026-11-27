@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useDemoStore } from "@/stores/DemoStore";
+import { useAuth } from "@/features/auth/authContext";
+import ServerMeetingsView from "@/features/meeting/components/ServerMeetingsView";
 import { Badge } from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
 import EmptyState from "@/components/ui/EmptyState";
@@ -16,7 +18,7 @@ interface DraftItem extends MeetingActionItem {
   selected: boolean;
 }
 
-export default function MeetingsPage() {
+function DemoMeetingsPage() {
   const { projectId } = useParams();
   const { projects, meetings, users, tasks, currentUser } = useDemoStore();
   const project = projects.find((p) => p.id === projectId);
@@ -537,4 +539,17 @@ function MeetingEditor({ meetingId, isPm }: { meetingId: string; isPm: boolean }
       </div>
     </div>
   );
+}
+
+/**
+ * api 모드의 서버 프로젝트는 서버 회의록 API(08. 회의록)로 그린다. 데모 회의록을 서버 프로젝트에 섞지 않는다.
+ * 데모 모드·프론트 데모 프로젝트는 기존 데모 화면(AI 초안 데모 포함)을 그대로 쓴다.
+ */
+export default function MeetingsPage() {
+  const { mode } = useAuth();
+  const { projectId } = useParams();
+  const { projects } = useDemoStore();
+  const project = projects.find((p) => p.id === projectId);
+  if (mode === "api" && project?.serverId !== undefined) return <ServerMeetingsView project={{ ...project, serverId: project.serverId }} />;
+  return <DemoMeetingsPage />;
 }
