@@ -1,4 +1,4 @@
-import type { Task } from "@/types";
+import type { Project, Task } from "@/types";
 import { assigneeIdsOf } from "@/utils/assignee";
 
 export interface RollupValue {
@@ -82,6 +82,15 @@ export function projectProgress(tasks: Task[], projectId: string): number {
     return Math.round(leaves.reduce((sum, t) => sum + t.progress, 0) / leaves.length);
   }
   return Math.round(leaves.reduce((sum, t) => sum + t.progress * t.estimate, 0) / estimate);
+}
+
+/**
+ * 화면에 보여 줄 프로젝트 진척률. 서버 프로젝트는 서버 값만 쓴다(데모 업무가 없어 계산하면 0%가 되기 때문).
+ * 서버 값을 아직 받지 않았으면 null — 화면은 '-'로 표시한다. 데모 프로젝트는 데모 업무로 계산한다.
+ */
+export function displayProjectProgress(tasks: Task[], project: Pick<Project, "id" | "serverId" | "serverProgress">): number | null {
+  if (project.serverId !== undefined) return project.serverProgress ?? null;
+  return projectProgress(tasks, project.id);
 }
 
 export function stageProgress(tasks: Task[], projectId: string, stage: string): number {

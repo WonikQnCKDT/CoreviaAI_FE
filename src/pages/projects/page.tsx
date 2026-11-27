@@ -9,7 +9,7 @@ import Avatar from "@/components/ui/Avatar";
 import StatCard from "@/components/ui/StatCard";
 import { formatDate, TODAY } from "@/utils/date";
 import { HEALTH_LABEL, STAGE_LABEL, riskLevel } from "@/utils/ui";
-import { projectProgress } from "@/features/task/utils/taskTree";
+import { displayProjectProgress } from "@/features/task/utils/taskTree";
 import { canCreateProject, isSystemAdmin } from "@/utils/permission";
 import { PROJECT_TEXT, useServerProjectList } from "@/features/project/hooks/useServerProjects";
 import type { Health } from "@/types";
@@ -87,14 +87,18 @@ export default function ProjectsPage() {
 
     const withProgress = filtered.map((project) => ({
       project,
-      progress: projectProgress(tasks, project.id),
+      progress: displayProjectProgress(tasks, project),
       pmUser: users.find((u) => u.id === project.pmId),
     }));
 
     withProgress.sort((a, b) => {
       if (sort === "risk") return b.project.riskScore - a.project.riskScore;
-      if (sort === "progressDesc") return b.progress - a.progress;
-      if (sort === "progressAsc") return a.progress - b.progress;
+      // 진척률을 아직 모르는 서버 프로젝트(null)는 어느 정렬에서든 뒤로 보낸다
+      if ((sort === "progressDesc" || sort === "progressAsc") && (a.progress === null || b.progress === null)) {
+        return a.progress === null ? (b.progress === null ? 0 : 1) : -1;
+      }
+      if (sort === "progressDesc") return (b.progress ?? 0) - (a.progress ?? 0);
+      if (sort === "progressAsc") return (a.progress ?? 0) - (b.progress ?? 0);
       if (sort === "endDate") return a.project.endDate < b.project.endDate ? -1 : 1;
       return a.project.name.localeCompare(b.project.name, "ko");
     });

@@ -120,3 +120,12 @@ FE는 BE 구현(DTO)을 기준으로 연결했다. 명세를 구현에 맞춰 �
 | BE 합친 뒤 FE가 다시 볼 것 | 항목 필드 이름(`notificationType`·`messageKey`·`messageParams`·`readAt` 등), `unread-count` 응답 형식(`{unreadCount}`), SSE 이벤트 이름(`ready`·`notification`)과 data 형식, 읽음 응답 형식 |
 | 요청 | ① 모두 읽음 API(지금은 항목별 읽음만 있어 FE에 "모두 읽음"이 없다) ② `messageKey`(notification.assigned 등)를 다국어 라벨로 등록할지 결정 — FE는 같은 키로 한국어 기본 문구를 두었다 ③ 리스크 알림의 기여 요인 근거 필드(인수 기준) |
 
+## 14. (요청) 프로젝트 목록 응답의 진척률
+
+| 항목 | 내용 |
+| --- | --- |
+| 필요한 화면 | 프로젝트 목록(진척률 막대·진척률 정렬), 포트폴리오(경영진) 부서별 평균 진척률 |
+| 왜 필요한가 | 진척률은 상세 응답(`ProjectDetailResponse.progress`, int 0~100)에만 있고 목록 응답(`ProjectSummaryResponse`)에는 없다. 목록 화면이 프로젝트마다 상세를 부르면 프로젝트 수만큼 요청이 늘어난다 |
+| 지금 FE 동작 | 상세를 한 번 받은 프로젝트는 그 값을 쓰고(목록을 다시 받아도 유지), 아직 상세를 받지 않은 서버 프로젝트는 진척률을 `-`로 표시한다(PR #2 리뷰 P2). 진척률 정렬에서는 뒤로 보내고, 부서 평균에서는 뺀다 |
+| 제안 | `ProjectSummaryResponse`에 `progress`(int 0~100, 상세와 같은 `ProgressCalculator` 값)를 추가. 추가되면 FE는 목록에서도 서버 값을 그대로 쓰고 `-` 처리는 사라진다 |
+

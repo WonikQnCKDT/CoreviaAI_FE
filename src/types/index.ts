@@ -77,6 +77,11 @@ export interface Project {
   serverId?: number;
   /** 서버 프로젝트의 현재 단계를 폭포수 단계 API로 확인했는지. false면 stage는 기본값이라 화면에 표시하지 않습니다. */
   serverStageKnown?: boolean;
+  /**
+   * 서버가 계산한 프로젝트 진척률(0~100 정수, 업무 예상 공수 가중 평균). 상세 API에만 있어 상세를 받은 뒤에 채워진다.
+   * 서버 프로젝트인데 값이 없으면 아직 모르는 것이며, 데모 업무로 계산한 값으로 대신하지 않는다.
+   */
+  serverProgress?: number;
 }
 
 export interface Task {

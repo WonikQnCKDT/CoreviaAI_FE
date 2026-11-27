@@ -194,6 +194,8 @@ export const mergeServerDetail = function ({
       members: serverMembers,
       stage: stageFrom(phases, existing),
       serverStageKnown: known.length > 0,
+      // 진척률은 상세에만 있다. 목록 갱신(mergeServerSummary)은 기존 값을 그대로 이어받는다
+      serverProgress: detail.progress,
       gateApprovers: phases ? gateApprovers : merged.project.gateApprovers,
     },
   };

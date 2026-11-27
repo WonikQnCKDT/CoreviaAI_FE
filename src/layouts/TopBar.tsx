@@ -9,7 +9,7 @@ import NotificationBell from "@/features/notification/components/NotificationBel
 import ServerNotificationBell from "@/features/notification/components/ServerNotificationBell";
 import { SYSTEM_ROLE_LABEL } from "@/utils/permission";
 import { getUnsavedGuard } from "@/utils/navGuard";
-import { projectProgress } from "@/features/task/utils/taskTree";
+import { displayProjectProgress } from "@/features/task/utils/taskTree";
 import { HEALTH_DOT, HEALTH_LABEL, STAGE_LABEL, riskLevel } from "@/utils/ui";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 import { MENU_TEXT } from "@/shared/i18n/catalog/menu";
@@ -63,7 +63,7 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
     if (!activeProject) return null;
     const level = riskLevel(activeProject.riskScore);
     return {
-      progress: projectProgress(tasks, activeProject.id),
+      progress: displayProjectProgress(tasks, activeProject),
       stage: STAGE_LABEL[activeProject.stage],
       score: activeProject.riskScore,
       level,
@@ -127,7 +127,7 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
           {summary && (
             <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11.5px] leading-4 text-foreground-500">
               <span className="whitespace-nowrap">
-                진척률 <span className="font-semibold tabular-nums text-primary-600">{summary.progress}%</span>
+                진척률 <span className="font-semibold tabular-nums text-primary-600">{summary.progress === null ? "-" : `${summary.progress}%`}</span>
               </span>
               <span aria-hidden="true" className="text-foreground-300">
                 ·

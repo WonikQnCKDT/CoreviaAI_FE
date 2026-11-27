@@ -151,3 +151,34 @@ describe("mergeServerDetail", () => {
     expect(project).toMatchObject({ method: "none", serverStageKnown: false, stage: "analysis" });
   });
 });
+
+describe("서버 진척률 (PR #2 P2)", () => {
+  it("상세의 진척률을 화면 모델에 그대로 넣는다(서버 70 → 화면 70)", () => {
+    const { project } = mergeServerDetail({ detail: detail({ progress: 70 }), phases: [], members: null, users });
+    expect(project.serverProgress).toBe(70);
+  });
+
+  it("경계값 0·100도 그대로 둔다(0을 '모름'으로 바꾸지 않는다)", () => {
+    expect(mergeServerDetail({ detail: detail({ progress: 0 }), phases: [], members: null, users }).project.serverProgress).toBe(0);
+    expect(mergeServerDetail({ detail: detail({ progress: 100 }), phases: [], members: null, users }).project.serverProgress).toBe(100);
+  });
+
+  it("목록 응답에는 진척률이 없다: 목록만 받은 새 프로젝트는 값이 없다", () => {
+    const { project } = mergeServerSummary({ summary: summary(), users });
+    expect(project.serverProgress).toBeUndefined();
+  });
+
+  it("상세를 받은 뒤 목록을 다시 받아도 진척률을 지우지 않는다", () => {
+    const first = mergeServerDetail({ detail: detail({ progress: 70 }), phases: [], members: null, users });
+    const { project } = mergeServerSummary({ summary: summary({ name: "구매 발주 2차" }), existing: first.project, users: first.users });
+    expect(project.name).toBe("구매 발주 2차");
+    expect(project.serverProgress).toBe(70);
+  });
+
+  it("상세를 다시 받으면 새 진척률로 바뀐다", () => {
+    const first = mergeServerDetail({ detail: detail({ progress: 70 }), phases: [], members: null, users });
+    const { project } = mergeServerDetail({ detail: detail({ progress: 85 }), phases: [], members: null, existing: first.project, users: first.users });
+    expect(project.serverProgress).toBe(85);
+  });
+});
+

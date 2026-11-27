@@ -7,7 +7,7 @@ import { Badge, HealthBadge, PriorityBadge, StatusBadge } from "@/components/ui/
 import InfoTip from "@/components/ui/InfoTip";
 import { addDays, ddayLabel, diffDays, formatDate, formatShort, TODAY } from "@/utils/date";
 import { STAGES, STAGE_LABEL, riskLevel } from "@/utils/ui";
-import { isLateTask, isMissingTask, leafTasks, projectProgress, stageProgress } from "@/features/task/utils/taskTree";
+import { displayProjectProgress, isLateTask, isMissingTask, leafTasks, stageProgress } from "@/features/task/utils/taskTree";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 export default function ProjectOverviewPage() {
@@ -66,7 +66,7 @@ export default function ProjectOverviewPage() {
 
     return {
       projectTasks,
-      progress: projectProgress(tasks, project.id),
+      progress: displayProjectProgress(tasks, project),
       late,
       missing,
       openIssues,
@@ -199,7 +199,7 @@ export default function ProjectOverviewPage() {
                 text="최하위 업무의 진척률을 예상 작업량으로 가중 평균한 값입니다. 자동 계산되며 직접 수정할 수 없습니다."
               />
             </span>
-            <span className="text-[16px] font-semibold tabular-nums leading-none text-primary-700">{derived.progress}%</span>
+            <span className="text-[16px] font-semibold tabular-nums leading-none text-primary-700">{derived.progress === null ? "-" : `${derived.progress}%`}</span>
           </div>
           <ProgressBar value={derived.progress} size="md" color="bg-primary-500" className="mt-2" />
         </div>

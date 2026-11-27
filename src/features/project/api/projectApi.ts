@@ -363,7 +363,8 @@ const toDetail = function (dto: ProjectDetailDto): ServerProjectDetail {
     createdBy,
     actors: toActors(actors),
     features: toFeatures(features),
-    progress: Number.isFinite(progress) ? progress : 0,
+    // 서버 계약은 int 0~100(ProjectDetailResponse.progress, ProgressCalculator)이라 그대로 쓴다
+    progress,
     version,
   };
 };
