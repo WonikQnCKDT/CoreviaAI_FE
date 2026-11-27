@@ -12,13 +12,16 @@ import { formatDate, TODAY, diffDays } from "@/utils/date";
 import { HEALTH_LABEL, STAGE_LABEL, riskLevel } from "@/utils/ui";
 import { projectProgress } from "@/features/task/utils/taskTree";
 import { canViewPortfolio, canViewProject, isExecutive, projectRole } from "@/utils/permission";
-import type { Health, StageKey } from "@/types";
+import type { Health, Project, StageKey } from "@/types";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 import { PROJECT_FOCUS_LABEL } from "@/shared/i18n/catalog/status";
 
 type FocusKey = "all" | "ongoing" | "late" | "done";
 
 const FOCUS_LABEL: Record<FocusKey, string> = PROJECT_FOCUS_LABEL;
+
+/** 완료되지 않았는데 종료일이 지난 프로젝트. 렌더링 값에 의존하지 않아 컴포넌트 밖에 둔다 */
+const isLateProject = (project: Project) => project.status !== "done" && project.endDate < TODAY;
 
 export default function PortfolioPage() {
   const navigate = useNavigate();
@@ -42,8 +45,6 @@ export default function PortfolioPage() {
       return projectRole(project, currentUser.id) === "pm";
     });
   }, [allowed, projects, currentUser, exec]);
-
-  const isLateProject = (project: (typeof projects)[number]) => project.status !== "done" && project.endDate < TODAY;
 
   const metrics = useMemo(() => {
     const done = scoped.filter((project) => project.status === "done").length;

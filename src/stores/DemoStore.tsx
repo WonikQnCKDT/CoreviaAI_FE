@@ -120,6 +120,8 @@ function makeHistory(taskId: string, userId: string, field: string, before: stri
   return { id: uid("h"), taskId, userId, field, before, after, createdAt: isoNow() };
 }
 
+// 데모 저장소의 공개 함수는 이 파일에 함께 둔다(45개 화면이 import). 개발 중 HMR 경고일 뿐 동작 영향 없음
+// eslint-disable-next-line react-refresh/only-export-components
 export function createInitialState(): DemoState {
   return {
     users: mockUsers.map((u) => ({ ...u })),
@@ -2252,12 +2254,16 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
   return <DemoStoreContext.Provider value={value}>{children}</DemoStoreContext.Provider>;
 }
 
+// 데모 저장소의 공개 함수는 이 파일에 함께 둔다(45개 화면이 import). 개발 중 HMR 경고일 뿐 동작 영향 없음
+// eslint-disable-next-line react-refresh/only-export-components
 export function useDemoStore(): DemoStoreValue {
   const context = useContext(DemoStoreContext);
   if (!context) throw new Error("DemoStoreProvider가 필요합니다.");
   return context;
 }
 
+// 데모 저장소의 공개 함수는 이 파일에 함께 둔다(45개 화면이 import). 개발 중 HMR 경고일 뿐 동작 영향 없음
+// eslint-disable-next-line react-refresh/only-export-components
 export function stageBounds(project: Project, stage: StageKey): { start: string; end: string } {
   const totalDays = Math.max(diffDays(project.startDate, project.endDate), 1);
   const segment = Math.ceil(totalDays / 5);

@@ -57,7 +57,6 @@ export default function TaskFormModal({ open, onClose, projectId, stage, parentI
       });
       setError("");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const submit = () => {

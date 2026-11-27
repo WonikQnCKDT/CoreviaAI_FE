@@ -180,6 +180,8 @@ function MeetingEditor({ meetingId, isPm }: { meetingId: string; isPm: boolean }
     setContent(meeting.content);
     setDecisions(meeting.decisions);
     setItems(meeting.actionItems.map((a) => ({ ...a, selected: false })));
+    // 같은 회의록이 다시 만들어질 때마다(저장소 갱신) 입력 중인 폼을 덮어쓰지 않도록 id·수정 시각이 바뀔 때만 다시 채운다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [meeting?.id, meeting?.updatedAt]);
 
   if (!meeting || !project) return null;
