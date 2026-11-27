@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (1018개)
+## 등록 필요 (1035개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -699,7 +699,9 @@
 | `mywork.worklog.today` | 오늘 | mywork.worklog |
 | `mywork.worklog.totalMinutes` | 누적 {minutes}분 | mywork.worklog |
 | `mywork.worklog.unsaved` | 저장하지 않은 변경이 있습니다. | mywork.worklog |
+| `notification.assigned` | '{taskName}' 업무가 배정되었습니다. | notification |
 | `notification.demoFooter` | 데모 알림 · 예약 실행·실시간 발송 미연결 | notification |
+| `notification.dueSoon` | '{taskName}' 업무가 내일({endDate}) 마감입니다. | notification |
 | `notification.empty` | 알림이 없습니다. | notification |
 | `notification.emptyHint` | 업무 배정·검수 요청이 생기면 이곳에 표시됩니다. | notification |
 | `notification.evidence` | 근거 · {text} | notification |
@@ -707,6 +709,21 @@
 | `notification.loading` | 알림을 불러오는 중입니다. | notification |
 | `notification.meetingSavedToKb` | 회의록을 지식 허브에 저장했습니다. 원본 링크가 유지됩니다. | notification |
 | `notification.offline` | 네트워크 연결이 끊겼습니다. 일시적인 통신 오류는 로그아웃 사유가 아니며, 연결이 복구되면 자동으로 다시 확인합니다. | notification |
+| `notification.server.fallbackApprovalRequested` | 승인 요청이 있습니다. | notification.server |
+| `notification.server.fallbackAssigned` | 업무가 배정되었습니다. | notification.server |
+| `notification.server.fallbackDueSoon` | 내일 마감인 업무가 있습니다. | notification.server |
+| `notification.server.fallbackMentioned` | 회원님을 멘션했습니다. | notification.server |
+| `notification.server.fallbackMissingTask` | 누락이 의심되는 업무가 있습니다. | notification.server |
+| `notification.server.fallbackProjectInactive` | 프로젝트가 비활성 상태입니다. | notification.server |
+| `notification.server.fallbackRiskUp` | 프로젝트 위험 등급이 올라갔습니다. | notification.server |
+| `notification.server.fallbackStatusChanged` | 업무 상태가 바뀌었습니다. | notification.server |
+| `notification.server.live` | 실시간 연결됨 | notification.server |
+| `notification.server.more` | 더 보기 | notification.server |
+| `notification.server.noMarkAll` | 모두 읽음은 서버 API가 없어 항목을 눌러 하나씩 읽음 처리합니다. | notification.server |
+| `notification.server.polling` | 1분마다 새로 확인합니다 | notification.server |
+| `notification.server.readFailed` | 읽음 처리를 하지 못했습니다. 잠시 후 다시 시도해 주세요. | notification.server |
+| `notification.server.unavailable` | 알림 서버가 아직 준비되지 않았습니다. 서버에 알림 기능이 반영된 뒤 화면을 새로 고치면 표시됩니다. | notification.server |
+| `notification.statusChanged` | '{taskName}' 업무 상태가 '{status}'(으)로 바뀌었습니다. | notification |
 | `notification.title` | 알림 | notification |
 | `notification.type.assign` | 배정 | notification.type |
 | `notification.type.deliverable` | 검수 | notification.type |

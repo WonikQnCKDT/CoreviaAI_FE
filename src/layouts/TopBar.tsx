@@ -6,6 +6,7 @@ import Modal from "@/components/ui/Modal";
 import PasswordChangeModal from "@/features/auth/components/PasswordChangeModal";
 import { useAuth } from "@/features/auth/authContext";
 import NotificationBell from "@/features/notification/components/NotificationBell";
+import ServerNotificationBell from "@/features/notification/components/ServerNotificationBell";
 import { SYSTEM_ROLE_LABEL } from "@/utils/permission";
 import { getUnsavedGuard } from "@/utils/navGuard";
 import { projectProgress } from "@/features/task/utils/taskTree";
@@ -144,7 +145,8 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <NotificationBell />
+          {/* api 모드는 서버 알림(12. 알림 API), 데모 모드는 데모 알림 */}
+          {mode === "api" ? <ServerNotificationBell /> : <NotificationBell />}
 
           <div className="relative">
             <button
