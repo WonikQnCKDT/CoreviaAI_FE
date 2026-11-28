@@ -33,7 +33,7 @@ import { METHODOLOGY_LABEL, ROLE_LABEL, VISIBILITY_LABEL } from "@/shared/i18n/c
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 import { formatLabel } from "@/shared/i18n/store";
 import { clearUnsavedGuard, setUnsavedGuard } from "@/utils/navGuard";
-import { TODAY } from "@/utils/date";
+import { today } from "@/utils/date";
 import type { MethodKey, Visibility } from "@/types";
 
 /** 목록 화면이 생성 성공 안내를 띄우려고 받는 내비게이션 state */
@@ -88,7 +88,7 @@ const ServerProjectCreateWizard = function () {
 
   // 제안 코드는 화면을 연 시점에 한 번 정한다. 서버에서 받은 프로젝트 코드만 본다(데모 샘플 코드는 섞지 않는다).
   const [suggestedCode] = useState(() =>
-    generateProjectCode(projects.filter((p) => p.serverId !== undefined).map((p) => p.code), issueYear(TODAY)),
+    generateProjectCode(projects.filter((p) => p.serverId !== undefined).map((p) => p.code), issueYear(today())),
   );
 
   const loadOptions = useCallback(() => {

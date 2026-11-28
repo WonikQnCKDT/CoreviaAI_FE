@@ -7,7 +7,7 @@ import ProgressBar from "@/components/ui/ProgressBar";
 import EmptyState from "@/components/ui/EmptyState";
 import Avatar from "@/components/ui/Avatar";
 import StatCard from "@/components/ui/StatCard";
-import { formatDate, TODAY } from "@/utils/date";
+import { formatDate, TODAY, today } from "@/utils/date";
 import { HEALTH_LABEL, STAGE_LABEL, riskLevel } from "@/utils/ui";
 import { displayProjectProgress } from "@/features/task/utils/taskTree";
 import { canCreateProject, isSystemAdmin } from "@/utils/permission";
@@ -47,6 +47,7 @@ export default function ProjectsPage() {
   const dismissCreated = () => navigate(location.pathname + location.search, { replace: true, state: null });
   // api 모드: 서버 목록(GET /api/projects)을 받아 화면 프로젝트로 연결하고, 서버 프로젝트만 보여준다.
   const { isApi, state: listState, reload: reloadList } = useServerProjectList();
+  const baseToday = isApi ? today() : TODAY;
   const projects = useMemo(
     () => (isApi ? allProjects.filter((project) => project.serverId !== undefined) : allProjects),
     [isApi, allProjects],
@@ -76,7 +77,7 @@ export default function ProjectsPage() {
       const matchesDept = dept === "all" || project.dept === dept;
       const matchesPm = pm === "all" || project.pmId === pm;
       const matchesRisk = risk === "all" || riskLevel(project.riskScore) === risk;
-      const late = project.status !== "done" && project.endDate < TODAY;
+      const late = project.status !== "done" && project.endDate < baseToday;
       const matchesFocus =
         focus === "all" ||
         (focus === "done" && project.status === "done") ||
@@ -103,18 +104,18 @@ export default function ProjectsPage() {
       return a.project.name.localeCompare(b.project.name, "ko");
     });
     return withProgress;
-  }, [projects, tasks, users, search, status, dept, pm, risk, focus, sort]);
+  }, [projects, tasks, users, search, status, dept, pm, risk, focus, sort, baseToday]);
 
   const counts = useMemo(() => {
     const done = projects.filter((p) => p.status === "done").length;
-    const late = projects.filter((p) => p.status !== "done" && p.endDate < TODAY).length;
+    const late = projects.filter((p) => p.status !== "done" && p.endDate < baseToday).length;
     return {
       total: projects.length,
       ongoing: projects.length - done - late,
       late,
       done,
     };
-  }, [projects]);
+  }, [projects, baseToday]);
 
   const resetFilters = () => {
     setSearch("");
