@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (1222개)
+## 등록 필요 (1227개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -249,6 +249,8 @@
 | `board.server.concurrent` | 다른 사용자가 먼저 바꿨습니다. 최신 보드를 다시 불러왔으니 확인한 뒤 다시 시도해 주세요. | board.server |
 | `board.server.dragHint` | 카드를 드래그하거나 '이동'에서 컬럼을 고르면 업무 상태가 바뀝니다. | board.server |
 | `board.server.emptyColumn` | 카드가 없습니다. | board.server |
+| `board.server.emptyFilteredDescription` | 단계·담당자 필터를 변경하거나 초기화해 주세요. | board.server |
+| `board.server.emptyFilteredTitle` | 필터 조건에 해당하는 카드가 없습니다. | board.server |
 | `board.server.forbidden` | 이 작업을 할 권한이 없습니다. 권한이 바뀌었을 수 있어 보드를 새로 불러왔습니다. | board.server |
 | `board.server.invalid` | 입력값을 확인해 주세요. | board.server |
 | `board.server.loadFailed` | 칸반 보드를 불러오지 못했습니다. | board.server |
@@ -261,6 +263,9 @@
 | `board.server.network` | 서버에 연결하지 못했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요. | board.server |
 | `board.server.notFound` | 카드나 컬럼을 찾을 수 없습니다. 보드를 새로 불러왔습니다. | board.server |
 | `board.server.openDetail` | 상세 보기 | board.server |
+| `board.server.phaseAll` | 단계 전체 | board.server |
+| `board.server.phaseFilter` | 단계 | board.server |
+| `board.server.resetFilters` | 필터 초기화 | board.server |
 | `board.server.retry` | 다시 시도 | board.server |
 | `board.server.serverError` | 서버 오류로 처리하지 못했습니다. 잠시 후 다시 시도해 주세요. | board.server |
 | `board.server.subtaskOf` | {name} 하위 | board.server |

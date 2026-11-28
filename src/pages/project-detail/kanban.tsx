@@ -323,6 +323,8 @@ export default function KanbanPage() {
   const { projectId } = useParams();
   const { projects } = useDemoStore();
   const project = projects.find((p) => p.id === projectId);
-  if (mode === "api" && project?.serverId !== undefined) return <ServerKanbanView project={{ ...project, serverId: project.serverId }} />;
+  if (mode === "api" && project?.serverId !== undefined) {
+    return <ServerKanbanView key={project.serverId} project={{ ...project, serverId: project.serverId }} />;
+  }
   return <DemoKanbanPage />;
 }
