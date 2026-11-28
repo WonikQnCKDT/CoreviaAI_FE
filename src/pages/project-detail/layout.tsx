@@ -5,6 +5,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import { canEditProject, isProjectMember, isSystemAdmin } from "@/utils/permission";
 import { PROJECT_TEXT, useServerProjectDetail } from "@/features/project/hooks/useServerProjects";
 import { PROJECT_MENU_TEXT } from "@/shared/i18n/catalog/menu";
+import type { ProjectOutletContext } from "@/features/project/hooks/useProjectOutlet";
 
 interface TabItem {
   readonly label: string;
@@ -185,7 +186,7 @@ export default function ProjectDetailLayout() {
         </div>
       )}
 
-      <Outlet />
+      <Outlet context={{ reloadServer } satisfies ProjectOutletContext} />
     </div>
   );
 }

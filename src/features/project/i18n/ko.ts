@@ -85,8 +85,6 @@ export const PROJECT_SETTINGS_TEXT = defineLabels("project.settings", {
   inviteTitle: "멤버 초대",
   inviteDisabled: "초대 기능 사용 불가",
   pmOnlyInvite: "멤버 초대는 프로젝트 PM만 할 수 있습니다.",
-  pmChangeNotConnected:
-    "서버 프로젝트의 PM 추가·해제는 멤버 역할 변경으로 합니다. 이 화면은 아직 서버와 연결되지 않아 바꿀 수 없습니다(이전 위임 API는 서버에서 없어졌습니다).",
   approverNotConnected: "게이트 승인자 변경은 서버 API가 아직 없어 이 화면에서 바꿀 수 없습니다(FR-PRJ-05).",
   serverMembers: "서버 멤버 목록 기준",
 });
