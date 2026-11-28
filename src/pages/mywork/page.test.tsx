@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-libra
 import MyWorkPage from "@/pages/mywork/page";
 import { TODO_TEXT } from "@/features/mywork/i18n/ko";
 import { TODO_REFRESH_MS } from "@/features/mywork/hooks/useServerTodos";
+import { MYWORK_TAB_TEXT } from "@/shared/i18n/catalog/menu";
 import { jsonFail, jsonOk, renderApp, stubFetch } from "@/test/appHarness";
 
 const item = (overrides: Record<string, unknown> = {}) => ({
@@ -198,6 +199,52 @@ describe("api 모드 내 TODO", () => {
     expect(await screen.findByText("새 배정")).toBeTruthy();
   });
 
+  it("배정 해제되거나 완료된 업무는 다음 재조회 결과 반영 시 목록에서 사라진다", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    let round = 0;
+    stubFetch({
+      "GET /api/me/todos": ({ url }) => {
+        if (url.searchParams.get("done") === "true") return jsonOk(page([]));
+        round += 1;
+        return jsonOk(
+          page(
+            round === 1
+              ? [item({ id: 5, source: "TASK", title: "해제될 배정 업무", projectId: 77, taskStatus: "IN_PROGRESS", urgency: 0 })]
+              : [],
+          ),
+        );
+      },
+    });
+    renderServer();
+    expect(await screen.findByText("해제될 배정 업무")).toBeTruthy();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(TODO_REFRESH_MS);
+    });
+    expect(await screen.findByText(TODO_TEXT.empty)).toBeTruthy();
+    expect(screen.queryByText("해제될 배정 업무")).toBeNull();
+  });
+
+  it("개인 TODO 조회는 소유자 파라미터를 보내지 않고 서버 세션 기준으로 본인 것만 조회한다", async () => {
+    const { calls } = stubFetch(todos([item()]));
+    renderServer();
+    await screen.findByText("주간 보고서");
+    const todoCalls = calls.filter((c) => c.path.startsWith("/api/me/todos"));
+    expect(todoCalls.length).toBeGreaterThanOrEqual(2);
+    for (const call of todoCalls) {
+      expect(call.path).not.toMatch(/userId|ownerId|assignee/i);
+    }
+  });
+
+  it("승인 요청 탭은 서버 모드에서 데모 데이터를 보여 주지 않고 준비 중 안내를 표시한다", async () => {
+    stubFetch(todos([item()]));
+    renderServer();
+    await screen.findByText("주간 보고서");
+    fireEvent.click(screen.getByRole("tab", { name: new RegExp(MYWORK_TAB_TEXT.approval) }));
+    expect(await screen.findByText(TODO_TEXT.approvalPendingTitle)).toBeTruthy();
+    expect(screen.getByText(TODO_TEXT.approvalPendingDesc)).toBeTruthy();
+    expect(screen.queryByText("승인 대기")).toBeNull();
+  });
+
   it("처음 조회가 실패하면 오류와 다시 시도를 보여 준다", async () => {
     stubFetch({ "GET /api/me/todos": () => jsonFail(500, "서버 오류") });
     renderServer();
@@ -207,10 +254,12 @@ describe("api 모드 내 TODO", () => {
 });
 
 describe("데모 모드 내 업무 (기존 시연 유지)", () => {
-  it("데모 업무 목록을 그대로 보여 주고 서버를 부르지 않는다", async () => {
+  it("데모 업무 목록과 승인 요청 탭을 그대로 보여 주고 서버를 부르지 않는다", async () => {
     const { fetchMock } = stubFetch({});
     renderApp({ mode: "demo", route: "/", routes: ROUTES });
     expect(await screen.findByText("업무 목록")).toBeTruthy();
+    fireEvent.click(screen.getByRole("tab", { name: new RegExp(MYWORK_TAB_TEXT.approval) }));
+    expect(screen.queryByText(TODO_TEXT.approvalPendingTitle)).toBeNull();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

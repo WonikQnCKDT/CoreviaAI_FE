@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (1238개)
+## 등록 필요 (1240개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -641,6 +641,8 @@
 | `mywork.schedule.updated` | '{name}' 일정을 수정했습니다. | mywork.schedule |
 | `mywork.todo.add` | 할 일 추가 | mywork.todo |
 | `mywork.todo.addTitle` | 개인 할 일 추가 | mywork.todo |
+| `mywork.todo.approvalPendingDesc` | 승인 요청 목록은 후속 서버 연동 후 표시됩니다. | mywork.todo |
+| `mywork.todo.approvalPendingTitle` | 승인 요청 연동 준비 중 | mywork.todo |
 | `mywork.todo.cancel` | 취소 | mywork.todo |
 | `mywork.todo.completed` | '{name}'을(를) 완료했습니다. | mywork.todo |
 | `mywork.todo.concurrent` | 다른 요청과 겹쳐 처리하지 못했습니다. 목록을 새로 불러왔으니 다시 시도해 주세요. | mywork.todo |
