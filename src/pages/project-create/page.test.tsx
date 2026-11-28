@@ -97,6 +97,8 @@ describe("api 모드 프로젝트 생성 (6단계 위자드)", () => {
       "GET /api/departments": () => jsonOk(DEPARTMENTS),
       "POST /api/projects": ({ body }) => jsonOk(createdDetail((body as { name: string }).name)),
       "GET /api/projects": () => jsonOk({ items: [createdDetail("구매 발주 시스템")], nextCursor: null, hasNext: false }),
+      // 목록 응답에는 진척률이 없어 목록 화면이 상세를 불러 채운다
+      "GET /api/projects/77": () => jsonOk(createdDetail("구매 발주 시스템")),
     });
     renderApp({ mode: "api", route: "/projects/new", routes: API_ROUTES });
 

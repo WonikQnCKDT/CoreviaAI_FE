@@ -7,6 +7,8 @@ import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 export interface ResetTarget {
   name: string;
   serverUserId?: number;
+  /** 사용자 생성 직후 BE가 1회 반환한 임시 비밀번호. 있으면 추가 호출 없이 바로 표시한다. */
+  initialTemporaryPassword?: string | null;
 }
 
 interface PasswordResetDialogProps<T extends ResetTarget> {
@@ -49,7 +51,11 @@ const PasswordResetDialog = function <T extends ResetTarget>({
   useEffect(() => {
     controllerRef.current?.abort();
     setServerUserId(target?.serverUserId ? String(target.serverUserId) : "");
-    setState({ phase: "confirm" });
+    setState(
+      target?.initialTemporaryPassword
+        ? { phase: "issued", temporaryPassword: target.initialTemporaryPassword }
+        : { phase: "confirm" },
+    );
     setCopy("idle");
   }, [target]);
 

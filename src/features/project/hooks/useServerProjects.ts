@@ -26,13 +26,41 @@ const failureMessage = function (failure: ApiFailure): string {
   return AUTH_TEXT.unknown;
 };
 
+/** 목록 진척률을 채우려고 상세를 동시에 부르는 최대 개수. 프로젝트가 많아도 서버에 한꺼번에 몰리지 않게 한다 */
+export const PROGRESS_FETCH_CONCURRENCY = 4;
+
 /**
- * api 모드: GET /api/projects 전체를 받아 화면 프로젝트로 연결한다.
+ * 목록 응답(ProjectSummaryResponse)에는 진척률이 없어, 프로젝트마다 상세(GET /api/projects/{id})를 불러 채운다.
+ * 목록은 먼저 보여 주고 진척률은 받는 대로 채운다. 실패한 프로젝트는 '-'로 남긴다(목록 전체를 실패로 보지 않는다).
+ */
+const fillServerProgress = async function ({
+  serverIds,
+  signal,
+  apply,
+}: {
+  serverIds: number[];
+  signal: AbortSignal;
+  apply: (serverId: number, progress: number) => void;
+}) {
+  const queue = [...serverIds];
+  const worker = async () => {
+    while (queue.length > 0 && !signal.aborted) {
+      const serverId = queue.shift() as number;
+      const result = await fetchProjectDetail({ projectId: serverId, signal });
+      if (signal.aborted) return;
+      if (result.ok === true) apply(serverId, result.data.progress);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(PROGRESS_FETCH_CONCURRENCY, queue.length) }, worker));
+};
+
+/**
+ * api 모드: GET /api/projects 전체를 받아 화면 프로젝트로 연결하고, 진척률은 상세에서 채운다.
  * demo 모드: 아무것도 하지 않는다 (항상 ready).
  */
 export const useServerProjectList = function () {
   const { mode } = useAuth();
-  const { syncServerProjects } = useDemoStore();
+  const { syncServerProjects, syncServerProjectProgress } = useDemoStore();
   const isApi = mode === "api";
   const [state, setState] = useState<ServerLoadState>(isApi ? { phase: "loading" } : { phase: "ready" });
   const controllerRef = useRef<AbortController | null>(null);
@@ -58,8 +86,9 @@ export const useServerProjectList = function () {
       }
       syncServerProjects(result.data);
       setState({ phase: "ready" });
+      void fillServerProgress({ serverIds: result.data.map((p) => p.id), signal: controller.signal, apply: syncServerProjectProgress });
     });
-  }, [isApi, syncServerProjects]);
+  }, [isApi, syncServerProjects, syncServerProjectProgress]);
 
   useEffect(() => {
     reload();
