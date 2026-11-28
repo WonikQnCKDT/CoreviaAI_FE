@@ -20,6 +20,7 @@ import { PORTFOLIO_TEXT, PROJECT_LIST_TEXT } from "@/features/project/i18n/ko";
 import { formatLabel } from "@/shared/i18n/store";
 import { useCommonCodes } from "@/shared/codes/useCommonCodes";
 import { RISK_LEVEL_TO_HEALTH } from "@/shared/codes/codeStore";
+import { PROJECT_TEXT, useServerProjectList } from "@/features/project/hooks/useServerProjects";
 
 type FocusKey = "all" | "ongoing" | "late" | "done";
 
@@ -30,7 +31,13 @@ const isLateProject = (project: Project) => project.status !== "done" && project
 
 export default function PortfolioPage() {
   const navigate = useNavigate();
-  const { currentUser, projects, tasks, users } = useDemoStore();
+  const { currentUser, projects: allProjects, tasks, users } = useDemoStore();
+  // api 모드는 서버 목록을 직접 받고(진척률은 상세에서 채운다) 서버 프로젝트만 보인다. 데모 프로젝트를 섞지 않는다
+  const { isApi, state: listState, reload: reloadList } = useServerProjectList();
+  const projects = useMemo(
+    () => (isApi ? allProjects.filter((project) => project.serverId !== undefined) : allProjects),
+    [isApi, allProjects],
+  );
   const { codes: riskCodes } = useCommonCodes("RISK_LEVEL");
   const riskOptions = useMemo(
     () =>
@@ -146,6 +153,26 @@ export default function PortfolioPage() {
     () => [...scoped].sort((a, b) => b.riskScore - a.riskScore).slice(0, 5),
     [scoped],
   );
+
+  // 목록을 받기 전에는 권한(PM 여부)을 판단할 수 없어 '권한 없음'보다 먼저 확인한다
+  if (listState.phase === "loading") {
+    return (
+      <p role="status" className="px-4 py-12 text-center text-sm text-foreground-500">
+        {PROJECT_TEXT.loading}
+      </p>
+    );
+  }
+  if (listState.phase === "error") {
+    return (
+      <div role="alert" className="px-4 py-12 text-center">
+        <p className="text-sm font-medium text-foreground-900">{PROJECT_TEXT.loadListFailed}</p>
+        <p className="mt-1 text-xs text-foreground-600">{listState.message}</p>
+        <button type="button" className="btn-outline mt-3" onClick={reloadList}>
+          {PROJECT_TEXT.retry}
+        </button>
+      </div>
+    );
+  }
 
   if (!allowed) {
     return (
