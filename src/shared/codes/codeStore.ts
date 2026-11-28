@@ -174,3 +174,18 @@ export const RISK_LEVEL_TO_HEALTH: Readonly<Record<string, "normal" | "caution" 
   CAUTION: "caution",
   DANGER: "danger",
 };
+
+/** 화면 TaskStatus ↔ 서버 공통 코드 TASK_STATUS (BE V8 시드 기준) */
+export const TASK_STATUS_TO_CODE: Readonly<Record<"todo" | "progress" | "review" | "done", string>> = {
+  todo: "TODO",
+  progress: "IN_PROGRESS",
+  review: "REVIEW",
+  done: "DONE",
+};
+
+export const CODE_TO_TASK_STATUS: Readonly<Record<string, "todo" | "progress" | "review" | "done">> = {
+  TODO: "todo",
+  IN_PROGRESS: "progress",
+  REVIEW: "review",
+  DONE: "done",
+};

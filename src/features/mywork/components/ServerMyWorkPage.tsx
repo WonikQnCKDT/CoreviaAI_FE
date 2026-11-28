@@ -13,6 +13,8 @@ import { TODO_TEXT } from "@/features/mywork/i18n/ko";
 import { loadTaskFilter, saveTaskFilter, TASK_FILTERS, type TaskFilter } from "@/features/mywork/utils/filters";
 import { interpretTodoFailure, matchesFilter, requestIdFor, todoStats, type PendingCreate, type TodoAction } from "@/features/mywork/utils/todoRules";
 import type { ApiResult } from "@/shared/api/client";
+import { TASK_STATUS_TO_CODE } from "@/shared/codes/codeStore";
+import { useCommonCodes } from "@/shared/codes/useCommonCodes";
 import { MYWORK_TAB_TEXT } from "@/shared/i18n/catalog/menu";
 import { formatLabel } from "@/shared/i18n/store";
 import { useDemoStore } from "@/stores/DemoStore";
@@ -49,6 +51,7 @@ const dueBadge = function (item: TodoItem) {
 export default function ServerMyWorkPage() {
   const { projects } = useDemoStore();
   const { state, reload } = useServerTodos();
+  const { labelOf: taskStatusLabelOf } = useCommonCodes("TASK_STATUS");
   const [tab, setTab] = useState<TabKey>("todo");
   const [filter, setFilterState] = useState<TaskFilter>(loadTaskFilter);
   const [dialog, setDialog] = useState<DialogTarget>(null);
@@ -210,7 +213,7 @@ export default function ServerMyWorkPage() {
                       {item.source === "task" ? TODO_TEXT.sourceTask : TODO_TEXT.sourcePersonal}
                     </Badge>
                     {item.projectId !== null && <span>{projectName(item.projectId)}</span>}
-                    {item.taskStatus && <StatusBadge status={item.taskStatus} />}
+                    {item.taskStatus && <StatusBadge status={item.taskStatus} label={taskStatusLabelOf(TASK_STATUS_TO_CODE[item.taskStatus])} />}
                   </div>
                 </div>
                 {dueBadge(item)}

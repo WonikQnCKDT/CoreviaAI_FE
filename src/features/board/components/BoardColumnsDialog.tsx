@@ -11,6 +11,8 @@ import { BOARD_COLUMN_TEXT } from "@/features/board/i18n/ko";
 import { canDeleteColumn, columnTitle, interpretBoardFailure, reorderedIds, validateColumnInput, type BoardAction } from "@/features/board/utils/boardRules";
 import type { WbsStatus } from "@/features/wbs/api/wbsApi";
 import type { ApiResult } from "@/shared/api/client";
+import { CODE_TO_TASK_STATUS, TASK_STATUS_TO_CODE } from "@/shared/codes/codeStore";
+import { useCommonCodes } from "@/shared/codes/useCommonCodes";
 import { TASK_STATUS_LABEL } from "@/shared/i18n/catalog/status";
 import { formatLabel } from "@/shared/i18n/store";
 
@@ -31,6 +33,14 @@ const draftOf = (columns: BoardColumn[]): Draft =>
 
 /** 컬럼 관리(PM): 이름·WIP 저장, 앞뒤 순서, 추가, 삭제. 서버 응답이 오면 보드를 다시 받는다 */
 export default function BoardColumnsDialog({ projectId, columns, onClose, onChanged }: Props) {
+  const { codes: taskStatusCodes, labelOf: taskStatusLabelOf } = useCommonCodes("TASK_STATUS");
+  const statusOptions = (() => {
+    const ordered = taskStatusCodes
+      .map((item) => CODE_TO_TASK_STATUS[item.code])
+      .filter((status): status is WbsStatus => Boolean(status));
+    return ordered.length > 0 ? ordered : STATUSES;
+  })();
+  const statusLabel = (status: WbsStatus) => taskStatusLabelOf(TASK_STATUS_TO_CODE[status], TASK_STATUS_LABEL[status]);
   const [draft, setDraft] = useState<Draft>(() => draftOf(columns));
   const [list, setList] = useState(columns);
   const [added, setAdded] = useState({ name: "", statusCategory: "todo" as WbsStatus, wipLimit: "" });
@@ -119,12 +129,12 @@ export default function BoardColumnsDialog({ projectId, columns, onClose, onChan
                 <input
                   className={fieldClass}
                   aria-label={`${BOARD_COLUMN_TEXT.name}: ${title}`}
-                  placeholder={column.labelKey ? `${BOARD_COLUMN_TEXT.namePlaceholder} (${TASK_STATUS_LABEL[column.statusCategory]})` : BOARD_COLUMN_TEXT.namePlaceholder}
+                  placeholder={column.labelKey ? `${BOARD_COLUMN_TEXT.namePlaceholder} (${statusLabel(column.statusCategory)})` : BOARD_COLUMN_TEXT.namePlaceholder}
                   maxLength={50}
                   value={value.name}
                   onChange={(e) => setDraft({ ...draft, [column.id]: { ...value, name: e.target.value } })}
                 />
-                <span className="text-[11.5px] text-foreground-600">{TASK_STATUS_LABEL[column.statusCategory]}</span>
+                <span className="text-[11.5px] text-foreground-600">{statusLabel(column.statusCategory)}</span>
                 <input
                   className={fieldClass}
                   inputMode="numeric"
@@ -164,7 +174,7 @@ export default function BoardColumnsDialog({ projectId, columns, onClose, onChan
           <div className="grid grid-cols-[1fr_120px_96px_auto] items-center gap-2">
             <input className={fieldClass} aria-label={`${BOARD_COLUMN_TEXT.addTitle} ${BOARD_COLUMN_TEXT.name}`} placeholder={BOARD_COLUMN_TEXT.namePlaceholder} maxLength={50} value={added.name} onChange={(e) => setAdded({ ...added, name: e.target.value })} />
             <select className={fieldClass} aria-label={`${BOARD_COLUMN_TEXT.addTitle} ${BOARD_COLUMN_TEXT.status}`} value={added.statusCategory} onChange={(e) => setAdded({ ...added, statusCategory: e.target.value as WbsStatus })}>
-              {STATUSES.map((s) => <option key={s} value={s}>{TASK_STATUS_LABEL[s]}</option>)}
+              {statusOptions.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
             </select>
             <input className={fieldClass} inputMode="numeric" aria-label={`${BOARD_COLUMN_TEXT.addTitle} ${BOARD_COLUMN_TEXT.wipLimit}`} placeholder={BOARD_COLUMN_TEXT.wipPlaceholder} value={added.wipLimit} onChange={(e) => setAdded({ ...added, wipLimit: e.target.value })} />
             <button type="button" className="btn-primary px-3 py-1 text-[12px]" disabled={busy || list.length >= 20} onClick={add}>
