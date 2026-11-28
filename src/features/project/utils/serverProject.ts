@@ -16,6 +16,9 @@ import type {
 
 const ROLE_KEYS: RoleKey[] = ["pm", "biz", "dev", "qa"];
 const COLOR_KEYS = ["primary", "accent", "emerald", "secondary", "amber"];
+
+/** 서버 프로젝트의 색 키. 화면마다 같은 프로젝트가 같은 색이 되도록 서버 ID로만 정한다 */
+export const serverProjectColorKey = (serverId: number) => COLOR_KEYS[Math.abs(serverId) % COLOR_KEYS.length];
 const DEFAULT_WIP = { todo: 5, progress: 4, review: 3, done: 99 };
 const NO_DEPARTMENT = "-";
 
@@ -117,7 +120,7 @@ export const mergeServerSummary = function ({
     notice: "",
     riskScore: 0,
     kanbanWip: DEFAULT_WIP,
-    colorKey: COLOR_KEYS[id % COLOR_KEYS.length],
+    colorKey: serverProjectColorKey(id),
     description: "",
     gateApprovers: {},
   };

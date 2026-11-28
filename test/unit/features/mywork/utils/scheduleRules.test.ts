@@ -11,7 +11,9 @@ import {
   kstTimeOf,
   kstToday,
   monthRange,
+  moveSelected,
   validateEventForm,
+  viewRange,
   validateTaskLog,
 } from "@/features/mywork/utils/scheduleRules";
 
@@ -96,5 +98,32 @@ describe("실패 해석", () => {
     expect(interpretScheduleFailure("saveTaskLog", http(409))).toEqual({ message: WORKLOG_TEXT.concurrent, reload: true });
     expect(interpretScheduleFailure("saveWorklog", http(409))).toEqual({ message: SCHEDULE_TEXT.concurrent, reload: true });
     expect(interpretScheduleFailure("load", { kind: "network" })).toEqual({ message: SCHEDULE_TEXT.network, reload: false });
+  });
+});
+
+describe("보기 방식별 범위·이동 (SCRUM-120 월·주·일)", () => {
+  it("월: 그 달 1일 ~ 다음 달 1일(한국 00:00 기준)", () => {
+    expect(viewRange("month", "2026-12-17")).toEqual(monthRange(2026, 11));
+  });
+
+  it("주: 월요일부터 7일. 일요일은 그 주의 마지막 날이고, 연말에 걸친 주도 다음 해로 넘어간다", () => {
+    expect(viewRange("week", "2026-12-02")).toMatchObject({ firstDate: "2026-11-30", nextDate: "2026-12-07", from: "2026-11-29T15:00:00.000Z" });
+    // 월요일 당일·일요일(주의 첫 날·마지막 날)
+    expect(viewRange("week", "2026-11-30").firstDate).toBe("2026-11-30");
+    expect(viewRange("week", "2026-12-06").firstDate).toBe("2026-11-30");
+    expect(viewRange("week", "2026-12-31")).toMatchObject({ firstDate: "2026-12-28", nextDate: "2027-01-04" });
+  });
+
+  it("일: 그날 하루 [한국 00:00, 다음 날 00:00)", () => {
+    expect(viewRange("day", "2026-12-31")).toEqual({ from: "2026-12-30T15:00:00.000Z", to: "2026-12-31T15:00:00.000Z", firstDate: "2026-12-31", nextDate: "2027-01-01" });
+  });
+
+  it("이동: 월은 1일로(31일 → 2월 넘침 없음, 연도 경계), 주는 7일, 일은 하루", () => {
+    expect(moveSelected("month", "2027-01-31", 1)).toBe("2027-02-01");
+    expect(moveSelected("month", "2027-01-15", -1)).toBe("2026-12-01");
+    expect(moveSelected("month", "2026-12-15", 1)).toBe("2027-01-01");
+    expect(moveSelected("week", "2026-12-29", 1)).toBe("2027-01-05");
+    expect(moveSelected("day", "2026-12-31", 1)).toBe("2027-01-01");
+    expect(moveSelected("day", "2027-01-01", -1)).toBe("2026-12-31");
   });
 });

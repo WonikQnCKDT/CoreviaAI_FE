@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (1495개)
+## 등록 필요 (1514개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -743,6 +743,7 @@
 | `mywork.schedule.endDate` | 종료일 | mywork.schedule |
 | `mywork.schedule.endTime` | 종료 시각 | mywork.schedule |
 | `mywork.schedule.invalid` | 입력값을 확인해 주세요. | mywork.schedule |
+| `mywork.schedule.legend` | 프로젝트 색상 | mywork.schedule |
 | `mywork.schedule.loadFailed` | 일정을 불러오지 못했습니다. | mywork.schedule |
 | `mywork.schedule.loading` | 일정을 불러오는 중입니다 | mywork.schedule |
 | `mywork.schedule.memo` | 메모 (선택) | mywork.schedule |
@@ -750,13 +751,24 @@
 | `mywork.schedule.monthTitle` | {year}년 {month}월 | mywork.schedule |
 | `mywork.schedule.more` | +{count} | mywork.schedule |
 | `mywork.schedule.network` | 서버에 연결하지 못했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요. | mywork.schedule |
+| `mywork.schedule.nextDay` | 다음 날 | mywork.schedule |
 | `mywork.schedule.nextMonth` | 다음 달 | mywork.schedule |
+| `mywork.schedule.nextWeek` | 다음 주 | mywork.schedule |
 | `mywork.schedule.noDelete` | 개인 일정 삭제는 아직 지원하지 않습니다(정책 보류). | mywork.schedule |
+| `mywork.schedule.noteBadge` | 업무 노트 있음 | mywork.schedule |
+| `mywork.schedule.noteExists` | 이 날 기록한 업무 노트가 있습니다. | mywork.schedule |
+| `mywork.schedule.noteNone` | 이 날 기록한 업무 노트가 없습니다. | mywork.schedule |
+| `mywork.schedule.notesUnavailable` | 업무 노트를 기록한 날을 불러오지 못했습니다. 노트 표시만 빠지고 일정은 그대로 볼 수 있습니다. | mywork.schedule |
+| `mywork.schedule.noteTitle` | 업무 노트 | mywork.schedule |
 | `mywork.schedule.notFound` | 일정을 찾을 수 없습니다. 목록을 새로 불러왔습니다. | mywork.schedule |
+| `mywork.schedule.openNote` | 업무 노트 열기 | mywork.schedule |
 | `mywork.schedule.openProject` | 프로젝트에서 보기 | mywork.schedule |
 | `mywork.schedule.periodInvalid` | 종료는 시작보다 뒤여야 합니다. | mywork.schedule |
 | `mywork.schedule.personal` | 개인 일정 | mywork.schedule |
+| `mywork.schedule.prevDay` | 전날 | mywork.schedule |
 | `mywork.schedule.prevMonth` | 이전 달 | mywork.schedule |
+| `mywork.schedule.prevWeek` | 이전 주 | mywork.schedule |
+| `mywork.schedule.projectFallback` | 프로젝트 #{id} | mywork.schedule |
 | `mywork.schedule.retry` | 다시 시도 | mywork.schedule |
 | `mywork.schedule.save` | 저장 | mywork.schedule |
 | `mywork.schedule.saving` | 저장 중 | mywork.schedule |
@@ -765,16 +777,22 @@
 | `mywork.schedule.startDate` | 시작일 | mywork.schedule |
 | `mywork.schedule.startTime` | 시작 시각 | mywork.schedule |
 | `mywork.schedule.task` | 담당 업무 | mywork.schedule |
-| `mywork.schedule.thisMonth` | 이번 달 | mywork.schedule |
 | `mywork.schedule.timeout` | 응답이 늦어 요청을 멈췄습니다. 잠시 후 다시 시도해 주세요. | mywork.schedule |
 | `mywork.schedule.timeRequired` | 시작 시각과 종료 시각을 입력해 주세요. | mywork.schedule |
 | `mywork.schedule.titleControl` | 제목에는 줄바꿈·탭 같은 제어 문자를 쓸 수 없습니다. | mywork.schedule |
 | `mywork.schedule.titleLabel` | 제목 | mywork.schedule |
 | `mywork.schedule.titleRequired` | 제목을 입력해 주세요. | mywork.schedule |
 | `mywork.schedule.titleTooLong` | 제목은 200자 이하로 입력해 주세요. | mywork.schedule |
+| `mywork.schedule.today` | 오늘 | mywork.schedule |
 | `mywork.schedule.truncated` | 항목이 많아 일부만 표시합니다. | mywork.schedule |
 | `mywork.schedule.unknown` | 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요. | mywork.schedule |
 | `mywork.schedule.updated` | '{name}' 일정을 수정했습니다. | mywork.schedule |
+| `mywork.schedule.viewDay` | 일 | mywork.schedule |
+| `mywork.schedule.viewLabel` | 보기 방식 | mywork.schedule |
+| `mywork.schedule.viewMonth` | 월 | mywork.schedule |
+| `mywork.schedule.viewWeek` | 주 | mywork.schedule |
+| `mywork.schedule.weekTitle` | {start} ~ {end} | mywork.schedule |
+| `mywork.schedule.writeNote` | 업무 노트 쓰기 | mywork.schedule |
 | `mywork.todo.add` | 할 일 추가 | mywork.todo |
 | `mywork.todo.addTitle` | 개인 할 일 추가 | mywork.todo |
 | `mywork.todo.approvalPendingDesc` | 승인 요청 목록은 후속 서버 연동 후 표시됩니다. | mywork.todo |
@@ -846,6 +864,7 @@
 | `mywork.worklog.notePlaceholder` | 오늘 한 일, 진행 상황, 문제 해결 과정을 기록하세요. | mywork.worklog |
 | `mywork.worklog.noteSaved` | {date} 업무 노트를 저장했습니다. | mywork.worklog |
 | `mywork.worklog.noteTitle` | {date} 업무 노트 | mywork.worklog |
+| `mywork.worklog.openCalendar` | 캘린더에서 이 날 보기 | mywork.worklog |
 | `mywork.worklog.openProject` | 프로젝트에서 보기 | mywork.worklog |
 | `mywork.worklog.prevDay` | 전날 | mywork.worklog |
 | `mywork.worklog.progress` | 진척률(%) | mywork.worklog |
