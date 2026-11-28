@@ -19,6 +19,7 @@ import {
   reorderProjectPhases,
   type NewProjectInput,
 } from "@/features/project/api/projectApi";
+import { creationOptionsDto } from "@/test/projectFixtures";
 
 const ok = (response: unknown) => new Response(JSON.stringify({ success: true, response, error: null }), { status: 200 });
 
@@ -257,37 +258,86 @@ describe("생성", () => {
     expect(lastRequest().url.searchParams.get("code")).toBe("erp-2026");
   });
 
-  it("생성 선택지는 템플릿·기능·운영 방식을 바꾸고 모르는 값은 뺀다", async () => {
+  it("생성 선택지: 실제 BE 응답(기본 시드)을 화면 모델로 바꾸고 기능은 enabled·requiresPhases를 그대로 담는다", async () => {
+    fetchMock.mockResolvedValue(ok(creationOptionsDto()));
+    const result = await fetchCreationOptions();
+    expect(lastRequest().url.pathname).toBe("/api/projects/creation-options");
+    expect(result.ok === true && result.data).toEqual({
+      templates: [
+        { value: "empty", defaultMethodology: "none", defaultActors: ["pm"], defaultFeatures: ["kanban", "board", "meeting", "issue", "file"], defaultPhases: [] },
+        {
+          value: "itProject",
+          defaultMethodology: "waterfall",
+          defaultActors: ["pm", "biz", "dev", "qa"],
+          defaultFeatures: ["wbs", "kanban", "board", "meeting", "deliverable", "issue", "file"],
+          defaultPhases: ["분석", "설계", "개발", "테스트", "이행"],
+        },
+      ],
+      methodologies: [
+        { value: "none", enabled: true },
+        { value: "waterfall", enabled: true },
+        { value: "agile", enabled: false },
+      ],
+      departmentTypes: [
+        {
+          value: "sw",
+          enabled: true,
+          actors: [
+            { value: "pm", enabled: true, required: true },
+            { value: "biz", enabled: true, required: false },
+            { value: "dev", enabled: true, required: false },
+            { value: "qa", enabled: true, required: false },
+          ],
+        },
+        {
+          value: "manufacturing",
+          enabled: false,
+          actors: [
+            { value: "pm", enabled: false, required: true },
+            { value: "deptStaff", enabled: false, required: false },
+            { value: "customerLiaison", enabled: false, required: false },
+          ],
+        },
+      ],
+      features: [
+        { value: "wbs", enabled: true, requiresPhases: false },
+        { value: "kanban", enabled: true, requiresPhases: false },
+        { value: "board", enabled: true, requiresPhases: false },
+        { value: "meeting", enabled: true, requiresPhases: false },
+        { value: "deliverable", enabled: true, requiresPhases: true },
+        { value: "issue", enabled: true, requiresPhases: false },
+        { value: "file", enabled: true, requiresPhases: false },
+        { value: "git", enabled: false, requiresPhases: false },
+      ],
+    });
+  });
+
+  it("회귀(SCRUM-98): 실제 BE 응답의 기능이 하나도 걸러지지 않는다", async () => {
+    fetchMock.mockResolvedValue(ok(creationOptionsDto()));
+    const result = await fetchCreationOptions();
+    expect(result.ok === true && result.data.features).toHaveLength(creationOptionsDto().features.length);
+  });
+
+  it("생성 선택지의 모르는 값은 빼고, requiresPhases가 없는 기능은 단계가 필요하다고 본다", async () => {
+    const dto = creationOptionsDto();
     fetchMock.mockResolvedValue(
       ok({
-        templates: [
-          { value: "IT_PROJECT", defaultMethodology: "WATERFALL", defaultActors: ["PM", "QA"], defaultFeatures: ["WBS", "GIT"], defaultPhases: ["분석", "설계"] },
-          { value: "MYSTERY", defaultMethodology: "NONE", defaultActors: [], defaultFeatures: [] },
-        ],
-        methodologies: [
-          { value: "NONE", enabled: true },
-          { value: "AGILE", enabled: false },
-        ],
-        departmentTypes: [{ value: "SW", enabled: true, actors: [{ value: "PM", enabled: true, required: true }] }],
-        features: [
-          { value: "DELIVERABLE", enabled: true, methodologies: ["WATERFALL"] },
-          { value: "GIT", enabled: false, methodologies: [] },
-        ],
+        ...dto,
+        templates: [...dto.templates, { ...dto.templates[0], value: "MYSTERY" }],
+        methodologies: [...dto.methodologies, { value: "SCRUM", enabled: true }],
+        features: [{ value: "AI_MAGIC", enabled: true, requiresPhases: false }, { value: "WBS", enabled: true }],
       }),
     );
     const result = await fetchCreationOptions();
-    expect(result.ok === true && result.data).toEqual({
-      templates: [{ value: "itProject", defaultMethodology: "waterfall", defaultActors: ["pm", "qa"], defaultFeatures: ["wbs", "git"], defaultPhases: ["분석", "설계"] }],
-      methodologies: [
-        { value: "none", enabled: true },
-        { value: "agile", enabled: false },
-      ],
-      departmentTypes: [{ value: "sw", enabled: true, actors: [{ value: "pm", enabled: true, required: true }] }],
-      features: [
-        { value: "deliverable", enabled: true, methodologies: ["waterfall"] },
-        { value: "git", enabled: false, methodologies: [] },
-      ],
-    });
+    expect(result.ok === true && result.data.templates.map(({ value }) => value)).toEqual(["empty", "itProject"]);
+    expect(result.ok === true && result.data.methodologies.map(({ value }) => value)).toEqual(["none", "waterfall", "agile"]);
+    expect(result.ok === true && result.data.features).toEqual([{ value: "wbs", enabled: true, requiresPhases: true }]);
+  });
+
+  it("생성 선택지 응답이 비어 있으면 빈 목록", async () => {
+    fetchMock.mockResolvedValue(ok({ templates: null, methodologies: [], departmentTypes: [], features: null }));
+    const result = await fetchCreationOptions();
+    expect(result.ok === true && result.data).toEqual({ templates: [], methodologies: [], departmentTypes: [], features: [] });
   });
 });
 
