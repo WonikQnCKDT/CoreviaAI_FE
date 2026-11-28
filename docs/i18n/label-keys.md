@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (1091개)
+## 등록 필요 (1115개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -156,6 +156,28 @@
 | `admin.notice.userSaved` | {name} 사용자 정보를 저장했습니다. | admin.notice |
 | `admin.notice.userStatusChanged` | {name} 계정을 {status} 상태로 바꿨습니다. | admin.notice |
 | `admin.ownAccountLocked` | 본인 계정의 역할과 상태는 바꿀 수 없습니다. | admin |
+| `admin.pmReassign.clearSelection` | 선택 해제 | admin.pmReassign |
+| `admin.pmReassign.code` | 프로젝트 코드 | admin.pmReassign |
+| `admin.pmReassign.codeFormat` | 프로젝트 코드는 영문·숫자로 시작하는 영문·숫자·하이픈(-) 2~20자입니다. | admin.pmReassign |
+| `admin.pmReassign.codePlaceholder` | 예) PRT-2026-001 | admin.pmReassign |
+| `admin.pmReassign.codeRequired` | 프로젝트 코드를 입력해 주세요. | admin.pmReassign |
+| `admin.pmReassign.confirmBody` | {code} 프로젝트의 PM으로 {name}을(를) 지정합니다. | admin.pmReassign |
+| `admin.pmReassign.confirmNote` | 활성 PM이 남아 있는 프로젝트이거나 코드가 없으면 서버가 거부합니다. 남아 있던 비활성 PM은 멤버에서 제외됩니다. | admin.pmReassign |
+| `admin.pmReassign.confirmTitle` | PM을 재지정하시겠습니까? | admin.pmReassign |
+| `admin.pmReassign.description` | 활성 PM이 한 명도 남지 않은 프로젝트(퇴사·비활성화 등)에만 새 PM을 지정합니다. 남아 있던 비활성 PM은 멤버에서 제외되고, 처리 내용은 프로젝트 멤버 이력과 감사 로그에 남습니다. | admin.pmReassign |
+| `admin.pmReassign.done` | {code} 프로젝트의 PM을 재지정했습니다. 현재 PM: {names} | admin.pmReassign |
+| `admin.pmReassign.notAllowed` | 재지정할 수 없습니다. 활성 PM이 남아 있는 프로젝트이거나 없는 프로젝트 코드입니다. 코드를 확인하고, 활성 PM이 있으면 그 PM이 직접 PM을 추가·해제하도록 안내해 주세요. | admin.pmReassign |
+| `admin.pmReassign.privacyNote` | 시스템 관리자는 프로젝트 데이터를 볼 수 없어 프로젝트 코드로만 지정합니다. 활성 PM이 있는 프로젝트는 PM이 직접 PM을 추가·해제합니다. | admin.pmReassign |
+| `admin.pmReassign.selected` | 선택됨: {name} | admin.pmReassign |
+| `admin.pmReassign.submit` | PM 재지정 | admin.pmReassign |
+| `admin.pmReassign.title` | PM 재지정 | admin.pmReassign |
+| `admin.pmReassign.user` | 새 PM | admin.pmReassign |
+| `admin.pmReassign.userEmpty` | 조건에 맞는 활성 일반 사용자가 없습니다 | admin.pmReassign |
+| `admin.pmReassign.userFailed` | 사용자 목록을 불러오지 못했습니다 | admin.pmReassign |
+| `admin.pmReassign.userLoading` | 사용자를 찾는 중입니다 | admin.pmReassign |
+| `admin.pmReassign.userRequired` | 새 PM으로 지정할 사용자를 선택해 주세요. | admin.pmReassign |
+| `admin.pmReassign.userSearch` | 새 PM 이름 또는 아이디 검색 | admin.pmReassign |
+| `admin.pmReassign.userSearchHint` | 활성 일반 사용자만 PM으로 지정할 수 있습니다. | admin.pmReassign |
 | `admin.resetFilters` | 필터 초기화 | admin |
 | `admin.retry` | 다시 시도 | admin |
 | `admin.roleChangeConfirmBody` | 역할을 바꾸면 대상 사용자의 모든 세션이 즉시 종료되어 다시 로그인해야 합니다. | admin |
@@ -511,10 +533,12 @@
 | `menu.admin.hintDepartments` | 조직 트리 | menu.admin |
 | `menu.admin.hintErrorLogs` | 미처리 예외 조회 | menu.admin |
 | `menu.admin.hintLabels` | 문구·번역 | menu.admin |
+| `menu.admin.hintPmReassign` | 활성 PM 없는 프로젝트 | menu.admin |
 | `menu.admin.hintRisk` | 임계값·가중치·이력 | menu.admin |
 | `menu.admin.hintUsers` | 계정·부서·역할 | menu.admin |
 | `menu.admin.labels` | 다국어 라벨 | menu.admin |
 | `menu.admin.nav` | 시스템 관리 | menu.admin |
+| `menu.admin.pmReassign` | PM 재지정 | menu.admin |
 | `menu.admin.risk` | AI · 리스크 설정 | menu.admin |
 | `menu.admin.users` | 사용자 | menu.admin |
 | `menu.admin.usersAndOrg` | 사용자 · 조직 | menu.admin |
