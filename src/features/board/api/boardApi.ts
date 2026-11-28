@@ -112,6 +112,7 @@ export interface UserRef {
 
 export interface BoardCard {
   id: number;
+  phaseId: number | null;
   parentTaskId: number | null;
   parentTaskName: string;
   name: string;
@@ -247,6 +248,7 @@ const toEffort = (value: unknown) => {
 
 export const toCard = (dto: BoardCardDto): BoardCard => ({
   id: dto.id,
+  phaseId: positiveId(dto.phaseId),
   parentTaskId: positiveId(dto.parentTaskId),
   parentTaskName: text(dto.parentTaskName),
   name: text(dto.name),
@@ -345,17 +347,22 @@ const taskPath = (projectId: number, taskId: number) => `/projects/${enc(project
 
 /* ===== 칸반 보드 ===== */
 
-/** GET /api/projects/{projectId}/board — assigneeUserId를 주면 그 담당자 카드만(카드 수·WIP는 컬럼 전체 기준) */
+/** GET /api/projects/{projectId}/board — assigneeUserId·phaseId를 주면 두 조건을 모두 만족하는 카드만(카드 수·WIP는 컬럼 전체 기준) */
 export const fetchBoard = async function ({
   projectId,
   assigneeUserId,
+  phaseId,
   signal,
 }: {
   projectId: number;
   assigneeUserId?: number | null;
+  phaseId?: number | null;
   signal?: AbortSignal;
 }) {
-  const query = assigneeUserId ? `?assigneeUserId=${enc(assigneeUserId)}` : "";
+  const search = new URLSearchParams();
+  if (positiveId(assigneeUserId) !== null) search.set("assigneeUserId", String(assigneeUserId));
+  if (positiveId(phaseId) !== null) search.set("phaseId", String(phaseId));
+  const query = search.toString() ? `?${search}` : "";
   const result = await apiRequest<BoardDto>({ path: `${boardPath(projectId)}${query}`, signal });
   return mapResult(result, (dto) => toColumns(dto?.columns));
 };

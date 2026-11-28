@@ -35,8 +35,9 @@ const NOTICE_CLASS = {
  */
 export default function ServerKanbanView({ project }: { project: Project & { serverId: number } }) {
   const projectId = project.serverId;
+  const [phaseId, setPhaseId] = useState<number | null>(null);
   const [assigneeUserId, setAssigneeUserId] = useState<number | null>(null);
-  const { state, reload, viewer } = useServerBoard(projectId, assigneeUserId);
+  const { state, reload, viewer } = useServerBoard(projectId, assigneeUserId, phaseId);
   const [notice, setNotice] = useState<Notice>(null);
   const [busy, setBusy] = useState(false);
   const [columnsOpen, setColumnsOpen] = useState(false);
@@ -44,6 +45,12 @@ export default function ServerKanbanView({ project }: { project: Project & { ser
   const [dragging, setDragging] = useState<BoardCard | null>(null);
   const [overColumn, setOverColumn] = useState<number | null>(null);
   const busyRef = useRef(false);
+
+  const hasFilter = phaseId !== null || assigneeUserId !== null;
+  const resetFilters = () => {
+    setPhaseId(null);
+    setAssigneeUserId(null);
+  };
 
   if (state.phase === "loading") return <p role="status" className="py-10 text-center text-[13px] text-foreground-500">{BOARD_TEXT.loading}</p>;
   if (state.phase === "unavailable") return <EmptyState icon="ri-layout-grid-line" title={BOARD_TEXT.unavailable} />;
@@ -54,12 +61,19 @@ export default function ServerKanbanView({ project }: { project: Project & { ser
         icon="ri-error-warning-line"
         title={BOARD_TEXT.loadFailed}
         description={state.message}
-        action={<button type="button" className="btn-outline" onClick={reload}>{BOARD_TEXT.retry}</button>}
+        action={
+          <div className="flex items-center justify-center gap-2">
+            <button type="button" className="btn-outline" onClick={reload}>{BOARD_TEXT.retry}</button>
+            {hasFilter && (
+              <button type="button" className="btn-outline" onClick={resetFilters}>{BOARD_TEXT.resetFilters}</button>
+            )}
+          </div>
+        }
       />
     );
   }
 
-  const { columns, members } = state;
+  const { columns, phases, members } = state;
   const note = boardViewerNote(viewer);
   const cardTotal = columns.reduce((sum, c) => sum + c.cards.length, 0);
 
@@ -104,6 +118,17 @@ export default function ServerKanbanView({ project }: { project: Project & { ser
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
+          {phases.length > 0 && (
+            <select
+              className="field w-auto min-w-[108px] text-[12px]"
+              aria-label={BOARD_TEXT.phaseFilter}
+              value={phaseId ?? ""}
+              onChange={(e) => setPhaseId(e.target.value ? Number(e.target.value) : null)}
+            >
+              <option value="">{BOARD_TEXT.phaseAll}</option>
+              {phases.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          )}
           <select
             className="field w-auto min-w-[116px] text-[12px]"
             aria-label={BOARD_TEXT.assigneeFilter}
@@ -160,8 +185,15 @@ export default function ServerKanbanView({ project }: { project: Project & { ser
                     <li
                       key={card.id}
                       draggable={movable && !busy}
-                      onDragStart={() => setDragging(card)}
-                      onDragEnd={() => setDragging(null)}
+                      onDragStart={(e) => {
+                        if (!movable || busy) return;
+                        e.dataTransfer?.setData("text/plain", String(card.id));
+                        setDragging(card);
+                      }}
+                      onDragEnd={() => {
+                        setDragging(null);
+                        setOverColumn(null);
+                      }}
                       className={`rounded-lg border border-background-300 bg-background-50 p-2.5 shadow-card ${movable ? "cursor-grab" : ""}`}
                     >
                       {card.parentTaskName && <p className="truncate text-[10.5px] text-foreground-500">{formatLabel(BOARD_TEXT.subtaskOf, { name: card.parentTaskName })}</p>}
@@ -202,6 +234,21 @@ export default function ServerKanbanView({ project }: { project: Project & { ser
           );
         })}
       </div>
+
+      {hasFilter && cardTotal === 0 && (
+        <div className="card">
+          <EmptyState
+            icon="ri-layout-grid-line"
+            title={BOARD_TEXT.emptyFilteredTitle}
+            description={BOARD_TEXT.emptyFilteredDescription}
+            action={
+              <button type="button" className="btn-outline" onClick={resetFilters}>
+                {BOARD_TEXT.resetFilters}
+              </button>
+            }
+          />
+        </div>
+      )}
 
       {columnsOpen && <BoardColumnsDialog projectId={projectId} columns={columns} onClose={() => setColumnsOpen(false)} onChanged={reload} />}
       {detailTaskId !== null && (

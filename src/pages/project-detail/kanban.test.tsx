@@ -53,8 +53,14 @@ const members = (myActor: string) => ({
   hasNext: false,
 });
 
-const handlers = (myActor: string, boardBody: unknown = board()) => ({
+const phases = [
+  { id: 1, name: "설계", sortOrder: 1, status: "IN_PROGRESS", gateApproverUserId: null },
+  { id: 2, name: "개발", sortOrder: 2, status: "WAITING", gateApproverUserId: null },
+];
+
+const handlers = (myActor: string, boardBody: unknown = board(), phaseList: unknown = phases) => ({
   "GET /api/projects/77/board": () => jsonOk(boardBody),
+  "GET /api/projects/77/phases": () => jsonOk(phaseList),
   "GET /api/projects/77/members": () => jsonOk(members(myActor)),
 });
 
@@ -152,6 +158,166 @@ describe("api 모드 칸반 (서버 프로젝트)", () => {
     await screen.findByText("API 설계");
     fireEvent.change(screen.getByRole("combobox", { name: BOARD_TEXT.assigneeFilter }), { target: { value: "11" } });
     await waitFor(() => expect(calls.some((c) => c.path === "/api/projects/77/board?assigneeUserId=11")).toBe(true));
+  });
+
+  it("단계 필터와 담당자 필터를 조합해 서버에 요청하고, 빈 결과 시 안내와 초기화 버튼을 보여 준다", async () => {
+    const { calls } = renderServerWith({
+      ...handlers("PM"),
+      "GET /api/projects/77/board": ({ url }) => {
+        const phase = url.searchParams.get("phaseId");
+        const assignee = url.searchParams.get("assigneeUserId");
+        if (phase === "2" && assignee === "11") {
+          return jsonOk(board([]));
+        }
+        return jsonOk(board());
+      },
+    });
+    await screen.findByText("API 설계");
+
+    fireEvent.change(screen.getByRole("combobox", { name: BOARD_TEXT.phaseFilter }), { target: { value: "2" } });
+    await waitFor(() => expect(calls.some((c) => c.path === "/api/projects/77/board?phaseId=2")).toBe(true));
+
+    fireEvent.change(screen.getByRole("combobox", { name: BOARD_TEXT.assigneeFilter }), { target: { value: "11" } });
+    await waitFor(() => expect(calls.some((c) => c.path === "/api/projects/77/board?assigneeUserId=11&phaseId=2")).toBe(true));
+
+    expect(await screen.findByText(BOARD_TEXT.emptyFilteredTitle)).toBeTruthy();
+    expect(screen.getByText(BOARD_TEXT.emptyFilteredDescription)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: BOARD_TEXT.resetFilters }));
+    await waitFor(() => expect(screen.getByText("API 설계")).toBeTruthy());
+    expect(screen.queryByText(BOARD_TEXT.emptyFilteredTitle)).toBeNull();
+  });
+
+  it("단계 없는 프로젝트(단계 404)에서는 단계 필터를 숨기고 보드를 정상 표시한다", async () => {
+    renderServerWith({
+      ...handlers("PM"),
+      "GET /api/projects/77/phases": () => jsonFail(404, "단계를 찾을 수 없습니다"),
+    });
+    await screen.findByText("API 설계");
+    expect(screen.queryByRole("combobox", { name: BOARD_TEXT.phaseFilter })).toBeNull();
+    expect(screen.getByRole("combobox", { name: BOARD_TEXT.assigneeFilter })).toBeTruthy();
+  });
+
+  it("드래그앤드롭: 카드를 다른 컬럼에 드롭하면 상태 변경 API를 호출하고 새 컬럼에 반영한다", async () => {
+    let moved = false;
+    const { calls } = renderServerWith({
+      ...handlers("PM"),
+      "GET /api/projects/77/board": () =>
+        jsonOk(moved ? { columns: [column(31, "TODO"), column(32, "IN_PROGRESS", [card({ status: "IN_PROGRESS", version: 3 })]), column(33, "REVIEW"), column(34, "DONE")] } : board()),
+      "PUT /api/projects/77/board/cards/103/column": () => {
+        moved = true;
+        return jsonOk({ card: card({ status: "IN_PROGRESS", version: 3 }), column: column(32, "IN_PROGRESS"), wipWarning: false });
+      },
+    });
+    const cardItem = (await screen.findByText("API 설계")).closest("li");
+    if (!cardItem) throw new Error("카드 항목을 찾을 수 없다");
+    const targetColumn = screen.getByRole("region", { name: "진행" });
+
+    fireEvent.dragStart(cardItem);
+    fireEvent.dragOver(targetColumn);
+    fireEvent.drop(targetColumn);
+
+    expect(await screen.findByText("'API 설계'을(를) '진행'(으)로 옮겼습니다.")).toBeTruthy();
+    expect(calls.find((c) => c.method === "PUT")).toMatchObject({
+      path: "/api/projects/77/board/cards/103/column",
+      body: { columnId: 32, version: 2 },
+    });
+    await waitFor(() => expect(within(targetColumn).getByText("API 설계")).toBeTruthy());
+  });
+
+  it("드래그앤드롭: WIP 한도 초과 응답이면 경고를 표시한다", async () => {
+    renderServerWith({
+      ...handlers("PM"),
+      "PUT /api/projects/77/board/cards/103/column": () =>
+        jsonOk({ card: card({ status: "IN_PROGRESS", version: 3 }), column: column(32, "IN_PROGRESS", [], { wipLimit: 1, cardCount: 2, wipExceeded: true }), wipWarning: true }),
+    });
+    const cardItem = (await screen.findByText("API 설계")).closest("li");
+    if (!cardItem) throw new Error("카드 항목을 찾을 수 없다");
+    const targetColumn = screen.getByRole("region", { name: "진행" });
+
+    fireEvent.dragStart(cardItem);
+    fireEvent.dragOver(targetColumn);
+    fireEvent.drop(targetColumn);
+
+    const status = await screen.findByRole("status");
+    expect(status.textContent).toBe("'진행' 컬럼이 WIP 한도를 넘었습니다. 이동은 반영되었습니다.");
+  });
+
+  it("드래그앤드롭: 단계·담당자 필터 적용 중에도 이동이 동작하고 필터 쿼리를 유지해 다시 조회한다", async () => {
+    let moved = false;
+    const { calls } = renderServerWith({
+      ...handlers("PM"),
+      "GET /api/projects/77/board": () =>
+        jsonOk(moved ? { columns: [column(31, "TODO"), column(32, "IN_PROGRESS", [card({ status: "IN_PROGRESS", version: 3 })]), column(33, "REVIEW"), column(34, "DONE")] } : board()),
+      "PUT /api/projects/77/board/cards/103/column": () => {
+        moved = true;
+        return jsonOk({ card: card({ status: "IN_PROGRESS", version: 3 }), column: column(32, "IN_PROGRESS"), wipWarning: false });
+      },
+    });
+    await screen.findByText("API 설계");
+    fireEvent.change(screen.getByRole("combobox", { name: BOARD_TEXT.phaseFilter }), { target: { value: "1" } });
+    fireEvent.change(screen.getByRole("combobox", { name: BOARD_TEXT.assigneeFilter }), { target: { value: "11" } });
+    await waitFor(() => expect(calls.some((c) => c.path === "/api/projects/77/board?assigneeUserId=11&phaseId=1")).toBe(true));
+
+    const callsBeforeDrop = calls.filter((c) => c.path === "/api/projects/77/board?assigneeUserId=11&phaseId=1").length;
+    const cardItem = screen.getByText("API 설계").closest("li");
+    if (!cardItem) throw new Error("카드 항목을 찾을 수 없다");
+    const targetColumn = screen.getByRole("region", { name: "진행" });
+
+    fireEvent.dragStart(cardItem);
+    fireEvent.dragOver(targetColumn);
+    fireEvent.drop(targetColumn);
+
+    expect(await screen.findByText("'API 설계'을(를) '진행'(으)로 옮겼습니다.")).toBeTruthy();
+    await waitFor(() =>
+      expect(calls.filter((c) => c.path === "/api/projects/77/board?assigneeUserId=11&phaseId=1").length).toBeGreaterThan(callsBeforeDrop),
+    );
+    expect(within(targetColumn).getByText("API 설계")).toBeTruthy();
+  });
+
+  it("드래그앤드롭: 서버 오류(500)로 실패하면 오류를 표시하고 카드는 원래 컬럼에 남는다", async () => {
+    renderServerWith({
+      ...handlers("PM"),
+      "PUT /api/projects/77/board/cards/103/column": () => jsonFail(500, "서버 내부 오류"),
+    });
+    const cardItem = (await screen.findByText("API 설계")).closest("li");
+    if (!cardItem) throw new Error("카드 항목을 찾을 수 없다");
+    const sourceColumn = screen.getByRole("region", { name: "대기" });
+    const targetColumn = screen.getByRole("region", { name: "진행" });
+
+    fireEvent.dragStart(cardItem);
+    fireEvent.dragOver(targetColumn);
+    fireEvent.drop(targetColumn);
+
+    expect((await screen.findByRole("alert")).textContent).toBe(BOARD_TEXT.serverError);
+    expect(within(sourceColumn).getByText("API 설계")).toBeTruthy();
+    expect(within(targetColumn).queryByText("API 설계")).toBeNull();
+  });
+
+  it("드래그앤드롭 경계값: 같은 컬럼에 드롭하거나 이동 권한이 없으면 API를 호출하지 않는다", async () => {
+    const { calls } = renderServerWith(handlers("BUSINESS_OWNER", board([card({ assignee: { id: ME, name: "홍길동" } })])));
+    const cardItem = (await screen.findByText("API 설계")).closest("li");
+    if (!cardItem) throw new Error("카드 항목을 찾을 수 없다");
+    const targetColumn = screen.getByRole("region", { name: "진행" });
+
+    fireEvent.dragStart(cardItem);
+    fireEvent.dragOver(targetColumn);
+    fireEvent.drop(targetColumn);
+
+    expect(calls.some((c) => c.method === "PUT")).toBe(false);
+  });
+
+  it("드래그앤드롭 경계값: PM이라도 같은 컬럼에 드롭하면 API를 호출하지 않는다", async () => {
+    const { calls } = renderServerWith(handlers("PM"));
+    const cardItem = (await screen.findByText("API 설계")).closest("li");
+    if (!cardItem) throw new Error("카드 항목을 찾을 수 없다");
+    const sameColumn = screen.getByRole("region", { name: "대기" });
+
+    fireEvent.dragStart(cardItem);
+    fireEvent.dragOver(sameColumn);
+    fireEvent.drop(sameColumn);
+
+    expect(calls.some((c) => c.method === "PUT")).toBe(false);
   });
 
   it("칸반 기능이 꺼졌으면(404) 사용할 수 없다고 안내한다", async () => {

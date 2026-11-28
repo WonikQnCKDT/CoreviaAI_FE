@@ -64,7 +64,7 @@ describe("fetchBoard", () => {
     expect(result.data.map((c) => c.id)).toEqual([31, 32]);
     expect(result.data[1]).toMatchObject({ name: "개발 중", labelKey: null, statusCategory: "progress", wipLimit: 3, wipExceeded: true });
     expect(result.data[1].cards[0]).toMatchObject({ taskType: "defect", priority: "high", status: "progress" });
-    expect(result.data[0].cards[0]).toMatchObject({ parentTaskName: "설계", assignee: { id: 11, name: "김QA" } });
+    expect(result.data[0].cards[0]).toMatchObject({ phaseId: 1, parentTaskName: "설계", assignee: { id: 11, name: "김QA" } });
   });
 
   it("라벨 키 형식이 아니면 버리고, 상태를 모르는 컬럼은 뺀다", async () => {
@@ -77,11 +77,20 @@ describe("fetchBoard", () => {
     expect(result.data[0].labelKey).toBeNull();
   });
 
-  it("담당자 필터는 쿼리로 보낸다", async () => {
+  it("담당자·단계 필터는 양수일 때만 쿼리로 보내고 조합도 지원한다", async () => {
     const { calls } = stubFetch({ "GET /api/projects/7/board": () => jsonOk({ columns: [] }) });
     await fetchBoard({ projectId: 7, assigneeUserId: 11 });
-    await fetchBoard({ projectId: 7, assigneeUserId: null });
-    expect(calls.map((c) => c.path)).toEqual(["/api/projects/7/board?assigneeUserId=11", "/api/projects/7/board"]);
+    await fetchBoard({ projectId: 7, phaseId: 2 });
+    await fetchBoard({ projectId: 7, assigneeUserId: 11, phaseId: 2 });
+    await fetchBoard({ projectId: 7, assigneeUserId: null, phaseId: null });
+    await fetchBoard({ projectId: 7, assigneeUserId: 0, phaseId: -1 });
+    expect(calls.map((c) => c.path)).toEqual([
+      "/api/projects/7/board?assigneeUserId=11",
+      "/api/projects/7/board?phaseId=2",
+      "/api/projects/7/board?assigneeUserId=11&phaseId=2",
+      "/api/projects/7/board",
+      "/api/projects/7/board",
+    ]);
   });
 });
 
