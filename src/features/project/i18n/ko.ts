@@ -95,13 +95,6 @@ export const PROJECT_FEATURE_LABEL = defineLabels("project.feature", {
   git: "Git 연동",
 });
 
-/**
- * 멤버·설정 화면의 멤버 초대 안내(SCRUM-106에서 사용자 검색 컴포넌트로 연결하기 전까지).
- */
-export const PROJECT_DIRECTORY_TEXT = defineLabels("project.directory", {
-  usersUnavailable: "초대할 사용자를 찾는 사용자 검색 API가 아직 없어 멤버 초대를 할 수 없습니다. 서버에 일반 사용자용 사용자 검색 API가 생기면 초대할 수 있습니다.",
-});
-
 /** 초대할 사용자 이름 검색(UserSearchPicker). {keyword}·{count}는 FE가 값을 넣는 자리 */
 export const USER_SEARCH_TEXT = defineLabels("project.userSearch", {
   placeholder: "이름으로 찾기 (2자 이상)",
@@ -117,10 +110,7 @@ export const USER_SEARCH_TEXT = defineLabels("project.userSearch", {
 /** api 모드 멤버·설정 화면 문구 */
 export const PROJECT_SETTINGS_TEXT = defineLabels("project.settings", {
   inviteTitle: "멤버 초대",
-  inviteDisabled: "초대 기능 사용 불가",
   pmOnlyInvite: "멤버 초대는 프로젝트 PM만 할 수 있습니다.",
-  pmChangeNotConnected:
-    "서버 프로젝트의 PM 추가·해제는 멤버 역할 변경으로 합니다. 이 화면은 아직 서버와 연결되지 않아 바꿀 수 없습니다(이전 위임 API는 서버에서 없어졌습니다).",
   approverNotConnected: "게이트 승인자 변경은 서버 API가 아직 없어 이 화면에서 바꿀 수 없습니다(FR-PRJ-05).",
   serverMembers: "서버 멤버 목록 기준",
 });

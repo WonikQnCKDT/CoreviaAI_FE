@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (1119개)
+## 등록 필요 (1209개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -156,6 +156,28 @@
 | `admin.notice.userSaved` | {name} 사용자 정보를 저장했습니다. | admin.notice |
 | `admin.notice.userStatusChanged` | {name} 계정을 {status} 상태로 바꿨습니다. | admin.notice |
 | `admin.ownAccountLocked` | 본인 계정의 역할과 상태는 바꿀 수 없습니다. | admin |
+| `admin.pmReassign.clearSelection` | 선택 해제 | admin.pmReassign |
+| `admin.pmReassign.code` | 프로젝트 코드 | admin.pmReassign |
+| `admin.pmReassign.codeFormat` | 프로젝트 코드는 영문·숫자로 시작하는 영문·숫자·하이픈(-) 2~20자입니다. | admin.pmReassign |
+| `admin.pmReassign.codePlaceholder` | 예) PRT-2026-001 | admin.pmReassign |
+| `admin.pmReassign.codeRequired` | 프로젝트 코드를 입력해 주세요. | admin.pmReassign |
+| `admin.pmReassign.confirmBody` | {code} 프로젝트의 PM으로 {name}을(를) 지정합니다. | admin.pmReassign |
+| `admin.pmReassign.confirmNote` | 활성 PM이 남아 있는 프로젝트이거나 코드가 없으면 서버가 거부합니다. 남아 있던 비활성 PM은 멤버에서 제외됩니다. | admin.pmReassign |
+| `admin.pmReassign.confirmTitle` | PM을 재지정하시겠습니까? | admin.pmReassign |
+| `admin.pmReassign.description` | 활성 PM이 한 명도 남지 않은 프로젝트(퇴사·비활성화 등)에만 새 PM을 지정합니다. 남아 있던 비활성 PM은 멤버에서 제외되고, 처리 내용은 프로젝트 멤버 이력과 감사 로그에 남습니다. | admin.pmReassign |
+| `admin.pmReassign.done` | {code} 프로젝트의 PM을 재지정했습니다. 현재 PM: {names} | admin.pmReassign |
+| `admin.pmReassign.notAllowed` | 재지정할 수 없습니다. 활성 PM이 남아 있는 프로젝트이거나 없는 프로젝트 코드입니다. 코드를 확인하고, 활성 PM이 있으면 그 PM이 직접 PM을 추가·해제하도록 안내해 주세요. | admin.pmReassign |
+| `admin.pmReassign.privacyNote` | 시스템 관리자는 프로젝트 데이터를 볼 수 없어 프로젝트 코드로만 지정합니다. 활성 PM이 있는 프로젝트는 PM이 직접 PM을 추가·해제합니다. | admin.pmReassign |
+| `admin.pmReassign.selected` | 선택됨: {name} | admin.pmReassign |
+| `admin.pmReassign.submit` | PM 재지정 | admin.pmReassign |
+| `admin.pmReassign.title` | PM 재지정 | admin.pmReassign |
+| `admin.pmReassign.user` | 새 PM | admin.pmReassign |
+| `admin.pmReassign.userEmpty` | 조건에 맞는 활성 일반 사용자가 없습니다 | admin.pmReassign |
+| `admin.pmReassign.userFailed` | 사용자 목록을 불러오지 못했습니다 | admin.pmReassign |
+| `admin.pmReassign.userLoading` | 사용자를 찾는 중입니다 | admin.pmReassign |
+| `admin.pmReassign.userRequired` | 새 PM으로 지정할 사용자를 선택해 주세요. | admin.pmReassign |
+| `admin.pmReassign.userSearch` | 새 PM 이름 또는 아이디 검색 | admin.pmReassign |
+| `admin.pmReassign.userSearchHint` | 활성 일반 사용자만 PM으로 지정할 수 있습니다. | admin.pmReassign |
 | `admin.resetFilters` | 필터 초기화 | admin |
 | `admin.retry` | 다시 시도 | admin |
 | `admin.roleChangeConfirmBody` | 역할을 바꾸면 대상 사용자의 모든 세션이 즉시 종료되어 다시 로그인해야 합니다. | admin |
@@ -511,10 +533,12 @@
 | `menu.admin.hintDepartments` | 조직 트리 | menu.admin |
 | `menu.admin.hintErrorLogs` | 미처리 예외 조회 | menu.admin |
 | `menu.admin.hintLabels` | 문구·번역 | menu.admin |
+| `menu.admin.hintPmReassign` | 활성 PM 없는 프로젝트 | menu.admin |
 | `menu.admin.hintRisk` | 임계값·가중치·이력 | menu.admin |
 | `menu.admin.hintUsers` | 계정·부서·역할 | menu.admin |
 | `menu.admin.labels` | 다국어 라벨 | menu.admin |
 | `menu.admin.nav` | 시스템 관리 | menu.admin |
+| `menu.admin.pmReassign` | PM 재지정 | menu.admin |
 | `menu.admin.risk` | AI · 리스크 설정 | menu.admin |
 | `menu.admin.users` | 사용자 | menu.admin |
 | `menu.admin.usersAndOrg` | 사용자 · 조직 | menu.admin |
@@ -808,7 +832,6 @@
 | `project.create.template` | 템플릿 | project.create |
 | `project.create.title` | 새 프로젝트 | project.create |
 | `project.create.visibility` | 공개 범위 | project.create |
-| `project.directory.usersUnavailable` | 초대할 사용자를 찾는 사용자 검색 API가 아직 없어 멤버 초대를 할 수 없습니다. 서버에 일반 사용자용 사용자 검색 API가 생기면 초대할 수 있습니다. | project.directory |
 | `project.feature.board` | 게시판 | project.feature |
 | `project.feature.deliverable` | 산출물·게이트 | project.feature |
 | `project.feature.file` | 파일 | project.feature |
@@ -817,10 +840,77 @@
 | `project.feature.kanban` | 칸반 | project.feature |
 | `project.feature.meeting` | 회의록 | project.feature |
 | `project.feature.wbs` | WBS·간트 | project.feature |
+| `project.member.actor.customerLiaison` | 고객 담당자 | project.member.actor |
+| `project.member.actor.deptStaff` | 부서 담당자 | project.member.actor |
+| `project.member.alreadyMember` | 이미 프로젝트 멤버인 사용자가 있어 아무도 초대하지 않았습니다. 멤버 목록을 다시 불러왔으니 확인 후 다시 시도해 주세요. | project.member |
+| `project.member.approver` | 승인자 | project.member |
+| `project.member.approverHint` | 게이트 승인자는 PM이 될 수 없고 멤버에서 제외할 수 없습니다. 승인자를 먼저 변경해 주세요. | project.member |
+| `project.member.assignedTasks` | 담당 업무 {count}건 | project.member |
+| `project.member.cancel` | 취소 | project.member |
+| `project.member.change.invited` | 초대 | project.member.change |
+| `project.member.change.pmAdded` | PM 추가 | project.member.change |
+| `project.member.change.pmDelegated` | PM 위임(이전 기록) | project.member.change |
+| `project.member.change.pmReassigned` | PM 재지정(관리자) | project.member.change |
+| `project.member.change.pmReleased` | PM 해제 | project.member.change |
+| `project.member.change.removed` | 제외 | project.member.change |
+| `project.member.change.roleChanged` | 역할 변경 | project.member.change |
+| `project.member.confirmChange` | 변경 | project.member |
+| `project.member.confirmPmAddTitle` | PM으로 추가하시겠습니까? | project.member |
+| `project.member.confirmPmReleaseTitle` | PM을 해제하시겠습니까? | project.member |
+| `project.member.confirmRemove` | 제외 | project.member |
+| `project.member.confirmRemoveBody` | {name}을(를) 프로젝트 멤버에서 제외합니다. 제외한 기록은 변경 이력에 남습니다. | project.member |
+| `project.member.confirmRemoveTitle` | 멤버에서 제외하시겠습니까? | project.member |
+| `project.member.confirmRoleBody` | {name}의 역할을 {before}에서 {after}(으)로 바꿉니다. | project.member |
+| `project.member.confirmRoleTitle` | 역할을 변경하시겠습니까? | project.member |
+| `project.member.empty` | 아직 멤버가 없습니다 | project.member |
+| `project.member.hasTasks` | 담당 중인 업무가 있어 제외할 수 없습니다. 아래 업무를 다른 멤버에게 먼저 재배정해 주세요. | project.member |
+| `project.member.historyBy` | 처리: {name} | project.member |
+| `project.member.historyDescription` | 초대·역할 변경·PM 추가·해제·재지정·제외를 최신순으로 보여 줍니다. | project.member |
+| `project.member.historyEmpty` | 아직 멤버 변경 이력이 없습니다 | project.member |
+| `project.member.historyFailed` | 변경 이력을 불러오지 못했습니다 | project.member |
+| `project.member.historyLoading` | 변경 이력을 불러오는 중입니다 | project.member |
+| `project.member.historyTitle` | 멤버·역할 변경 이력 | project.member |
+| `project.member.invited` | {count}명을 초대했습니다. | project.member |
+| `project.member.inviteEmpty` | 아직 고른 사용자가 없습니다. | project.member |
+| `project.member.inviteHint` | 이름으로 찾아 추가하고 각자 역할을 고른 뒤 한 번에 초대합니다. 역할은 프로젝트에 지정한 액터 중 PM을 뺀 것에서 고릅니다. PM은 초대한 뒤 역할 변경으로 추가합니다. | project.member |
+| `project.member.inviteLimit` | 한 번에 최대 {max}명까지 초대할 수 있습니다. | project.member |
+| `project.member.inviteNeedActor` | PM 외 액터가 지정되어 있지 않아 초대할 수 없습니다. | project.member |
+| `project.member.inviteRejected` | 초대할 수 없는 사용자이거나 고를 수 없는 역할이 있어 아무도 초대하지 않았습니다. | project.member |
+| `project.member.inviteRemove` | {name}을(를) 초대 목록에서 빼기 | project.member |
+| `project.member.inviteRole` | {name} 초대 역할 | project.member |
+| `project.member.inviteSearch` | 초대할 사용자 찾기 | project.member |
+| `project.member.inviteSubmit` | {count}명 초대 | project.member |
+| `project.member.inviting` | 초대 중 | project.member |
+| `project.member.lastPm` | 프로젝트에는 PM이 1명 이상 있어야 해서 마지막 PM은 해제하거나 제외할 수 없습니다. 다른 멤버를 먼저 PM으로 추가해 주세요. | project.member |
+| `project.member.lastPmHint` | 마지막 PM이라 역할을 바꾸거나 제외할 수 없습니다. 다른 멤버를 먼저 PM으로 추가해 주세요. | project.member |
+| `project.member.loadFailed` | 멤버 목록을 불러오지 못했습니다 | project.member |
+| `project.member.loading` | 멤버를 불러오는 중입니다 | project.member |
+| `project.member.loadingMore` | 더 불러오는 중 | project.member |
+| `project.member.loadMore` | 더 보기 | project.member |
+| `project.member.me` | 나 | project.member |
+| `project.member.memberGone` | 이미 제외되었거나 없는 멤버입니다. 목록을 다시 불러왔습니다. | project.member |
+| `project.member.noActor` | 없음 | project.member |
+| `project.member.pmAddNote` | PM이 되면 멤버·단계·업무를 편집할 수 있습니다. 게이트 승인자로 지정된 멤버는 PM이 될 수 없습니다. | project.member |
+| `project.member.pmCount` | PM {count}명 | project.member |
+| `project.member.pmGuide` | PM 추가·해제는 아래 멤버 목록에서 역할을 PM으로 바꾸거나 PM에서 다른 역할로 바꿔 합니다. PM은 1명 이상 남아야 합니다. 활성 PM이 모두 없어진 프로젝트는 시스템 관리자가 PM을 재지정합니다. | project.member |
+| `project.member.pmGuideReadOnly` | PM 추가·해제는 현재 PM만 할 수 있습니다. 활성 PM이 모두 없어진 프로젝트는 시스템 관리자가 PM을 재지정합니다. | project.member |
+| `project.member.pmOnly` | PM 권한이 없어 처리하지 못했습니다. 다른 PM이 먼저 역할을 바꿨을 수 있어 목록을 다시 불러왔습니다. | project.member |
+| `project.member.pmReleaseSelfNote` | 본인의 PM을 해제하면 이 프로젝트의 PM 권한이 바로 사라집니다. | project.member |
+| `project.member.pmTargetRejected` | 이 멤버는 PM으로 지정할 수 없습니다. 게이트 승인자이거나 비활성 계정인지 확인해 주세요. | project.member |
+| `project.member.readOnly` | 읽기 전용 · 역할 변경과 제외는 PM만 할 수 있습니다 | project.member |
+| `project.member.remove` | 제외 | project.member |
+| `project.member.removeAria` | {name}을(를) 멤버에서 제외 | project.member |
+| `project.member.removeConflict` | 마지막 PM이거나 게이트 승인자라 제외할 수 없습니다. 다른 PM을 먼저 추가하거나 승인자를 먼저 변경해 주세요. | project.member |
+| `project.member.removed` | {name}을(를) 멤버에서 제외했습니다. | project.member |
+| `project.member.retry` | 다시 시도 | project.member |
+| `project.member.roleChanged` | {name}의 역할을 {after}(으)로 바꿨습니다. | project.member |
+| `project.member.roleRejected` | 선택한 역할로 바꿀 수 없습니다. 프로젝트에 지정한 액터인지 확인해 주세요. | project.member |
+| `project.member.roleSelect` | {name}의 역할 | project.member |
+| `project.member.submitting` | 처리 중 | project.member |
+| `project.member.title` | 현재 멤버 ({count}명) | project.member |
+| `project.member.unknownName` | (이름 없음) | project.member |
 | `project.settings.approverNotConnected` | 게이트 승인자 변경은 서버 API가 아직 없어 이 화면에서 바꿀 수 없습니다(FR-PRJ-05). | project.settings |
-| `project.settings.inviteDisabled` | 초대 기능 사용 불가 | project.settings |
 | `project.settings.inviteTitle` | 멤버 초대 | project.settings |
-| `project.settings.pmChangeNotConnected` | 서버 프로젝트의 PM 추가·해제는 멤버 역할 변경으로 합니다. 이 화면은 아직 서버와 연결되지 않아 바꿀 수 없습니다(이전 위임 API는 서버에서 없어졌습니다). | project.settings |
 | `project.settings.pmOnlyInvite` | 멤버 초대는 프로젝트 PM만 할 수 있습니다. | project.settings |
 | `project.settings.serverMembers` | 서버 멤버 목록 기준 | project.settings |
 | `project.template.empty` | 빈 템플릿 | project.template |

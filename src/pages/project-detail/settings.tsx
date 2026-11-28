@@ -7,17 +7,24 @@ import EmptyState from "@/components/ui/EmptyState";
 import Modal from "@/components/ui/Modal";
 import GateApproverPanel from "@/features/gate/components/GateApproverPanel";
 import { ROLE_LABEL } from "@/utils/ui";
-import { canEditProject, isSystemAdmin } from "@/utils/permission";
+import { canEditProject, isExecutive, isSystemAdmin } from "@/utils/permission";
 import { gateApproverCandidates } from "@/features/gate/utils/gate";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 import { useAuth } from "@/features/auth/authContext";
 import { PROJECT_SETTINGS_TEXT } from "@/features/project/i18n/ko";
-import { SERVER_DIRECTORY } from "@/features/project/utils/serverCreate";
+import { PROJECT_MEMBER_TEXT } from "@/features/project/i18n/member";
+import { useProjectServerReload } from "@/features/project/hooks/useProjectOutlet";
+import ServerMemberPanel from "@/features/project/components/members/ServerMemberPanel";
+import MemberHistoryList from "@/features/project/components/members/MemberHistoryList";
+import ServerMemberInvitePanel from "@/features/project/components/members/ServerMemberInvitePanel";
 
 export default function ProjectSettingsPage() {
   const { projectId } = useParams();
   const { projects, users, currentUser, changeProjectPm } = useDemoStore();
-  const { mode } = useAuth();
+  const { mode, account } = useAuth();
+  const reloadServer = useProjectServerReload();
+  const [historyKey, setHistoryKey] = useState(0);
+  const [memberKey, setMemberKey] = useState(0);
   const [nextPmId, setNextPmId] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pmMessage, setPmMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
@@ -50,6 +57,24 @@ export default function ProjectSettingsPage() {
     .map((member) => users.find((user) => user.id === member.userId))
     .filter((user): user is NonNullable<typeof user> => Boolean(user) && Boolean(user?.active));
   const nextPm = users.find((u) => u.id === nextPmId) || null;
+  // 서버 프로젝트: 이미 멤버인 서버 사용자 ID(초대 검색 결과에서 뺀다. 최종 판정은 서버 409)
+  const memberServerIds = project.members
+    .map((member) => users.find((user) => user.id === member.userId)?.serverUserId)
+    .filter((id): id is number => typeof id === "number");
+  /** 멤버 역할·구성이 바뀌면 이력과 화면 프로젝트(PM 표시·권한)를 다시 맞춘다 */
+  const refreshHistory = () => {
+    setHistoryKey((key) => key + 1);
+    reloadServer();
+  };
+  /** 초대 뒤에는 멤버 목록도 다시 받는다 */
+  const refreshServerMembers = () => {
+    setMemberKey((key) => key + 1);
+    refreshHistory();
+  };
+  // 서버 프로젝트: 화면이 아는 게이트 승인자의 서버 사용자 ID(멤버 화면에서 PM 지정·제외를 미리 막는다)
+  const approverServerIds = Object.values(project.gateApprovers || {})
+    .map((userId) => users.find((user) => user.id === userId)?.serverUserId)
+    .filter((id): id is number => typeof id === "number");
 
   const requestPmChange = () => {
     if (!nextPmId) {
@@ -163,7 +188,12 @@ export default function ProjectSettingsPage() {
               </>
             ) : (
               <p className="mt-1 text-[10.5px] leading-4 text-foreground-600">
-                {serverManaged ? PROJECT_SETTINGS_TEXT.pmChangeNotConnected : "PM 변경은 현재 PM 또는 시스템 관리자만 수행할 수 있습니다."}
+                {/* 서버 프로젝트의 PM 추가·해제는 멤버 역할 변경으로 한다(아래 멤버 목록). 위임 API는 서버에 없다. */}
+                {serverManaged
+                  ? isPm
+                    ? PROJECT_MEMBER_TEXT.pmGuide
+                    : PROJECT_MEMBER_TEXT.pmGuideReadOnly
+                  : "PM 변경은 현재 PM 또는 시스템 관리자만 수행할 수 있습니다."}
               </p>
             )}
             {pmMessage && (
@@ -193,58 +223,69 @@ export default function ProjectSettingsPage() {
         </aside>
       </div>
 
-      {serverManaged && (
-        <section className="card px-4 py-3" aria-labelledby="member-invite-title">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h4 id="member-invite-title" className="text-[13px] font-semibold text-foreground-950">
-              {PROJECT_SETTINGS_TEXT.inviteTitle}
-            </h4>
-            <button type="button" className="btn-outline whitespace-nowrap" disabled aria-describedby="member-invite-reason">
-              <i className="ri-user-add-line" aria-hidden="true" /> {PROJECT_SETTINGS_TEXT.inviteTitle}
-            </button>
-          </div>
-          <p id="member-invite-reason" className="mt-2 flex items-start gap-1.5 text-[11px] leading-5 text-foreground-600">
-            <i className="ri-information-line mt-0.5 shrink-0" aria-hidden="true" />
-            {/* 초대 API(POST .../members)는 있지만 초대할 사용자를 찾을 검색 API가 없다. PM이 아니면 그 이유를 먼저 보여 준다. */}
-            <span>{isPm ? SERVER_DIRECTORY.users.reason() : PROJECT_SETTINGS_TEXT.pmOnlyInvite}</span>
-          </p>
-        </section>
+      {serverManaged && project.serverId !== undefined && (
+        <ServerMemberInvitePanel
+          key={`invite-${project.serverId}`}
+          projectId={project.serverId}
+          actors={project.actors}
+          memberUserIds={memberServerIds}
+          canInvite={isPm && !isExecutive(currentUser)}
+          onInvited={refreshServerMembers}
+        />
       )}
 
-      <section className="card overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-background-200 px-4 py-3">
-          <h4 className="text-[13px] font-semibold text-foreground-950">현재 멤버 ({project.members.length}명)</h4>
-          <span className="text-[10.5px] text-foreground-500">승인자 후보는 이 중 PM을 제외한 멤버입니다.</span>
-        </div>
-        <ul className="grid grid-cols-1 gap-2 px-4 py-3 sm:grid-cols-2 xl:grid-cols-3">
-          {project.members.map((member) => {
-            const user = users.find((u) => u.id === member.userId);
-            const isApprover = Object.values(project.gateApprovers || {}).includes(member.userId);
-            return (
-              <li
-                key={member.userId}
-                className="flex items-center gap-2.5 rounded-lg border border-background-200 bg-background-50 px-3 py-2"
-              >
-                <Avatar name={user?.name || "?"} size="sm" />
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-1.5">
-                    <span className="truncate text-[12.5px] font-medium text-foreground-900">{user?.name}</span>
-                    {member.userId === project.pmId && (
-                      <Badge className="border-primary-200 bg-primary-50 text-primary-700">PM</Badge>
-                    )}
-                    {isApprover && member.userId !== project.pmId && (
-                      <Badge className="border-accent-200 bg-accent-50 text-accent-800">승인자</Badge>
-                    )}
+      {serverManaged && project.serverId !== undefined && (
+        <>
+          <ServerMemberPanel
+            key={project.serverId}
+            projectId={project.serverId}
+            actors={project.actors}
+            viewerUserId={account?.userId ?? null}
+            viewerIsExecutive={isExecutive(currentUser)}
+            approverUserIds={approverServerIds}
+            refreshKey={memberKey}
+            onChanged={refreshHistory}
+          />
+          <MemberHistoryList key={`history-${project.serverId}`} projectId={project.serverId} refreshKey={historyKey} />
+        </>
+      )}
+
+      {!serverManaged && (
+        <section className="card overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-background-200 px-4 py-3">
+            <h4 className="text-[13px] font-semibold text-foreground-950">현재 멤버 ({project.members.length}명)</h4>
+            <span className="text-[10.5px] text-foreground-500">승인자 후보는 이 중 PM을 제외한 멤버입니다.</span>
+          </div>
+          <ul className="grid grid-cols-1 gap-2 px-4 py-3 sm:grid-cols-2 xl:grid-cols-3">
+            {project.members.map((member) => {
+              const user = users.find((u) => u.id === member.userId);
+              const isApprover = Object.values(project.gateApprovers || {}).includes(member.userId);
+              return (
+                <li
+                  key={member.userId}
+                  className="flex items-center gap-2.5 rounded-lg border border-background-200 bg-background-50 px-3 py-2"
+                >
+                  <Avatar name={user?.name || "?"} size="sm" />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-1.5">
+                      <span className="truncate text-[12.5px] font-medium text-foreground-900">{user?.name}</span>
+                      {member.userId === project.pmId && (
+                        <Badge className="border-primary-200 bg-primary-50 text-primary-700">PM</Badge>
+                      )}
+                      {isApprover && member.userId !== project.pmId && (
+                        <Badge className="border-accent-200 bg-accent-50 text-accent-800">승인자</Badge>
+                      )}
+                    </span>
+                    <span className="block truncate text-[10.5px] text-foreground-500">
+                      {user?.dept} · {ROLE_LABEL[member.role]}
+                    </span>
                   </span>
-                  <span className="block truncate text-[10.5px] text-foreground-500">
-                    {user?.dept} · {ROLE_LABEL[member.role]}
-                  </span>
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       <Modal
         open={confirmOpen}

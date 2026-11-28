@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 import ProjectCreatePage from "@/pages/project-create/page";
 import ProjectsPage from "@/pages/projects/page";
 import { useDemoStore } from "@/stores/DemoStore";
-import { PROJECT_CREATE_TEXT, PROJECT_DIRECTORY_TEXT, PROJECT_FEATURE_LABEL } from "@/features/project/i18n/ko";
+import { PROJECT_CREATE_TEXT, PROJECT_FEATURE_LABEL } from "@/features/project/i18n/ko";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 import { formatLabel } from "@/shared/i18n/store";
 import { jsonFail, jsonOk, renderApp, stubFetch } from "@/test/appHarness";
@@ -82,7 +82,6 @@ describe("api 모드 프로젝트 생성 (6단계 위자드)", () => {
     goStep("멤버");
     expect(screen.getByText(formatLabel(PROJECT_CREATE_TEXT.pmSelf, { name: "홍길동" }))).toBeTruthy();
     expect(screen.getByRole("combobox", { name: PROJECT_CREATE_TEXT.membersSearch })).toBeTruthy();
-    expect(screen.queryByText(PROJECT_DIRECTORY_TEXT.usersUnavailable)).toBeNull();
     // 데모 샘플 사용자(박지훈 등)는 api 모드 화면에 나오지 않는다.
     expect(screen.queryByText("박지훈")).toBeNull();
 
