@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState } from "react";
+import { Fragment, useRef, useState, type DragEvent } from "react";
 import { Link } from "react-router-dom";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
@@ -27,22 +27,35 @@ import {
   canManageWbs,
   canReparent,
   deriveDisplayStatus,
+  derivePhaseSummary,
+  findWbsItem,
   interpretWbsFailure,
   moveTarget,
   reparentCandidates,
+  resolveDropMove,
+  resolveDropPosition,
   viewerNote,
   type ReparentOption,
   type WbsAction,
+  type WbsDropPosition,
 } from "@/features/wbs/utils/wbsRules";
 import type { ApiResult } from "@/shared/api/client";
 import { formatLabel } from "@/shared/i18n/store";
 import type { Project } from "@/types";
 
 type Notice = { tone: "success" | "error"; text: string } | null;
+type DropTarget = { taskId: number; position: WbsDropPosition };
 
 const period = (item: WbsItem) => (item.startDate && item.endDate ? `${item.startDate} ~ ${item.endDate}` : "-");
 const effortText = (item: WbsItem) =>
   item.estimatedEffort === null ? WBS_TEXT.noEffort : formatLabel(WBS_TEXT.personDays, { value: item.estimatedEffort });
+
+const parseDraggedId = (dataTransfer: DataTransfer | null | undefined): number | null => {
+  const raw = dataTransfer?.getData?.("text/plain");
+  if (!raw) return null;
+  const num = Number(raw);
+  return Number.isInteger(num) && num > 0 ? num : null;
+};
 
 /**
  * api 모드 WBS(FR-WBS-01). 화면에 보이는 트리는 언제나 서버가 준 트리다.
@@ -59,7 +72,11 @@ export default function ServerWbsView({ project }: { project: Project & { server
   const [detailTaskId, setDetailTaskId] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
+  const [draggingId, setDraggingId] = useState<number | null>(null);
+  const [dropTarget, setDropTarget] = useState<DropTarget | null>(null);
   const busyRef = useRef(false);
+  const draggingIdRef = useRef<number | null>(null);
+  const dropTargetRef = useRef<DropTarget | null>(null);
 
   if (state.phase === "loading") {
     return <p className="py-10 text-center text-[13px] text-foreground-500" role="status">{WBS_TEXT.loading}</p>;
@@ -221,6 +238,83 @@ export default function ServerWbsView({ project }: { project: Project & { server
     if (ok) closeDialogs();
   };
 
+  const resetDrag = () => {
+    draggingIdRef.current = null;
+    dropTargetRef.current = null;
+    setDraggingId(null);
+    setDropTarget(null);
+  };
+
+  const handleDragStart = (event: DragEvent<HTMLTableRowElement>, item: WbsItem) => {
+    if (!pm || busy) {
+      event.preventDefault();
+      return;
+    }
+    draggingIdRef.current = item.id;
+    setDraggingId(item.id);
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", String(item.id));
+    }
+  };
+
+  const handleDragOver = (event: DragEvent<HTMLTableRowElement>, target: WbsItem) => {
+    if (!pm || busy || draggingIdRef.current === null) return;
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+    const position = resolveDropPosition(event.clientY, event.currentTarget.getBoundingClientRect());
+    const next: DropTarget = { taskId: target.id, position };
+    dropTargetRef.current = next;
+    setDropTarget((prev) => (prev?.taskId === target.id && prev.position === position ? prev : next));
+  };
+
+  const handleDragLeave = (event: DragEvent<HTMLTableRowElement>, targetId: number) => {
+    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+    if (dropTargetRef.current?.taskId === targetId) dropTargetRef.current = null;
+    setDropTarget((prev) => (prev?.taskId === targetId ? null : prev));
+  };
+
+  const handleDrop = (event: DragEvent<HTMLTableRowElement>, target: WbsItem) => {
+    event.preventDefault();
+    if (!pm || busy) {
+      resetDrag();
+      return;
+    }
+    const sourceId = draggingIdRef.current ?? parseDraggedId(event.dataTransfer);
+    const activeTarget = dropTargetRef.current;
+    const position =
+      activeTarget?.taskId === target.id
+        ? activeTarget.position
+        : resolveDropPosition(event.clientY, event.currentTarget.getBoundingClientRect());
+    resetDrag();
+    if (sourceId === null) return;
+
+    const validation = resolveDropMove({ tree, viewer, draggedId: sourceId, targetId: target.id, position });
+    if (validation.ok === false) {
+      setNotice({ tone: "error", text: validation.message });
+      return;
+    }
+    const draggedItem = findWbsItem(tree, sourceId);
+    if (!draggedItem) return;
+
+    void run(
+      "move",
+      () =>
+        moveWbsTask({
+          projectId,
+          taskId: draggedItem.id,
+          parentTaskId: validation.parentTaskId,
+          index: validation.index,
+          version: draggedItem.version,
+        }),
+      (change) => {
+        replaceTree(change.tasks);
+        return WBS_TEXT.moved;
+      },
+      { inDialog: false },
+    );
+  };
+
   const actions = (item: WbsItem) => {
     const buttons: { key: string; label: string; icon: string; onClick: () => void; disabled?: boolean }[] = [];
     if (canAddSubtask(viewer, item)) {
@@ -234,7 +328,7 @@ export default function ServerWbsView({ project }: { project: Project & { server
     }
     if (pm) {
       buttons.push(
-        { key: "reparent", label: "상위 작업 변경", icon: "ri-node-tree", onClick: () => setReparentTarget(item), disabled: !canReparent(tree, item) },
+        { key: "reparent", label: WBS_TEXT.reparent, icon: "ri-node-tree", onClick: () => setReparentTarget(item), disabled: !canReparent(tree, item) },
         { key: "up", label: WBS_TEXT.moveUp, icon: "ri-arrow-up-s-line", onClick: () => move(item, "up"), disabled: moveTarget(tree, item, "up") === null },
         { key: "down", label: WBS_TEXT.moveDown, icon: "ri-arrow-down-s-line", onClick: () => move(item, "down"), disabled: moveTarget(tree, item, "down") === null },
         { key: "delete", label: WBS_TEXT.delete, icon: "ri-delete-bin-line", onClick: () => remove(item) },
@@ -259,10 +353,33 @@ export default function ServerWbsView({ project }: { project: Project & { server
     );
   };
 
+  const rowClassName = (item: WbsItem) => {
+    const classes = ["border-t border-background-200"];
+    if (pm && !busy) classes.push("cursor-grab active:cursor-grabbing");
+    if (draggingId === item.id) classes.push("opacity-50");
+    if (dropTarget?.taskId === item.id) {
+      if (dropTarget.position === "before") classes.push("border-t-2 border-t-primary-500");
+      else if (dropTarget.position === "after") classes.push("border-b-2 border-b-primary-500");
+      else classes.push("bg-primary-50/70 ring-1 ring-inset ring-primary-400");
+    }
+    return classes.join(" ");
+  };
+
   const row = (item: WbsItem, depth: 0 | 1) => (
-    <tr key={item.id} className="border-t border-background-200">
+    <tr
+      key={item.id}
+      draggable={pm && !busy}
+      onDragStart={(e) => handleDragStart(e, item)}
+      onDragOver={(e) => handleDragOver(e, item)}
+      onDragLeave={(e) => handleDragLeave(e, item.id)}
+      onDrop={(e) => handleDrop(e, item)}
+      onDragEnd={resetDrag}
+      data-drop-position={dropTarget?.taskId === item.id ? dropTarget.position : undefined}
+      className={rowClassName(item)}
+    >
       <td className="td">
         <div className={`flex items-center gap-1.5 ${depth === 1 ? "pl-6" : ""}`}>
+          {pm && <i className="ri-draggable shrink-0 text-foreground-400" aria-hidden="true" title={WBS_TEXT.dragHandle} />}
           {depth === 1 && <i className="ri-corner-down-right-line text-foreground-400" aria-hidden="true" />}
           <button
             type="button"
@@ -284,7 +401,7 @@ export default function ServerWbsView({ project }: { project: Project & { server
       <td className="td min-w-[110px]" title={item.subtasks.length > 0 ? WBS_TEXT.derivedProgress : undefined}>
         <ProgressBar value={item.progress} showLabel />
       </td>
-      <td className="td" title={item.subtasks.length > 0 ? "하위 작업 상태 기준 자동 계산" : undefined}>
+      <td className="td" title={item.subtasks.length > 0 ? WBS_TEXT.derivedStatus : undefined}>
         <StatusBadge status={deriveDisplayStatus(item)} />
       </td>
       <td className="td">{actions(item)}</td>
@@ -303,6 +420,7 @@ export default function ServerWbsView({ project }: { project: Project & { server
       </div>
 
       {note && <p className="rounded-md bg-background-100 px-3 py-2 text-[12px] text-foreground-600">{note}</p>}
+      {pm && <p className="text-[11.5px] text-foreground-500">{WBS_TEXT.dragHint}</p>}
       <p className="text-[11.5px] text-foreground-500">{WBS_TEXT.dependencyNote}</p>
       {notice && (
         <p
@@ -319,10 +437,32 @@ export default function ServerWbsView({ project }: { project: Project & { server
 
       {(groups.length > 0 ? groups : [{ key: "none", phaseId: null, name: WBS_TEXT.noPhase }]).map((group) => {
         const tasks = tasksOf(group.phaseId);
+        const summary = derivePhaseSummary(tasks);
+        const phasePeriodText = summary.startDate && summary.endDate ? `${summary.startDate} ~ ${summary.endDate}` : "-";
+        const phaseEffortText =
+          summary.totalEffort !== null ? formatLabel(WBS_TEXT.personDays, { value: summary.totalEffort }) : WBS_TEXT.noEffort;
         return (
           <section key={group.key} className="card overflow-x-auto" aria-label={group.name}>
-            <div className="flex items-center justify-between border-b border-background-200 px-4 py-2.5">
-              <h3 className="text-[13px] font-semibold text-foreground-950">{group.name}</h3>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-background-200 px-4 py-2.5">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <h3 className="text-[13px] font-semibold text-foreground-950">{group.name}</h3>
+                <span className="text-[11.5px] text-foreground-500">
+                  {formatLabel(WBS_TEXT.phaseTaskCount, { count: summary.taskCount })}
+                </span>
+                {tasks.length > 0 && (
+                  <>
+                    <span
+                      className="text-[11.5px] tabular-nums text-foreground-600"
+                      title={WBS_TEXT.phaseDerivedSchedule}
+                    >
+                      {formatLabel(WBS_TEXT.phasePeriod, { period: phasePeriodText })}
+                    </span>
+                    <span className="text-[11.5px] tabular-nums text-foreground-600">
+                      {formatLabel(WBS_TEXT.phaseEffort, { effort: phaseEffortText })}
+                    </span>
+                  </>
+                )}
+              </div>
               {pm && (group.phaseId !== null || phases.length === 0) && (
                 <button
                   type="button"

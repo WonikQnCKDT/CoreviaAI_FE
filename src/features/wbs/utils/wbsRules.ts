@@ -96,6 +96,203 @@ export const reparentCandidates = function (tree: WbsItem[], item: WbsItem): Rep
 
 export const canReparent = (tree: WbsItem[], item: WbsItem) => reparentCandidates(tree, item).length > 0;
 
+export type WbsDropPosition = "before" | "inside" | "after";
+
+export type DropMoveValidation =
+  | { ok: true; parentTaskId: number | null; index: number }
+  | {
+      ok: false;
+      reason: "forbidden" | "notFound" | "sameItem" | "samePosition" | "descendant" | "maxDepth" | "crossPhase";
+      message: string;
+    };
+
+export const findWbsItem = function (tree: WbsItem[], id: number): WbsItem | null {
+  for (const task of tree) {
+    if (task.id === id) return task;
+    const sub = task.subtasks.find((s) => s.id === id);
+    if (sub) return sub;
+  }
+  return null;
+};
+
+/**
+ * 포인터 위치(clientY)와 대상 행의 사각형 영역으로 드롭 위치를 정한다.
+ * - 상단 25%: 대상 앞(before)
+ * - 중앙 50%: 대상의 하위작업(inside)
+ * - 하단 25%: 대상 뒤(after)
+ * 높이를 알 수 없는 환경(테스트 등)에서는 기본값("before")을 쓴다.
+ */
+export const resolveDropPosition = function (clientY: number, rect: { top: number; height: number }): WbsDropPosition {
+  if (!Number.isFinite(clientY) || rect.height <= 0) return "before";
+  const ratio = (clientY - rect.top) / rect.height;
+  if (ratio < 0.25) return "before";
+  if (ratio > 0.75) return "after";
+  return "inside";
+};
+
+/**
+ * HTML5 Drag & Drop 이동 유효성 검증 및 PUT .../position 요청 인자 계산.
+ * - 권한: PM만 이동 가능
+ * - 자기 자신·자손(자신의 하위작업)으로의 드롭 금지
+ * - 2단계(작업 > 하위작업) 제한: 하위작업 아래로 이동 금지, 하위작업이 있는 작업의 하위 편입 금지
+ * - 최상위 작업 간 순서 변경(before/after)은 같은 단계 내에서만 허용(BE PUT .../position은 최상위 이동 시 phaseId를 유지)
+ */
+export const resolveDropMove = function ({
+  tree,
+  viewer,
+  draggedId,
+  targetId,
+  position,
+}: {
+  tree: WbsItem[];
+  viewer: WbsViewer;
+  draggedId: number;
+  targetId: number;
+  position: WbsDropPosition;
+}): DropMoveValidation {
+  if (!canManageWbs(viewer)) {
+    return { ok: false, reason: "forbidden", message: WBS_TEXT.dragForbidden };
+  }
+  const dragged = findWbsItem(tree, draggedId);
+  const target = findWbsItem(tree, targetId);
+  if (!dragged || !target) {
+    return { ok: false, reason: "notFound", message: WBS_TEXT.notFound };
+  }
+  if (dragged.id === target.id) {
+    return { ok: false, reason: "sameItem", message: WBS_TEXT.dragSamePosition };
+  }
+  if (target.parentTaskId === dragged.id) {
+    return { ok: false, reason: "descendant", message: WBS_TEXT.dragDescendant };
+  }
+
+  if (position === "inside") {
+    if (target.parentTaskId !== null || dragged.subtasks.length > 0) {
+      return { ok: false, reason: "maxDepth", message: WBS_TEXT.dragMaxDepth };
+    }
+    const destWithout = target.subtasks.filter((s) => s.id !== dragged.id);
+    const newIndex = destWithout.length;
+    if (dragged.parentTaskId === target.id) {
+      const currentIndex = target.subtasks.findIndex((s) => s.id === dragged.id);
+      if (currentIndex === newIndex) {
+        return { ok: false, reason: "samePosition", message: WBS_TEXT.dragSamePosition };
+      }
+    }
+    return { ok: true, parentTaskId: target.id, index: newIndex };
+  }
+
+  // before / after: target과 같은 부모 아래로 이동
+  const newParentId = target.parentTaskId;
+  if (newParentId !== null) {
+    if (dragged.subtasks.length > 0) {
+      return { ok: false, reason: "maxDepth", message: WBS_TEXT.dragMaxDepth };
+    }
+    const parent = tree.find((t) => t.id === newParentId);
+    if (!parent) {
+      return { ok: false, reason: "notFound", message: WBS_TEXT.notFound };
+    }
+    const destWithout = parent.subtasks.filter((s) => s.id !== dragged.id);
+    const targetIndex = destWithout.findIndex((s) => s.id === target.id);
+    if (targetIndex < 0) {
+      return { ok: false, reason: "notFound", message: WBS_TEXT.notFound };
+    }
+    const newIndex = position === "before" ? targetIndex : targetIndex + 1;
+    if (dragged.parentTaskId === newParentId) {
+      const currentIndex = parent.subtasks.findIndex((s) => s.id === dragged.id);
+      if (currentIndex === newIndex) {
+        return { ok: false, reason: "samePosition", message: WBS_TEXT.dragSamePosition };
+      }
+    }
+    return { ok: true, parentTaskId: newParentId, index: newIndex };
+  }
+
+  // 최상위(parentTaskId === null) 위치로 이동
+  if (dragged.phaseId !== target.phaseId) {
+    return { ok: false, reason: "crossPhase", message: WBS_TEXT.dragCrossPhase };
+  }
+  if (dragged.parentTaskId === null) {
+    const visibleSamePhase = tree.filter((t) => t.phaseId === dragged.phaseId);
+    const currentVisibleIndex = visibleSamePhase.findIndex((t) => t.id === dragged.id);
+    const visibleWithout = visibleSamePhase.filter((t) => t.id !== dragged.id);
+    const targetVisibleIndex = visibleWithout.findIndex((t) => t.id === target.id);
+    const newVisibleIndex = position === "before" ? targetVisibleIndex : targetVisibleIndex + 1;
+    if (currentVisibleIndex === newVisibleIndex) {
+      return { ok: false, reason: "samePosition", message: WBS_TEXT.dragSamePosition };
+    }
+  }
+  const serverSiblings = tree.filter((t) => t.id !== dragged.id);
+  const targetServerIndex = serverSiblings.findIndex((t) => t.id === target.id);
+  if (targetServerIndex < 0) {
+    return { ok: false, reason: "notFound", message: WBS_TEXT.notFound };
+  }
+  return {
+    ok: true,
+    parentTaskId: null,
+    index: position === "before" ? targetServerIndex : targetServerIndex + 1,
+  };
+};
+
+export interface PhaseSummary {
+  taskCount: number;
+  startDate: string | null;
+  endDate: string | null;
+  totalEffort: number | null;
+}
+
+/**
+ * 단계(phase) 그룹의 기간·예상공수를 소속 작업에서 파생한다(FR-WBS-01 상위 기간 자동 산출).
+ * - 시작일: 소속 작업(하위작업이 있으면 하위작업 기준) 중 유효한 시작일의 최솟값
+ * - 종료일: 소속 작업(하위작업이 있으면 하위작업 기준) 중 유효한 종료일의 최댓값
+ * - 예상공수 합계: 말단 작업 기준(하위작업에 공수가 있으면 하위작업 합, 없으면 상위 작업 공수)으로 중복 없이 합산
+ */
+export const derivePhaseSummary = function (tasks: WbsItem[]): PhaseSummary {
+  let startDate: string | null = null;
+  let endDate: string | null = null;
+  let effortSum = 0;
+  let hasEffort = false;
+
+  const collectDate = (target: WbsItem) => {
+    if (target.startDate && (startDate === null || target.startDate < startDate)) {
+      startDate = target.startDate;
+    }
+    if (target.endDate && (endDate === null || target.endDate > endDate)) {
+      endDate = target.endDate;
+    }
+  };
+
+  for (const task of tasks) {
+    if (task.subtasks.length > 0) {
+      const hasSubDate = task.subtasks.some((sub) => Boolean(sub.startDate || sub.endDate));
+      if (hasSubDate) {
+        for (const sub of task.subtasks) collectDate(sub);
+      } else {
+        collectDate(task);
+      }
+
+      const subEfforts = task.subtasks.filter((sub) => sub.estimatedEffort !== null);
+      if (subEfforts.length > 0) {
+        for (const sub of subEfforts) effortSum += sub.estimatedEffort!;
+        hasEffort = true;
+      } else if (task.estimatedEffort !== null) {
+        effortSum += task.estimatedEffort;
+        hasEffort = true;
+      }
+    } else {
+      collectDate(task);
+      if (task.estimatedEffort !== null) {
+        effortSum += task.estimatedEffort;
+        hasEffort = true;
+      }
+    }
+  }
+
+  return {
+    taskCount: tasks.length,
+    startDate,
+    endDate,
+    totalEffort: hasEffort ? Math.round(effortSum * 10) / 10 : null,
+  };
+};
+
 /**
  * WBS 화면 표시용 상태:
  * - 하위작업이 없으면 서버 상태를 그대로 보여 준다.

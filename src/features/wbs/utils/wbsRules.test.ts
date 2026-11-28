@@ -10,12 +10,15 @@ import {
   canManageWbs,
   canReparent,
   deriveDisplayStatus,
+  derivePhaseSummary,
   interpretDraftFailure,
   interpretWbsFailure,
   moveTarget,
   parseEffort,
   parseProgress,
   reparentCandidates,
+  resolveDropMove,
+  resolveDropPosition,
   toReview,
   validateDraftInput,
   validateWbsForm,
@@ -355,5 +358,223 @@ describe("상위 작업 변경 후보 (reparentCandidates) & 파생 상태 (deri
       subtasks: [item({ id: 51, parentTaskId: 5, status: "todo" }), item({ id: 52, parentTaskId: 5, status: "done" })],
     });
     expect(deriveDisplayStatus(mixed)).toBe("progress");
+  });
+});
+
+describe("드래그 드롭 위치 계산 및 유효성 검증 (resolveDropPosition, resolveDropMove)", () => {
+  it("포인터 비율에 따라 before / inside / after를 판정하고 높이가 0이면 before를 반환한다", () => {
+    const rect = { top: 100, height: 40 };
+    expect(resolveDropPosition(105, rect)).toBe("before");
+    expect(resolveDropPosition(110, rect)).toBe("inside");
+    expect(resolveDropPosition(120, rect)).toBe("inside");
+    expect(resolveDropPosition(130, rect)).toBe("inside");
+    expect(resolveDropPosition(131, rect)).toBe("after");
+    expect(resolveDropPosition(0, { top: 0, height: 0 })).toBe("before");
+    expect(resolveDropPosition(Number.NaN, rect)).toBe("before");
+  });
+
+  const sub1 = item({ id: 11, phaseId: 10, parentTaskId: 1, name: "하위 1" });
+  const sub2 = item({ id: 12, phaseId: 10, parentTaskId: 1, name: "하위 2" });
+  const parentA = item({ id: 1, phaseId: 10, name: "작업 A", subtasks: [sub1, sub2] });
+  const otherPhase = item({ id: 2, phaseId: 20, name: "타단계 작업 B" });
+  const leafC = item({ id: 3, phaseId: 10, name: "작업 C" });
+  const leafD = item({ id: 4, phaseId: 10, name: "작업 D" });
+  const tree = [parentA, otherPhase, leafC, leafD];
+
+  it("같은 단계 내 최상위 순서 변경은 서버 전체 형제 목록 기준 index를 계산한다", () => {
+    // leafC를 parentA 앞으로 → [parentA, otherPhase, leafD]에서 parentA 앞 = 0
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 3, targetId: 1, position: "before" })).toEqual({
+      ok: true,
+      parentTaskId: null,
+      index: 0,
+    });
+    // parentA를 leafC 뒤로 → [otherPhase, leafC, leafD]에서 leafC 뒤 = 2
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 1, targetId: 3, position: "after" })).toEqual({
+      ok: true,
+      parentTaskId: null,
+      index: 2,
+    });
+  });
+
+  it("하위작업이 없는 최상위 작업을 다른 최상위 작업 아래(inside)로 옮길 수 있다(다른 단계 포함)", () => {
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 3, targetId: 1, position: "inside" })).toEqual({
+      ok: true,
+      parentTaskId: 1,
+      index: 2,
+    });
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 3, targetId: 2, position: "inside" })).toEqual({
+      ok: true,
+      parentTaskId: 2,
+      index: 0,
+    });
+  });
+
+  it("하위작업의 같은 부모 내 순서 변경, 다른 부모로 이동, 최상위 승격을 계산한다", () => {
+    // 같은 부모 내: sub2를 sub1 앞으로
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 12, targetId: 11, position: "before" })).toEqual({
+      ok: true,
+      parentTaskId: 1,
+      index: 0,
+    });
+    // 다른 최상위 작업 아래로 이동
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 11, targetId: 3, position: "inside" })).toEqual({
+      ok: true,
+      parentTaskId: 3,
+      index: 0,
+    });
+    // 같은 단계 최상위 작업 뒤로 승격
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 11, targetId: 1, position: "after" })).toEqual({
+      ok: true,
+      parentTaskId: null,
+      index: 1,
+    });
+  });
+
+  it("권한 없는 사용자는 드롭을 거부한다", () => {
+    expect(resolveDropMove({ tree, viewer: DEV, draggedId: 3, targetId: 1, position: "before" })).toEqual({
+      ok: false,
+      reason: "forbidden",
+      message: WBS_TEXT.dragForbidden,
+    });
+    expect(resolveDropMove({ tree, viewer: OUTSIDER, draggedId: 3, targetId: 1, position: "before" }).ok).toBe(false);
+  });
+
+  it("자기 자신 드롭과 같은 위치 드롭을 거부한다", () => {
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 3, targetId: 3, position: "before" })).toEqual({
+      ok: false,
+      reason: "sameItem",
+      message: WBS_TEXT.dragSamePosition,
+    });
+    // 같은 단계에서 leafC는 이미 parentA 바로 다음이므로 parentA after는 변화 없음
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 3, targetId: 1, position: "after" })).toEqual({
+      ok: false,
+      reason: "samePosition",
+      message: WBS_TEXT.dragSamePosition,
+    });
+    // sub1을 sub2 앞으로 놓으면 현재 위치와 동일
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 11, targetId: 12, position: "before" })).toEqual({
+      ok: false,
+      reason: "samePosition",
+      message: WBS_TEXT.dragSamePosition,
+    });
+    // sub2는 이미 parentA의 마지막 하위작업이므로 parentA inside는 변화 없음
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 12, targetId: 1, position: "inside" })).toEqual({
+      ok: false,
+      reason: "samePosition",
+      message: WBS_TEXT.dragSamePosition,
+    });
+  });
+
+  it("자손(자신의 하위작업) 아래·앞·뒤로 드롭하는 것을 거부한다", () => {
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 1, targetId: 11, position: "inside" })).toEqual({
+      ok: false,
+      reason: "descendant",
+      message: WBS_TEXT.dragDescendant,
+    });
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 1, targetId: 11, position: "before" })).toEqual({
+      ok: false,
+      reason: "descendant",
+      message: WBS_TEXT.dragDescendant,
+    });
+  });
+
+  it("3레벨 초과(하위작업 아래로 이동, 하위작업 보유 작업의 하위 편입)를 거부한다", () => {
+    // 하위작업 아래(inside)로 이동 시도
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 3, targetId: 11, position: "inside" })).toEqual({
+      ok: false,
+      reason: "maxDepth",
+      message: WBS_TEXT.dragMaxDepth,
+    });
+    // 하위작업이 있는 parentA를 leafC 아래로 이동 시도
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 1, targetId: 3, position: "inside" })).toEqual({
+      ok: false,
+      reason: "maxDepth",
+      message: WBS_TEXT.dragMaxDepth,
+    });
+    // 하위작업이 있는 parentA를 다른 부모의 하위작업 옆으로 이동 시도
+    const otherParentSub = item({ id: 21, phaseId: 20, parentTaskId: 2, name: "타부모 하위" });
+    const treeWithSub = [parentA, item({ id: 2, phaseId: 20, name: "타단계", subtasks: [otherParentSub] })];
+    expect(resolveDropMove({ tree: treeWithSub, viewer: PM, draggedId: 1, targetId: 21, position: "after" })).toEqual({
+      ok: false,
+      reason: "maxDepth",
+      message: WBS_TEXT.dragMaxDepth,
+    });
+  });
+
+  it("다른 단계의 최상위 작업 앞/뒤로의 순서 이동과 존재하지 않는 ID를 거부한다", () => {
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 3, targetId: 2, position: "before" })).toEqual({
+      ok: false,
+      reason: "crossPhase",
+      message: WBS_TEXT.dragCrossPhase,
+    });
+    expect(resolveDropMove({ tree, viewer: PM, draggedId: 999, targetId: 1, position: "before" })).toEqual({
+      ok: false,
+      reason: "notFound",
+      message: WBS_TEXT.notFound,
+    });
+  });
+});
+
+describe("단계 기간·예상공수 자동 산출 (derivePhaseSummary)", () => {
+  it("빈 단계는 기간과 공수가 null이다", () => {
+    expect(derivePhaseSummary([])).toEqual({
+      taskCount: 0,
+      startDate: null,
+      endDate: null,
+      totalEffort: null,
+    });
+  });
+
+  it("정렬되지 않은 소속 작업들에서 최소 시작일·최대 종료일·예상공수 합계(소수 오차 보정)를 계산한다", () => {
+    const tasks = [
+      item({ id: 1, startDate: "2026-12-10", endDate: "2026-12-20", estimatedEffort: 0.1 }),
+      item({ id: 2, startDate: "2026-12-01", endDate: "2026-12-12", estimatedEffort: 0.2 }),
+      item({ id: 3, startDate: "2026-12-05", endDate: "2026-12-25", estimatedEffort: null }),
+    ];
+    expect(derivePhaseSummary(tasks)).toEqual({
+      taskCount: 3,
+      startDate: "2026-12-01",
+      endDate: "2026-12-25",
+      totalEffort: 0.3,
+    });
+  });
+
+  it("하위작업이 있는 작업은 하위작업 기간과 말단 공수 기준으로 중복 없이 산출한다", () => {
+    const parentWithSubEffort = item({
+      id: 1,
+      startDate: "2026-12-03",
+      endDate: "2026-12-10",
+      estimatedEffort: 99,
+      subtasks: [
+        item({ id: 11, parentTaskId: 1, startDate: "2026-12-02", endDate: "2026-12-06", estimatedEffort: 1.5 }),
+        item({ id: 12, parentTaskId: 1, startDate: "2026-12-07", endDate: "2026-12-15", estimatedEffort: 2.5 }),
+      ],
+    });
+    const parentWithoutSubEffort = item({
+      id: 2,
+      startDate: "2026-12-05",
+      endDate: "2026-12-12",
+      estimatedEffort: 3,
+      subtasks: [item({ id: 21, parentTaskId: 2, startDate: "2026-12-05", endDate: "2026-12-12", estimatedEffort: null })],
+    });
+    expect(derivePhaseSummary([parentWithSubEffort, parentWithoutSubEffort])).toEqual({
+      taskCount: 2,
+      startDate: "2026-12-02",
+      endDate: "2026-12-15",
+      totalEffort: 7,
+    });
+  });
+
+  it("날짜가 비었거나 공수가 모두 null인 경계값을 안전하게 처리한다", () => {
+    const tasks = [
+      item({ id: 1, startDate: "", endDate: "", estimatedEffort: null }),
+      item({ id: 2, startDate: "2026-12-04", endDate: "2026-12-09", estimatedEffort: null }),
+    ];
+    expect(derivePhaseSummary(tasks)).toEqual({
+      taskCount: 2,
+      startDate: "2026-12-04",
+      endDate: "2026-12-09",
+      totalEffort: null,
+    });
   });
 });

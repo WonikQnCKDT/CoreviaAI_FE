@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (1209개)
+## 등록 필요 (1222개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -1192,6 +1192,14 @@
 | `wbs.server.dependencyNote` | 선후행 관계 편집은 아직 서버와 연결하지 않았습니다. | wbs.server |
 | `wbs.server.derivedProgress` | 하위작업 공수 가중 평균 | wbs.server |
 | `wbs.server.derivedSchedule` | 하위작업 기간으로 산출 | wbs.server |
+| `wbs.server.derivedStatus` | 하위 작업 상태 기준 자동 계산 | wbs.server |
+| `wbs.server.dragCrossPhase` | 다른 단계로의 최상위 순서 이동은 지원하지 않습니다. 작업 수정에서 단계를 바꾸거나 다른 작업 아래로 옮겨 주세요. | wbs.server |
+| `wbs.server.dragDescendant` | 상위 작업을 자신의 하위작업 아래로 옮길 수 없습니다. | wbs.server |
+| `wbs.server.dragForbidden` | 작업 순서·계층 이동은 프로젝트 PM만 할 수 있습니다. | wbs.server |
+| `wbs.server.dragHandle` | 드래그하여 이동 | wbs.server |
+| `wbs.server.dragHint` | 작업 행을 끌어 같은 단계 내 순서를 바꾸거나 다른 작업 아래 하위작업으로 옮길 수 있습니다. | wbs.server |
+| `wbs.server.dragMaxDepth` | 하위작업은 2단계(작업 > 하위작업)까지만 만들 수 있습니다. | wbs.server |
+| `wbs.server.dragSamePosition` | 이미 같은 위치에 있습니다. | wbs.server |
 | `wbs.server.edit` | 수정 | wbs.server |
 | `wbs.server.editProgress` | 진척률 수정 | wbs.server |
 | `wbs.server.empty` | 등록된 작업이 없습니다. | wbs.server |
@@ -1213,8 +1221,13 @@
 | `wbs.server.notFound` | 대상 작업이나 단계를 찾을 수 없습니다. WBS를 새로 불러왔습니다. | wbs.server |
 | `wbs.server.openDetail` | 업무 상세 | wbs.server |
 | `wbs.server.personDays` | {value}인일 | wbs.server |
+| `wbs.server.phaseDerivedSchedule` | 소속 작업 기간으로 자동 산출 | wbs.server |
+| `wbs.server.phaseEffort` | 예상 공수 {effort} | wbs.server |
+| `wbs.server.phasePeriod` | 기간 {period} | wbs.server |
+| `wbs.server.phaseTaskCount` | 작업 {count}건 | wbs.server |
 | `wbs.server.progress` | 진척률 | wbs.server |
 | `wbs.server.progressSaved` | 진척률을 {value}%로 저장했습니다. | wbs.server |
+| `wbs.server.reparent` | 상위 작업 변경 | wbs.server |
 | `wbs.server.retry` | 다시 시도 | wbs.server |
 | `wbs.server.serverError` | 서버 오류로 처리하지 못했습니다. 잠시 후 다시 시도해 주세요. | wbs.server |
 | `wbs.server.timeout` | 응답이 늦어 요청을 멈췄습니다. 잠시 후 다시 시도해 주세요. | wbs.server |

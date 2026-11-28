@@ -642,6 +642,139 @@ describe("서버 WBS 계층 변경 & 파생 상태 (FR-WBS-01)", () => {
     const parentRow = (await screen.findByText("통합 상위 작업")).closest("tr") as HTMLElement;
     expect(within(parentRow).getByText("완료")).toBeTruthy();
   });
+
+  it("PM은 행을 드래그해 같은 단계 내 순서를 바꾸고 서버 응답 트리로 순서를 유지한다", async () => {
+    const t1 = task({ id: 101, name: "작업 1", sortOrder: 1, version: 2 });
+    const t2 = task({ id: 102, name: "작업 2", sortOrder: 2, version: 5 });
+    const reordered = [
+      task({ id: 102, name: "작업 2", sortOrder: 1, version: 6 }),
+      task({ id: 101, name: "작업 1", sortOrder: 2, version: 2 }),
+    ];
+    const { calls } = renderServerWith({
+      ...baseHandlers("PM", [t1, t2]),
+      "PUT /api/projects/77/wbs/tasks/102/position": () => jsonOk({ taskId: 102, tasks: reordered }),
+    });
+
+    const row1 = (await screen.findByText("작업 1")).closest("tr") as HTMLElement;
+    const row2 = screen.getByText("작업 2").closest("tr") as HTMLElement;
+    expect(row1.getAttribute("draggable")).toBe("true");
+    expect(row2.getAttribute("draggable")).toBe("true");
+
+    vi.spyOn(row1, "getBoundingClientRect").mockReturnValue({
+      top: 100, bottom: 140, left: 0, right: 400, width: 400, height: 40, x: 0, y: 100, toJSON: () => ({}),
+    });
+
+    fireEvent.dragStart(row2);
+    fireEvent(row1, new MouseEvent("dragover", { bubbles: true, cancelable: true, clientY: 104 }));
+    fireEvent(row1, new MouseEvent("drop", { bubbles: true, cancelable: true, clientY: 104 }));
+
+    expect(await screen.findByText(WBS_TEXT.moved)).toBeTruthy();
+    const moveCall = calls.find((c) => c.method === "PUT" && c.path === "/api/projects/77/wbs/tasks/102/position");
+    expect(moveCall?.body).toEqual({ parentTaskId: null, index: 0, version: 5 });
+
+    const analysis = screen.getByRole("region", { name: "분석" });
+    const rows = within(analysis).getAllByRole("row");
+    // 머리행 + 작업 2(첫 번째) + 작업 1(두 번째)
+    expect(within(rows[1]).getByText("작업 2")).toBeTruthy();
+    expect(within(rows[2]).getByText("작업 1")).toBeTruthy();
+  });
+
+  it("PM이 행을 다른 최상위 작업 중앙(inside)으로 드롭하면 해당 작업의 하위작업으로 이동한다", async () => {
+    const t1 = task({ id: 101, name: "상위 작업 A", version: 2 });
+    const t2 = task({ id: 102, name: "이동할 작업 B", sortOrder: 2, version: 3 });
+    const movedTree = [
+      task({
+        id: 101,
+        name: "상위 작업 A",
+        version: 2,
+        subtasks: [task({ id: 102, parentTaskId: 101, name: "이동할 작업 B", sortOrder: 1, version: 4 })],
+      }),
+    ];
+    const { calls } = renderServerWith({
+      ...baseHandlers("PM", [t1, t2]),
+      "PUT /api/projects/77/wbs/tasks/102/position": () => jsonOk({ taskId: 102, tasks: movedTree }),
+    });
+
+    const rowA = (await screen.findByText("상위 작업 A")).closest("tr") as HTMLElement;
+    const rowB = screen.getByText("이동할 작업 B").closest("tr") as HTMLElement;
+    vi.spyOn(rowA, "getBoundingClientRect").mockReturnValue({
+      top: 100, bottom: 140, left: 0, right: 400, width: 400, height: 40, x: 0, y: 100, toJSON: () => ({}),
+    });
+
+    fireEvent.dragStart(rowB);
+    fireEvent(rowA, new MouseEvent("dragover", { bubbles: true, cancelable: true, clientY: 120 }));
+    fireEvent(rowA, new MouseEvent("drop", { bubbles: true, cancelable: true, clientY: 120 }));
+
+    expect(await screen.findByText(WBS_TEXT.moved)).toBeTruthy();
+    const moveCall = calls.find((c) => c.method === "PUT" && c.path === "/api/projects/77/wbs/tasks/102/position");
+    expect(moveCall?.body).toEqual({ parentTaskId: 101, index: 0, version: 3 });
+  });
+
+  it("유효하지 않은 드롭(3레벨 초과·자손 아래로 드롭)은 서버를 호출하지 않고 오류 문구를 보여 준다", async () => {
+    const sub = task({ id: 202, parentTaskId: 201, name: "하위 작업", version: 1 });
+    const parent = task({ id: 201, name: "하위 보유 작업", version: 2, subtasks: [sub] });
+    const other = task({ id: 203, name: "다른 작업", sortOrder: 2, version: 3 });
+    const { calls } = renderServerWith(baseHandlers("PM", [parent, other]));
+
+    const parentRow = (await screen.findByText("하위 보유 작업")).closest("tr") as HTMLElement;
+    const subRow = screen.getByText("하위 작업").closest("tr") as HTMLElement;
+    const otherRow = screen.getByText("다른 작업").closest("tr") as HTMLElement;
+
+    vi.spyOn(otherRow, "getBoundingClientRect").mockReturnValue({
+      top: 200, bottom: 240, left: 0, right: 400, width: 400, height: 40, x: 0, y: 200, toJSON: () => ({}),
+    });
+    vi.spyOn(subRow, "getBoundingClientRect").mockReturnValue({
+      top: 140, bottom: 180, left: 0, right: 400, width: 400, height: 40, x: 0, y: 140, toJSON: () => ({}),
+    });
+
+    // 하위작업을 가진 작업을 다른 작업 아래(inside)로 드롭 → 3레벨 초과 거부
+    fireEvent.dragStart(parentRow);
+    fireEvent(otherRow, new MouseEvent("dragover", { bubbles: true, cancelable: true, clientY: 220 }));
+    fireEvent(otherRow, new MouseEvent("drop", { bubbles: true, cancelable: true, clientY: 220 }));
+    expect(screen.getByRole("alert").textContent).toBe(WBS_TEXT.dragMaxDepth);
+
+    // 상위 작업을 자신의 하위작업 아래로 드롭 → 자손 아래 이동 거부
+    fireEvent.dragStart(parentRow);
+    fireEvent(subRow, new MouseEvent("dragover", { bubbles: true, cancelable: true, clientY: 160 }));
+    fireEvent(subRow, new MouseEvent("drop", { bubbles: true, cancelable: true, clientY: 160 }));
+    expect(screen.getByRole("alert").textContent).toBe(WBS_TEXT.dragDescendant);
+
+    expect(calls.some((c) => c.method === "PUT")).toBe(false);
+  });
+
+  it("PM이 아닌 사용자(개발자)는 행이 draggable=false이고 드래그할 수 없다", async () => {
+    const { calls } = renderServerWith(
+      baseHandlers("DEVELOPER", [
+        task({ id: 101, name: "작업 1", assignee: { id: ME, name: "홍길동" } }),
+        task({ id: 102, name: "작업 2", sortOrder: 2 }),
+      ]),
+    );
+    const row1 = (await screen.findByText("작업 1")).closest("tr") as HTMLElement;
+    const row2 = screen.getByText("작업 2").closest("tr") as HTMLElement;
+    expect(row1.getAttribute("draggable")).toBe("false");
+    expect(row2.getAttribute("draggable")).toBe("false");
+
+    fireEvent.dragStart(row2);
+    fireEvent.dragOver(row1);
+    fireEvent.drop(row1);
+    expect(calls.some((c) => c.method === "PUT")).toBe(false);
+  });
+
+  it("단계 헤더에 소속 작업 기준 자동 산출 기간과 예상공수 합계를 표시한다", async () => {
+    const t1 = task({ id: 101, phaseId: 1, name: "요구사항 수집", startDate: "2026-12-03", endDate: "2026-12-10", estimatedEffort: 2.5 });
+    const t2 = task({ id: 102, phaseId: 1, name: "현행 분석", startDate: "2026-12-01", endDate: "2026-12-18", estimatedEffort: 3.5 });
+    renderServerWith(baseHandlers("PM", [t1, t2]));
+
+    const analysis = await screen.findByRole("region", { name: "분석" });
+    expect(within(analysis).getByText("작업 2건")).toBeTruthy();
+    expect(within(analysis).getByText("기간 2026-12-01 ~ 2026-12-18")).toBeTruthy();
+    expect(within(analysis).getByText("예상 공수 6인일")).toBeTruthy();
+
+    // 작업이 없는 단계는 기간·공수 요약을 표시하지 않는다
+    const design = screen.getByRole("region", { name: "설계" });
+    expect(within(design).getByText("작업 0건")).toBeTruthy();
+    expect(within(design).queryByText(/^기간 /)).toBeNull();
+  });
 });
 
 describe("데모 모드 WBS (기존 시연 유지)", () => {
