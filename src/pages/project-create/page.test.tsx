@@ -50,10 +50,12 @@ const API_ROUTES = [
   { path: "/projects", element: <ProjectsPage /> },
 ];
 
+const goStep = (name: string) => fireEvent.click(screen.getByRole("button", { name: new RegExp(name) }));
+
 beforeEach(() => {
   localStorage.clear();
   sessionStorage.clear();
-  // jsdom에는 스크롤 API가 없다. 데모 화면은 단계가 바뀔 때 맨 위로 스크롤한다.
+  // jsdom에는 스크롤 API가 없다. 데모·서버 단계형 화면은 단계가 바뀔 때 맨 위로 스크롤한다.
   if (!Element.prototype.scrollTo) Element.prototype.scrollTo = () => undefined;
 });
 
@@ -62,22 +64,31 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("api 모드 프로젝트 생성", () => {
-  it("서버 선택지로 폼을 채우고, 주관 부서·멤버 초대를 서버 조회로 연결한다(API가 없다는 안내는 없다)", async () => {
+describe("api 모드 프로젝트 생성 (6단계 위자드)", () => {
+  it("명세 순서 6단계(기본 정보→템플릿·운영 방식→액터→기능 구성→멤버→게이트 승인자)로 나뉘고 서버 조회와 연결된다", async () => {
     stubFetch({ "GET /api/projects/creation-options": () => jsonOk(CREATION_OPTIONS), "GET /api/departments": () => jsonOk(DEPARTMENTS) });
     renderApp({ mode: "api", route: "/projects/new", routes: API_ROUTES });
 
-    // 서버가 준 첫 템플릿(id 오름차순, 빈 템플릿)의 기본값
-    expect(await screen.findByLabelText(PROJECT_CREATE_TEXT.template)).toHaveProperty("value", "empty");
-    expect(screen.getByLabelText(PROJECT_CREATE_TEXT.methodology)).toHaveProperty("value", "none");
-    expect(screen.getByText(formatLabel(PROJECT_CREATE_TEXT.pmSelf, { name: "홍길동" }))).toBeTruthy();
+    // 1단계: 기본 정보 + 주관 부서
     expect(await screen.findByRole("checkbox", { name: "본부 > 개발팀" })).toBeTruthy();
+    expect(screen.queryByLabelText(PROJECT_CREATE_TEXT.template)).toBeNull();
+
+    // 2단계: 템플릿·운영 방식 (서버가 준 첫 템플릿: 빈 템플릿)
+    goStep("템플릿·운영 방식");
+    expect(screen.getByLabelText(PROJECT_CREATE_TEXT.template)).toHaveProperty("value", "empty");
+    expect(screen.getByLabelText(PROJECT_CREATE_TEXT.methodology)).toHaveProperty("value", "none");
+
+    // 5단계: 멤버
+    goStep("멤버");
+    expect(screen.getByText(formatLabel(PROJECT_CREATE_TEXT.pmSelf, { name: "홍길동" }))).toBeTruthy();
     expect(screen.getByRole("combobox", { name: PROJECT_CREATE_TEXT.membersSearch })).toBeTruthy();
-    // 빈 템플릿은 단계가 없어 게이트 승인자를 지정하지 않는다
-    expect(screen.getByText(PROJECT_CREATE_TEXT.approverNoPhases)).toBeTruthy();
     expect(screen.queryByText(PROJECT_DIRECTORY_TEXT.usersUnavailable)).toBeNull();
     // 데모 샘플 사용자(박지훈 등)는 api 모드 화면에 나오지 않는다.
     expect(screen.queryByText("박지훈")).toBeNull();
+
+    // 6단계: 게이트 승인자 (빈 템플릿은 단계가 없어 승인자를 지정하지 않는다)
+    goStep("게이트 승인자");
+    expect(screen.getByText(PROJECT_CREATE_TEXT.approverNoPhases)).toBeTruthy();
   });
 
   it("서버가 성공을 돌려준 뒤에만 목록으로 가서 성공 안내를 띄우고 서버 목록을 다시 받는다", async () => {
@@ -92,6 +103,7 @@ describe("api 모드 프로젝트 생성", () => {
     renderApp({ mode: "api", route: "/projects/new", routes: API_ROUTES });
 
     fireEvent.change(await screen.findByLabelText(PROJECT_CREATE_TEXT.name), { target: { value: "구매 발주 시스템" } });
+    goStep("게이트 승인자");
     fireEvent.click(screen.getByRole("button", { name: new RegExp(PROJECT_CREATE_TEXT.submit) }));
 
     expect(await screen.findByText(formatLabel(PROJECT_CREATE_TEXT.created, { name: "구매 발주 시스템" }))).toBeTruthy();
@@ -125,26 +137,32 @@ describe("api 모드 프로젝트 생성", () => {
     renderApp({ mode: "api", route: "/projects/new", routes: API_ROUTES });
 
     const checkbox = (name: string) => screen.getByRole("checkbox", { name: new RegExp(`^${name}`) });
-    await screen.findByLabelText(PROJECT_CREATE_TEXT.template);
-    // 빈 템플릿(단계 없음): 기본 기능 체크, 산출물은 단계 필요로 비활성, Git은 준비 중으로 비활성, WBS는 고를 수 있다
+    fireEvent.change(await screen.findByLabelText(PROJECT_CREATE_TEXT.name), { target: { value: "기능 확인" } });
+
+    // 4단계(기능 구성) — 빈 템플릿(단계 없음): 기본 기능 체크, 산출물은 단계 필요로 비활성, Git은 준비 중으로 비활성
+    goStep("기능 구성");
     expect(checkbox(PROJECT_FEATURE_LABEL.kanban)).toHaveProperty("checked", true);
     expect(checkbox(PROJECT_FEATURE_LABEL.wbs)).toMatchObject({ checked: false, disabled: false });
     expect(checkbox(PROJECT_FEATURE_LABEL.deliverable)).toMatchObject({ checked: false, disabled: true });
     expect(checkbox(PROJECT_FEATURE_LABEL.git)).toMatchObject({ checked: false, disabled: true });
 
-    // IT 템플릿(폭포수·5단계): 산출물 포함 기본 기능이 자동 체크된다
+    // 2단계에서 IT 템플릿(폭포수·5단계)으로 변경 → 4단계에서 산출물 포함 기본 기능 자동 체크
+    goStep("템플릿·운영 방식");
     fireEvent.change(screen.getByLabelText(PROJECT_CREATE_TEXT.template), { target: { value: "itProject" } });
+    goStep("기능 구성");
     expect(checkbox(PROJECT_FEATURE_LABEL.wbs)).toHaveProperty("checked", true);
     expect(checkbox(PROJECT_FEATURE_LABEL.deliverable)).toMatchObject({ checked: true, disabled: false });
     // 생성 전에 개별로 바꿀 수 있다
     fireEvent.click(checkbox(PROJECT_FEATURE_LABEL.board));
     expect(checkbox(PROJECT_FEATURE_LABEL.board)).toHaveProperty("checked", false);
 
-    // 단계 없음으로 바꾸면 산출물은 선택 해제·비활성
+    // 2단계에서 단계 없음으로 바꾸면 4단계에서 산출물은 선택 해제·비활성
+    goStep("템플릿·운영 방식");
     fireEvent.change(screen.getByLabelText(PROJECT_CREATE_TEXT.methodology), { target: { value: "none" } });
+    goStep("기능 구성");
     expect(checkbox(PROJECT_FEATURE_LABEL.deliverable)).toMatchObject({ checked: false, disabled: true });
 
-    fireEvent.change(screen.getByLabelText(PROJECT_CREATE_TEXT.name), { target: { value: "기능 확인" } });
+    goStep("게이트 승인자");
     fireEvent.click(screen.getByRole("button", { name: new RegExp(PROJECT_CREATE_TEXT.submit) }));
     await screen.findByText(formatLabel(PROJECT_CREATE_TEXT.created, { name: "기능 확인" }));
     const post = calls.find(({ method, path }) => method === "POST" && path === "/api/projects");
@@ -156,7 +174,7 @@ describe("api 모드 프로젝트 생성", () => {
     });
   });
 
-  it("주관 부서·멤버·게이트 승인자를 골라 BE 형식으로 보낸다(역할은 지정 액터 중 PM 제외, 승인자는 단계 있을 때 멤버 중)", async () => {
+  it("주관 부서·멤버·게이트 승인자를 단계별로 골라 BE 형식으로 보낸다(역할은 지정 액터 중 PM 제외, 승인자는 단계 있을 때 멤버 중)", async () => {
     const { calls, unexpected } = stubFetch({
       "GET /api/projects/creation-options": () => jsonOk(CREATION_OPTIONS),
       "GET /api/departments": () => jsonOk(DEPARTMENTS),
@@ -166,12 +184,22 @@ describe("api 모드 프로젝트 생성", () => {
     });
     renderApp({ mode: "api", route: "/projects/new", routes: API_ROUTES });
 
-    fireEvent.change(await screen.findByLabelText(PROJECT_CREATE_TEXT.template), { target: { value: "itProject" } });
+    // 1단계: 기본 정보 + 주관 부서
+    fireEvent.change(await screen.findByLabelText(PROJECT_CREATE_TEXT.name), { target: { value: "연결 확인" } });
     fireEvent.click(await screen.findByRole("checkbox", { name: "본부 > 개발팀" }));
     fireEvent.click(screen.getByRole("checkbox", { name: "본부" }));
 
-    // 지정하지 않은 액터는 멤버 역할 목록에 없다: QA를 해제
+    // 2단계: IT 템플릿 선택
+    fireEvent.click(screen.getByRole("button", { name: /다음/ }));
+    fireEvent.change(screen.getByLabelText(PROJECT_CREATE_TEXT.template), { target: { value: "itProject" } });
+
+    // 3단계: 액터 — QA 해제
+    fireEvent.click(screen.getByRole("button", { name: /다음/ }));
     fireEvent.click(screen.getByRole("checkbox", { name: "QA" }));
+
+    // 4단계 → 5단계: 멤버 검색 및 초대
+    fireEvent.click(screen.getByRole("button", { name: /다음/ }));
+    fireEvent.click(screen.getByRole("button", { name: /다음/ }));
     const search = screen.getByRole("combobox", { name: PROJECT_CREATE_TEXT.membersSearch });
     fireEvent.focus(search);
     fireEvent.change(search, { target: { value: "김철" } });
@@ -180,23 +208,31 @@ describe("api 모드 프로젝트 생성", () => {
     const role = screen.getByRole("combobox", { name: formatLabel(PROJECT_CREATE_TEXT.memberRole, { name: "김철수" }) });
     expect(within(role).getAllByRole("option").map((option) => option.textContent)).toEqual(["현업 담당자", "개발자"]);
     fireEvent.change(role, { target: { value: "dev" } });
-    // 멤버 역할로 쓰는 액터는 해제할 수 없고, PM도 해제할 수 없다
+
+    // 3단계로 돌아가 확인: 멤버 역할로 쓰는 액터는 해제할 수 없고, PM도 해제할 수 없다
+    goStep("액터");
     expect(screen.getByRole("checkbox", { name: "개발자" })).toMatchObject({ checked: true, disabled: true });
     expect(screen.getByRole("checkbox", { name: "PM" })).toMatchObject({ checked: true, disabled: true });
 
-    // 승인자: 초대 멤버 중에서만
+    // 6단계: 게이트 승인자 (초대 멤버 중에서만)
+    goStep("게이트 승인자");
     const approver = screen.getByLabelText(PROJECT_CREATE_TEXT.approverLabel);
     expect(within(approver).getAllByRole("option").map((option) => option.textContent)).toEqual([PROJECT_CREATE_TEXT.approverNone, "김철수"]);
     fireEvent.change(approver, { target: { value: "11" } });
-    // 단계 없음으로 바꾸면 승인자 지정 불가·해제, 폭포수로 되돌리면 다시 고른다
+
+    // 2단계에서 단계 없음으로 바꾸면 6단계에서 승인자 지정 불가·해제, 폭포수로 되돌리면 다시 고른다
+    goStep("템플릿·운영 방식");
     fireEvent.change(screen.getByLabelText(PROJECT_CREATE_TEXT.methodology), { target: { value: "none" } });
+    goStep("게이트 승인자");
     expect(screen.queryByLabelText(PROJECT_CREATE_TEXT.approverLabel)).toBeNull();
     expect(screen.getByText(PROJECT_CREATE_TEXT.approverNoPhases)).toBeTruthy();
+
+    goStep("템플릿·운영 방식");
     fireEvent.change(screen.getByLabelText(PROJECT_CREATE_TEXT.methodology), { target: { value: "waterfall" } });
+    goStep("게이트 승인자");
     expect(screen.getByLabelText(PROJECT_CREATE_TEXT.approverLabel)).toHaveProperty("value", "");
     fireEvent.change(screen.getByLabelText(PROJECT_CREATE_TEXT.approverLabel), { target: { value: "11" } });
 
-    fireEvent.change(screen.getByLabelText(PROJECT_CREATE_TEXT.name), { target: { value: "연결 확인" } });
     fireEvent.click(screen.getByRole("button", { name: new RegExp(PROJECT_CREATE_TEXT.submit) }));
     await screen.findByText(formatLabel(PROJECT_CREATE_TEXT.created, { name: "연결 확인" }));
 
@@ -220,25 +256,35 @@ describe("api 모드 프로젝트 생성", () => {
     });
     renderApp({ mode: "api", route: "/projects/new", routes: API_ROUTES });
 
-    // 빈 템플릿은 PM만 지정 → 멤버 역할이 없어 검색 불가
-    const search = await screen.findByRole("combobox", { name: PROJECT_CREATE_TEXT.membersSearch });
-    expect(search).toHaveProperty("disabled", true);
-    expect(screen.getByText(PROJECT_CREATE_TEXT.membersNeedActor)).toBeTruthy();
     expect(await screen.findByText(PROJECT_CREATE_TEXT.departmentsEmpty)).toBeTruthy();
 
+    // 빈 템플릿은 PM만 지정 → 5단계 멤버 검색 불가
+    goStep("멤버");
+    const search = screen.getByRole("combobox", { name: PROJECT_CREATE_TEXT.membersSearch });
+    expect(search).toHaveProperty("disabled", true);
+    expect(screen.getByText(PROJECT_CREATE_TEXT.membersNeedActor)).toBeTruthy();
+
+    goStep("템플릿·운영 방식");
     fireEvent.change(screen.getByLabelText(PROJECT_CREATE_TEXT.template), { target: { value: "itProject" } });
-    fireEvent.focus(search);
-    fireEvent.change(search, { target: { value: "김철" } });
+    goStep("멤버");
+    const enabledSearch = screen.getByRole("combobox", { name: PROJECT_CREATE_TEXT.membersSearch });
+    fireEvent.focus(enabledSearch);
+    fireEvent.change(enabledSearch, { target: { value: "김철" } });
     fireEvent.click(await screen.findByRole("option", { name: /김철수/ }));
+
+    goStep("게이트 승인자");
     fireEvent.change(screen.getByLabelText(PROJECT_CREATE_TEXT.approverLabel), { target: { value: "11" } });
 
+    goStep("멤버");
     fireEvent.click(screen.getByRole("button", { name: formatLabel(PROJECT_CREATE_TEXT.removeMember, { name: "김철수" }) }));
     expect(screen.getByText(PROJECT_CREATE_TEXT.membersEmpty)).toBeTruthy();
+
+    goStep("게이트 승인자");
     expect(screen.queryByLabelText(PROJECT_CREATE_TEXT.approverLabel)).toBeNull();
     expect(screen.getByText(PROJECT_CREATE_TEXT.approverNoMembers)).toBeTruthy();
   });
 
-  it("서버가 승인자·멤버 규칙으로 거부(400)하면 해당 칸에 서버 메시지를 붙인다", async () => {
+  it("서버가 승인자·멤버 규칙으로 거부(400)하면 해당 단계로 자동 이동해 서버 메시지를 붙인다", async () => {
     stubFetch({
       "GET /api/projects/creation-options": () => jsonOk(CREATION_OPTIONS),
       "GET /api/departments": () => jsonOk(DEPARTMENTS),
@@ -247,6 +293,7 @@ describe("api 모드 프로젝트 생성", () => {
     renderApp({ mode: "api", route: "/projects/new", routes: API_ROUTES });
 
     fireEvent.change(await screen.findByLabelText(PROJECT_CREATE_TEXT.name), { target: { value: "거부 확인" } });
+    goStep("게이트 승인자");
     fireEvent.click(screen.getByRole("button", { name: new RegExp(PROJECT_CREATE_TEXT.submit) }));
     const message = await screen.findByText("프로젝트에 지정하지 않은 액터는 멤버 역할로 선택할 수 없습니다");
     expect(message.id).toBe("server-create-members-error");
@@ -266,17 +313,18 @@ describe("api 모드 프로젝트 생성", () => {
     renderApp({ mode: "api", route: "/projects/new", routes: API_ROUTES });
 
     expect(await screen.findByText(new RegExp(PROJECT_CREATE_TEXT.departmentsFailed))).toBeTruthy();
-    expect(screen.getByRole("button", { name: new RegExp(PROJECT_CREATE_TEXT.submit) })).toHaveProperty("disabled", false);
+    expect(screen.getByRole("button", { name: /다음/ })).toHaveProperty("disabled", false);
     fireEvent.click(screen.getByRole("button", { name: BUTTON_TEXT.retry }));
     expect(await screen.findByRole("checkbox", { name: "본부 > 구매팀" })).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText(PROJECT_CREATE_TEXT.name), { target: { value: "부서 없음" } });
+    goStep("게이트 승인자");
     fireEvent.click(screen.getByRole("button", { name: new RegExp(PROJECT_CREATE_TEXT.submit) }));
     await screen.findByText(formatLabel(PROJECT_CREATE_TEXT.created, { name: "부서 없음" }));
     expect(calls.find(({ method, path }) => method === "POST" && path === "/api/projects")?.body).toMatchObject({ departmentIds: [], members: [] });
   });
 
-  it("코드 중복(409)이면 코드 칸에 오류를 보이고 화면에 남는다(성공 안내 없음)", async () => {
+  it("코드 중복(409)이면 1단계(기본 정보)로 자동 이동해 코드 칸에 오류를 보이고 화면에 남는다", async () => {
     stubFetch({
       "GET /api/projects/creation-options": () => jsonOk(CREATION_OPTIONS),
       "GET /api/departments": () => jsonOk(DEPARTMENTS),
@@ -285,6 +333,7 @@ describe("api 모드 프로젝트 생성", () => {
     renderApp({ mode: "api", route: "/projects/new", routes: API_ROUTES });
 
     fireEvent.change(await screen.findByLabelText(PROJECT_CREATE_TEXT.name), { target: { value: "중복 코드" } });
+    goStep("게이트 승인자");
     fireEvent.click(screen.getByRole("button", { name: new RegExp(PROJECT_CREATE_TEXT.submit) }));
 
     expect(await screen.findByText("이미 사용 중인 프로젝트 코드입니다")).toBeTruthy();
@@ -307,6 +356,7 @@ describe("api 모드 프로젝트 생성", () => {
     renderApp({ mode: "api", route: "/projects/new", routes: API_ROUTES });
 
     fireEvent.change(await screen.findByLabelText(PROJECT_CREATE_TEXT.name), { target: { value: "다시 시도" } });
+    goStep("게이트 승인자");
     const submit = screen.getByRole("button", { name: new RegExp(PROJECT_CREATE_TEXT.submit) });
     fireEvent.click(submit);
     expect(await screen.findByText(/서버에 연결하지 못했습니다/)).toBeTruthy();
@@ -330,17 +380,21 @@ describe("api 모드 프로젝트 생성", () => {
     expect(calls.some(({ method }) => method === "POST")).toBe(false);
   });
 
-  it("필수 입력이 비면 요청을 보내지 않는다", async () => {
+  it("1단계 필수 입력이 비면 다음 단계로 넘어가지 않고, 마지막 단계 제출 시에도 1단계로 돌려보낸다", async () => {
     const { calls } = stubFetch({ "GET /api/projects/creation-options": () => jsonOk(CREATION_OPTIONS), "GET /api/departments": () => jsonOk(DEPARTMENTS) });
     renderApp({ mode: "api", route: "/projects/new", routes: API_ROUTES });
 
     await screen.findByLabelText(PROJECT_CREATE_TEXT.name);
-    fireEvent.click(screen.getByRole("button", { name: new RegExp(PROJECT_CREATE_TEXT.submit) }));
+    fireEvent.click(screen.getByRole("button", { name: /다음/ }));
     expect(await screen.findByText(PROJECT_CREATE_TEXT.nameRequired)).toBeTruthy();
+
+    goStep("게이트 승인자");
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(PROJECT_CREATE_TEXT.submit) }));
+    expect(await screen.findByLabelText(PROJECT_CREATE_TEXT.name)).toBeTruthy();
     expect(calls.some(({ method }) => method === "POST")).toBe(false);
   });
 
-  it("생성 선택지(필수)를 받지 못하면 제출을 막고 재시도로 다시 받는다", async () => {
+  it("생성 선택지(필수)를 받지 못하면 진행을 막고 재시도로 다시 받는다", async () => {
     let attempt = 0;
     stubFetch({
       "GET /api/projects/creation-options": () => {
@@ -354,14 +408,14 @@ describe("api 모드 프로젝트 생성", () => {
     const alert = await screen.findByRole("alert");
     expect(within(alert).getByText(PROJECT_CREATE_TEXT.optionsFailed)).toBeTruthy();
     expect(within(alert).getByText("서버에서 오류가 발생했습니다")).toBeTruthy();
-    expect(screen.getByRole("button", { name: new RegExp(PROJECT_CREATE_TEXT.submit) })).toHaveProperty("disabled", true);
+    expect(screen.getByRole("button", { name: /다음/ })).toHaveProperty("disabled", true);
 
     fireEvent.click(within(alert).getByRole("button", { name: BUTTON_TEXT.retry }));
-    expect(await screen.findByLabelText(PROJECT_CREATE_TEXT.template)).toBeTruthy();
-    expect(screen.getByRole("button", { name: new RegExp(PROJECT_CREATE_TEXT.submit) })).toHaveProperty("disabled", false);
+    expect(await screen.findByLabelText(PROJECT_CREATE_TEXT.name)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /다음/ })).toHaveProperty("disabled", false);
   });
 
-  it("필수 항목을 고를 수 없으면(SW 부서 유형 비활성) 어떤 항목인지 알리고 제출을 막는다", async () => {
+  it("필수 항목을 고를 수 없으면(SW 부서 유형 비활성) 어떤 항목인지 알리고 진행을 막는다", async () => {
     stubFetch({
       "GET /api/projects/creation-options": () =>
         jsonOk({ ...CREATION_OPTIONS, departmentTypes: [{ value: "SW", enabled: false, actors: [] }] }),
@@ -371,7 +425,7 @@ describe("api 모드 프로젝트 생성", () => {
 
     expect(await screen.findByText(PROJECT_CREATE_TEXT.blockedTitle)).toBeTruthy();
     expect(screen.getByText(PROJECT_CREATE_TEXT.noDepartmentType)).toBeTruthy();
-    expect(screen.getByRole("button", { name: new RegExp(PROJECT_CREATE_TEXT.submit) })).toHaveProperty("disabled", true);
+    expect(screen.getByRole("button", { name: /다음/ })).toHaveProperty("disabled", true);
   });
 
   it("코드 중복 확인: 사용 가능·사용 중·조회 실패를 구분해 보여 준다", async () => {
