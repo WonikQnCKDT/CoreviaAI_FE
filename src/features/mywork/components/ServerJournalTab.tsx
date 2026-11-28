@@ -42,9 +42,17 @@ const formOf = (task: CalendarTask, entry: WorklogTaskEntry | undefined): TaskLo
  * 노트 원문은 브라우저 저장소에 남기지 않고, Markdown은 HTML로 그리지 않는다(입력칸의 텍스트로만).
  * 업무 기록은 저장 직전에 업무 상세로 최신 업무 version을 받아 보낸다(서버가 진척·완료를 업무에 반영).
  */
-export default function ServerJournalTab({ today = kstToday() }: { today?: string }) {
+interface Props {
+  today?: string;
+  /** 처음 고를 날짜(캘린더에서 넘어올 때). 없으면 오늘 */
+  initialDate?: string;
+  /** 이 날을 캘린더에서 보기 */
+  onOpenCalendar?: (date: string) => void;
+}
+
+export default function ServerJournalTab({ today = kstToday(), initialDate, onOpenCalendar }: Props) {
   const { labelOf: taskStatusLabelOf } = useCommonCodes("TASK_STATUS");
-  const [date, setDate] = useState(today);
+  const [date, setDate] = useState(initialDate ?? today);
   const [day, setDay] = useState<DayState>({ phase: "loading" });
   const [content, setContent] = useState("");
   const [forms, setForms] = useState<Record<number, TaskLogForm>>({});
@@ -109,10 +117,12 @@ export default function ServerJournalTab({ today = kstToday() }: { today?: strin
     setBusy(false);
   };
 
-  /** 저장하지 않은 노트가 있으면 확인한 뒤 날짜를 바꾼다(입력이 사라지지 않게) */
+  /** 저장하지 않은 노트가 있으면 떠나기 전에 확인한다(입력이 사라지지 않게) */
+  const confirmLeave = () => !(day.phase === "ready" && content !== day.savedContent) || window.confirm(WORKLOG_TEXT.confirmLeave);
+
   const changeDate = (next: string) => {
     if (next === date) return;
-    if (day.phase === "ready" && content !== day.savedContent && !window.confirm(WORKLOG_TEXT.confirmLeave)) return;
+    if (!confirmLeave()) return;
     setNotice(null);
     setDate(next);
   };
@@ -205,6 +215,11 @@ export default function ServerJournalTab({ today = kstToday() }: { today?: strin
           <input type="date" className="field w-auto text-[13px]" aria-label={WORKLOG_TEXT.date} value={date} onChange={(e) => e.target.value && changeDate(e.target.value)} />
           <button type="button" className="btn-outline px-2 py-1" aria-label={WORKLOG_TEXT.nextDay} onClick={() => changeDate(addDays(date, 1))}><i className="ri-arrow-right-s-line" aria-hidden="true" /></button>
           <button type="button" className="btn-ghost px-2 py-1 text-[12px]" onClick={() => changeDate(today)}>{WORKLOG_TEXT.today}</button>
+          {onOpenCalendar && (
+            <button type="button" className="btn-outline ml-auto px-2 py-1 text-[12px]" onClick={() => confirmLeave() && onOpenCalendar(date)}>
+              <i className="ri-calendar-line" aria-hidden="true" /> {WORKLOG_TEXT.openCalendar}
+            </button>
+          )}
         </div>
 
         {notice && (

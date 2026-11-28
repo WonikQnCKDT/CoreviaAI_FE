@@ -1,7 +1,7 @@
 import type { ApiFailure } from "@/shared/api/client";
 import type { EventInput, PersonalEvent } from "@/features/mywork/api/scheduleApi";
 import { SCHEDULE_TEXT, WORKLOG_TEXT } from "@/features/mywork/i18n/ko";
-import { addDays } from "@/utils/date";
+import { addDays, startOfWeek } from "@/utils/date";
 
 /* =====================================================================
  * 한국 날짜·시각. 서버는 업무 기간을 한국 날짜 00:00(+09:00) 기준 종일 항목으로 주고,
@@ -30,6 +30,27 @@ export const monthRange = function (year: number, month: number) {
   const first = `${year}-${String(month + 1).padStart(2, "0")}-01`;
   const next = month === 11 ? `${year + 1}-01-01` : `${year}-${String(month + 2).padStart(2, "0")}-01`;
   return { from: kstDayStart(first), to: kstDayStart(next), firstDate: first, nextDate: next };
+};
+
+export type CalendarView = "month" | "week" | "day";
+
+/**
+ * 보기 방식별 조회 범위(한국 기준). 주는 월요일부터 7일, 일은 그날 하루.
+ * firstDate 이상 nextDate 미만이 화면에 그리는 날짜다.
+ */
+export const viewRange = function (view: CalendarView, selected: string) {
+  if (view === "month") return monthRange(Number(selected.slice(0, 4)), Number(selected.slice(5, 7)) - 1);
+  const first = view === "week" ? startOfWeek(selected) : selected;
+  const next = addDays(first, view === "week" ? 7 : 1);
+  return { from: kstDayStart(first), to: kstDayStart(next), firstDate: first, nextDate: next };
+};
+
+/** 이전·다음으로 옮긴 선택 날짜. 월 보기는 그 달 1일로 옮긴다(31일 → 2월 같은 넘침이 없게) */
+export const moveSelected = function (view: CalendarView, selected: string, delta: number) {
+  if (view === "week") return addDays(selected, 7 * delta);
+  if (view === "day") return addDays(selected, delta);
+  const index = Number(selected.slice(0, 4)) * 12 + Number(selected.slice(5, 7)) - 1 + delta;
+  return `${Math.floor(index / 12)}-${String((((index % 12) + 12) % 12) + 1).padStart(2, "0")}-01`;
 };
 
 /** 항목이 걸친 한국 날짜 목록(종료는 그 시각 직전까지). 너무 긴 항목은 범위 안으로만 */

@@ -53,6 +53,12 @@ export default function ServerMyWorkPage() {
   const { state, reload } = useServerTodos();
   const { labelOf: taskStatusLabelOf } = useCommonCodes("TASK_STATUS");
   const [tab, setTab] = useState<TabKey>("todo");
+  // 캘린더 ↔ 업무일지 상호 이동 때 넘겨받는 날짜(탭을 직접 고르면 오늘부터)
+  const [linkedDate, setLinkedDate] = useState<string | undefined>(undefined);
+  const openTab = (next: TabKey, date?: string) => {
+    setLinkedDate(date);
+    setTab(next);
+  };
   const [filter, setFilterState] = useState<TaskFilter>(loadTaskFilter);
   const [dialog, setDialog] = useState<DialogTarget>(null);
   const [dialogError, setDialogError] = useState("");
@@ -255,7 +261,7 @@ export default function ServerMyWorkPage() {
       <TabBar
         items={TABS.map((t) => ({ key: t.key, label: t.label(), icon: t.icon, count: t.key === "todo" ? stats.open : undefined }))}
         activeKey={tab}
-        onChange={(key) => setTab(key as TabKey)}
+        onChange={(key) => openTab(key as TabKey)}
         ariaLabel={MYWORK_TAB_TEXT.views}
         meta={
           <button type="button" className="btn-primary whitespace-nowrap" onClick={openCreate}>
@@ -278,8 +284,8 @@ export default function ServerMyWorkPage() {
           description={TODO_TEXT.approvalPendingDesc}
         />
       )}
-      {tab === "calendar" && <ServerCalendarTab />}
-      {tab === "journal" && <ServerJournalTab />}
+      {tab === "calendar" && <ServerCalendarTab initialDate={linkedDate} onOpenNote={(date) => openTab("journal", date)} />}
+      {tab === "journal" && <ServerJournalTab initialDate={linkedDate} onOpenCalendar={(date) => openTab("calendar", date)} />}
 
       {dialog && (
         <ServerTodoDialog
