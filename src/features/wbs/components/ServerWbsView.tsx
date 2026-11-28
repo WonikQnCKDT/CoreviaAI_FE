@@ -11,6 +11,7 @@ import {
   updateTaskProgress,
   updateWbsTask,
   type WbsItem,
+  type WbsTaskCreateAttributes,
   type WbsTaskFields,
 } from "@/features/wbs/api/wbsApi";
 import ServerTaskDetailDialog from "@/features/board/components/ServerTaskDetailDialog";
@@ -148,7 +149,15 @@ export default function ServerWbsView({ project }: { project: Project & { server
     return false;
   };
 
-  const submitForm = async ({ phaseId, fields }: { phaseId: number | null; fields: WbsTaskFields }) => {
+  const submitForm = async ({
+    phaseId,
+    fields,
+    attributes,
+  }: {
+    phaseId: number | null;
+    fields: WbsTaskFields;
+    attributes: WbsTaskCreateAttributes;
+  }) => {
     if (!formTarget) return;
     const target = formTarget;
     const ok =
@@ -170,6 +179,7 @@ export default function ServerWbsView({ project }: { project: Project & { server
                 parentTaskId: target.kind === "createSubtask" ? target.parent.id : null,
                 phaseId: target.kind === "createTask" ? phaseId : null,
                 fields,
+                attributes,
               }),
             (change) => {
               replaceTree(change.tasks);

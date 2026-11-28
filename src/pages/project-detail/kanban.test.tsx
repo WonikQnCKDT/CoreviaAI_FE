@@ -384,12 +384,21 @@ describe("api 모드 업무 상세", () => {
     createdBy: { id: 1, name: "김피엠" }, createdAt: "2026-11-21T01:00:00Z", updatedAt: "2026-11-21T01:00:00Z", version: 2, ...overrides,
   });
   const histories = {
-    items: [{ id: 51, activityType: "CREATED", before: null, after: { name: "<img src=x onerror=alert(1)>" }, actor: { id: 1, name: "김피엠" }, occurredAt: "2026-11-21T01:00:00Z" }],
+    items: [
+      {
+        id: 51,
+        activityType: "CREATED",
+        before: null,
+        after: { name: "<img src=x onerror=alert(1)>", priority: "HIGH", unknownKey: "v1" },
+        actor: { id: 1, name: "김피엠" },
+        occurredAt: "2026-11-21T01:00:00Z",
+      },
+    ],
     nextCursor: null,
     hasNext: false,
   };
 
-  it("카드를 누르면 상세·이력을 보여 주고, 이력의 사용자 입력은 텍스트로만 그린다", async () => {
+  it("카드를 누르면 상세·이력을 보여 주고, 필드 키는 라벨로 매핑하며 사용자 입력은 텍스트로만 그린다", async () => {
     renderServerWith({
       ...handlers("PM"),
       "GET /api/projects/77/tasks/103": () => jsonOk(taskDetail()),
@@ -397,7 +406,9 @@ describe("api 모드 업무 상세", () => {
     });
     fireEvent.click(await screen.findByRole("button", { name: `${BOARD_TEXT.openDetail}: API 설계` }));
     const dialog = await screen.findByRole("dialog");
-    expect(await within(dialog).findByText("name: <img src=x onerror=alert(1)>")).toBeTruthy();
+    expect(await within(dialog).findByText(`${TASK_DETAIL_TEXT.fieldName}: <img src=x onerror=alert(1)>`)).toBeTruthy();
+    expect(within(dialog).getByText(`${TASK_DETAIL_TEXT.priority}: HIGH`)).toBeTruthy();
+    expect(within(dialog).getByText("unknownKey: v1")).toBeTruthy();
     expect(dialog.querySelector("img")).toBeNull();
     expect(within(within(dialog).getByRole("region", { name: TASK_DETAIL_TEXT.histories })).getByText(TASK_DETAIL_TEXT.activityCreated)).toBeTruthy();
   });

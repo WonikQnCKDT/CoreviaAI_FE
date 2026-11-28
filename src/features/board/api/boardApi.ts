@@ -1,5 +1,13 @@
 import { apiRequest, type ApiResult } from "@/shared/api/client";
-import type { WbsStatus } from "@/features/wbs/api/wbsApi";
+import {
+  TASK_PRIORITY_TO_DTO,
+  TASK_TYPE_TO_DTO,
+  type TaskPriority,
+  type TaskType,
+  type WbsStatus,
+} from "@/features/wbs/api/wbsApi";
+
+export type { TaskPriority, TaskType };
 
 /**
  * 05. 업무·보드 (API) — 업무 상세(FR-TSK-01, SCRUM-109), 칸반 보드(FR-TSK-02, SCRUM-110).
@@ -102,9 +110,6 @@ interface CursorPageDto<T> {
 
 /* ===== 화면 모델 ===== */
 
-export type TaskType = "task" | "defect";
-export type TaskPriority = "high" | "medium" | "low";
-
 export interface UserRef {
   id: number;
   name: string;
@@ -204,9 +209,7 @@ export interface CursorPage<T> {
 const STATUS_FROM_DTO: Record<string, WbsStatus> = { TODO: "todo", IN_PROGRESS: "progress", REVIEW: "review", DONE: "done" };
 export const STATUS_TO_DTO: Record<WbsStatus, string> = { todo: "TODO", progress: "IN_PROGRESS", review: "REVIEW", done: "DONE" };
 const TYPE_FROM_DTO: Record<string, TaskType> = { TASK: "task", DEFECT: "defect" };
-const TYPE_TO_DTO: Record<TaskType, string> = { task: "TASK", defect: "DEFECT" };
 const PRIORITY_FROM_DTO: Record<string, TaskPriority> = { HIGH: "high", MEDIUM: "medium", LOW: "low" };
-const PRIORITY_TO_DTO: Record<TaskPriority, string> = { high: "HIGH", medium: "MEDIUM", low: "LOW" };
 const ACTIVITY_FROM_DTO: Record<string, HistoryActivity> = {
   CREATED: "created",
   ASSIGNED: "assigned",
@@ -468,8 +471,8 @@ export const updateTaskAttributes = async function ({
   signal?: AbortSignal;
 }) {
   const body = {
-    taskType: TYPE_TO_DTO[taskType],
-    priority: PRIORITY_TO_DTO[priority],
+    taskType: TASK_TYPE_TO_DTO[taskType],
+    priority: TASK_PRIORITY_TO_DTO[priority],
     completionCriteria: completionCriteria.trim() || null,
     version,
   };

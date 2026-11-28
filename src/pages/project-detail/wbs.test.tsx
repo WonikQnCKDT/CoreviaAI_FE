@@ -162,7 +162,52 @@ describe("api 모드 WBS (서버 프로젝트)", () => {
       estimatedEffort: null,
       parentTaskId: null,
       phaseId: 2,
+      taskType: "TASK",
+      priority: "MEDIUM",
+      completionCriteria: null,
     });
+  });
+
+  it("PM이 작업 추가 시 유형·우선순위·완료 조건을 지정하면 서버 코드로 전송한다", async () => {
+    const { calls } = renderServerWith({
+      ...baseHandlers("PM"),
+      "POST /api/projects/77/wbs/tasks": () => jsonOk({ taskId: 104, tasks: [task(), task({ id: 104, phaseId: 1, name: "결함 수정", taskType: "DEFECT", priority: "HIGH" })] }),
+    });
+    const analysis = await screen.findByRole("region", { name: "분석" });
+    fireEvent.click(within(analysis).getByRole("button", { name: WBS_TEXT.addTask }));
+    const dialog = screen.getByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText(WBS_FORM_TEXT.name), { target: { value: "결함 수정" } });
+    const dates = dialog.querySelectorAll('input[type="date"]');
+    fireEvent.change(dates[0], { target: { value: "2026-12-11" } });
+    fireEvent.change(dates[1], { target: { value: "2026-12-12" } });
+    fireEvent.change(within(dialog).getByLabelText(WBS_FORM_TEXT.taskType), { target: { value: "defect" } });
+    fireEvent.change(within(dialog).getByLabelText(WBS_FORM_TEXT.priority), { target: { value: "high" } });
+    fireEvent.change(within(dialog).getByLabelText(WBS_FORM_TEXT.completionCriteria), { target: { value: "  회귀 테스트 통과  " } });
+    fireEvent.click(within(dialog).getByRole("button", { name: WBS_FORM_TEXT.submit }));
+
+    expect(await screen.findByText("'결함 수정'을(를) 등록했습니다.")).toBeTruthy();
+    expect(calls.find((c) => c.method === "POST")?.body).toMatchObject({
+      name: "결함 수정",
+      taskType: "DEFECT",
+      priority: "HIGH",
+      completionCriteria: "회귀 테스트 통과",
+    });
+  });
+
+  it("완료 조건이 2000자를 넘으면 서버에 보내지 않는다", async () => {
+    const { calls } = renderServerWith(baseHandlers("PM"));
+    const analysis = await screen.findByRole("region", { name: "분석" });
+    fireEvent.click(within(analysis).getByRole("button", { name: WBS_TEXT.addTask }));
+    const dialog = screen.getByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText(WBS_FORM_TEXT.name), { target: { value: "긴 조건" } });
+    const dates = dialog.querySelectorAll('input[type="date"]');
+    fireEvent.change(dates[0], { target: { value: "2026-12-11" } });
+    fireEvent.change(dates[1], { target: { value: "2026-12-12" } });
+    fireEvent.change(within(dialog).getByLabelText(WBS_FORM_TEXT.completionCriteria), { target: { value: "a".repeat(2001) } });
+    fireEvent.click(within(dialog).getByRole("button", { name: WBS_FORM_TEXT.submit }));
+
+    expect(within(dialog).getByRole("alert").textContent).toBe(WBS_FORM_TEXT.completionCriteriaTooLong);
+    expect(calls.some((c) => c.method === "POST")).toBe(false);
   });
 
   it("입력이 잘못되면 서버에 보내지 않는다(시작일 > 종료일)", async () => {

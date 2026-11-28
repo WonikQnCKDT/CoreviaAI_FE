@@ -123,6 +123,35 @@ describe("변경 요청 본문", () => {
     });
   });
 
+  it("작업 등록 시 유형·우선순위·완료 조건을 서버 코드로 보내고 빈 완료 조건은 null", async () => {
+    const { calls } = stubFetch({ "POST /api/projects/7/wbs/tasks": () => jsonOk({ taskId: 202, tasks: [] }) });
+    await createWbsTask({
+      projectId: 7,
+      parentTaskId: null,
+      phaseId: 3,
+      fields: FIELDS,
+      attributes: { taskType: "defect", priority: "high", completionCriteria: "  통합 테스트 통과  " },
+    });
+    expect(calls[0].body).toMatchObject({
+      taskType: "DEFECT",
+      priority: "HIGH",
+      completionCriteria: "통합 테스트 통과",
+    });
+
+    await createWbsTask({
+      projectId: 7,
+      parentTaskId: null,
+      phaseId: 3,
+      fields: FIELDS,
+      attributes: { taskType: "task", priority: "low", completionCriteria: "   " },
+    });
+    expect(calls[1].body).toMatchObject({
+      taskType: "TASK",
+      priority: "LOW",
+      completionCriteria: null,
+    });
+  });
+
   it("하위작업 등록은 단계를 상위에서 물려받으므로 phaseId를 null로 보낸다", async () => {
     const { calls } = stubFetch({ "POST /api/projects/7/wbs/tasks": () => jsonOk({ taskId: 201, tasks: [] }) });
     await createWbsTask({ projectId: 7, parentTaskId: 101, phaseId: 3, fields: FIELDS });

@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (1227개)
+## 등록 필요 (1238개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -1019,6 +1019,13 @@
 | `task.server.derived` | 하위작업 기간으로 산출 | task.server |
 | `task.server.description` | 설명 | task.server |
 | `task.server.effort` | 예상 공수 | task.server |
+| `task.server.fieldBoardColumnId` | 보드 컬럼 | task.server |
+| `task.server.fieldCompletionCriteria` | 완료 조건 | task.server |
+| `task.server.fieldDueDate` | 마감일 | task.server |
+| `task.server.fieldEndDate` | 종료일 | task.server |
+| `task.server.fieldName` | 작업명 | task.server |
+| `task.server.fieldSortOrder` | 정렬 순서 | task.server |
+| `task.server.fieldStartDate` | 시작일 | task.server |
 | `task.server.forbidden` | 이 업무를 수정할 권한이 없습니다. 업무를 새로 불러왔습니다. | task.server |
 | `task.server.histories` | 변경 이력 | task.server |
 | `task.server.historiesEmpty` | 변경 이력이 없습니다. | task.server |
@@ -1103,6 +1110,8 @@
 | `wbs.form.assigneePmOnly` | 담당자 배정은 PM만 할 수 있습니다. | wbs.form |
 | `wbs.form.assigneeSelfOnly` | 담당자는 비우거나 본인만 지정할 수 있습니다. | wbs.form |
 | `wbs.form.cancel` | 취소 | wbs.form |
+| `wbs.form.completionCriteria` | 완료 조건 (선택) | wbs.form |
+| `wbs.form.completionCriteriaTooLong` | 완료 조건은 2000자 이하로 입력해 주세요. | wbs.form |
 | `wbs.form.createSubtaskTitle` | '{name}' 하위작업 추가 | wbs.form |
 | `wbs.form.createTitle` | 작업 추가 | wbs.form |
 | `wbs.form.dateOrder` | 시작일은 종료일보다 늦을 수 없습니다. | wbs.form |
@@ -1119,6 +1128,7 @@
 | `wbs.form.nameTooLong` | 작업명은 200자 이하로 입력해 주세요. | wbs.form |
 | `wbs.form.phase` | 단계 | wbs.form |
 | `wbs.form.phaseInherited` | 하위작업은 상위 작업의 단계를 따릅니다. | wbs.form |
+| `wbs.form.priority` | 우선순위 | wbs.form |
 | `wbs.form.progressDoneNote` | 완료 상태의 작업은 진척률이 100이어야 합니다. | wbs.form |
 | `wbs.form.progressInvalid` | 진척률은 0~100 사이의 정수로 입력해 주세요. | wbs.form |
 | `wbs.form.progressLabel` | 진척률 (0~100%) | wbs.form |
@@ -1126,6 +1136,7 @@
 | `wbs.form.startDate` | 시작일 | wbs.form |
 | `wbs.form.submit` | 저장 | wbs.form |
 | `wbs.form.submitting` | 저장 중 | wbs.form |
+| `wbs.form.taskType` | 유형 | wbs.form |
 | `wbs.milestone.add` | 마일스톤 추가 | wbs.milestone |
 | `wbs.milestone.aiSource` | AI 초안 | wbs.milestone |
 | `wbs.milestone.cancel` | 취소 | wbs.milestone |

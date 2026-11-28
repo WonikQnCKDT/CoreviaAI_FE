@@ -106,6 +106,11 @@ interface ApplyWbsDraftDto {
 /* ===== 화면 모델 ===== */
 
 export type WbsStatus = "todo" | "progress" | "review" | "done";
+export type TaskType = "task" | "defect";
+export type TaskPriority = "high" | "medium" | "low";
+
+export const TASK_TYPE_TO_DTO: Record<TaskType, string> = { task: "TASK", defect: "DEFECT" };
+export const TASK_PRIORITY_TO_DTO: Record<TaskPriority, string> = { high: "HIGH", medium: "MEDIUM", low: "LOW" };
 
 export interface WbsItem {
   id: number;
@@ -315,6 +320,13 @@ export interface WbsTaskFields {
   estimatedEffort: number | null;
 }
 
+/** 업무 등록 시 함께 보내는 업무 속성(FR-TSK-01). 수정은 업무 상세 API(PATCH /tasks/{taskId})로 한다 */
+export interface WbsTaskCreateAttributes {
+  taskType: TaskType;
+  priority: TaskPriority;
+  completionCriteria: string;
+}
+
 const fieldsBody = (fields: WbsTaskFields) => ({
   name: fields.name.trim(),
   description: fields.description.trim() || null,
@@ -336,15 +348,28 @@ export const createWbsTask = async function ({
   parentTaskId,
   phaseId,
   fields,
+  attributes,
   signal,
 }: {
   projectId: number;
   parentTaskId: number | null;
   phaseId: number | null;
   fields: WbsTaskFields;
+  attributes?: WbsTaskCreateAttributes;
   signal?: AbortSignal;
 }) {
-  const body = { ...fieldsBody(fields), parentTaskId, phaseId: parentTaskId === null ? phaseId : null };
+  const body = {
+    ...fieldsBody(fields),
+    parentTaskId,
+    phaseId: parentTaskId === null ? phaseId : null,
+    ...(attributes
+      ? {
+          taskType: TASK_TYPE_TO_DTO[attributes.taskType],
+          priority: TASK_PRIORITY_TO_DTO[attributes.priority],
+          completionCriteria: attributes.completionCriteria.trim() || null,
+        }
+      : {}),
+  };
   const result = await apiRequest<WbsTaskChangeDto>({ method: "POST", path: `${wbsPath(projectId)}/tasks`, body, signal });
   return mapResult(result, toChange);
 };

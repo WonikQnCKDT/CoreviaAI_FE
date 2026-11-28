@@ -8,6 +8,7 @@ import {
   canManageColumns,
   canMoveCard,
   columnTitle,
+  historyFieldLabel,
   historyLines,
   interpretBoardFailure,
   reorderedIds,
@@ -105,17 +106,33 @@ describe("컬럼 순서·삭제 가능", () => {
 
 describe("이력 줄", () => {
   const userName = (id: number) => (id === 11 ? "김QA" : null);
-  it("바뀐 필드만, 담당자 ID는 이름으로, 빈 값은 '없음'", () => {
+  it("바뀐 필드만, 담당자 ID는 이름으로, 빈 값은 '없음', 필드 키는 사람이 읽는 라벨로 매핑한다", () => {
     expect(historyLines({ before: { assigneeUserId: null, name: "a" }, after: { assigneeUserId: "11", name: "a" }, userName })).toEqual([
-      { field: "assigneeUserId", from: TASK_DETAIL_TEXT.none, to: "김QA" },
+      { field: "assigneeUserId", label: TASK_DETAIL_TEXT.assignee, from: TASK_DETAIL_TEXT.none, to: "김QA" },
     ]);
-    expect(historyLines({ before: null, after: { assigneeUserId: "99" }, userName })).toEqual([{ field: "assigneeUserId", from: "", to: "#99" }]);
+    expect(historyLines({ before: null, after: { assigneeUserId: "99" }, userName })).toEqual([
+      { field: "assigneeUserId", label: TASK_DETAIL_TEXT.assignee, from: "", to: "#99" },
+    ]);
+  });
+
+  it("주요 필드 키를 i18n 라벨로 바꾸고 모르는 키·프로토타입 키는 원문으로 폴백한다", () => {
+    expect(historyFieldLabel("priority")).toBe(TASK_DETAIL_TEXT.priority);
+    expect(historyFieldLabel("dueDate")).toBe(TASK_DETAIL_TEXT.fieldDueDate);
+    expect(historyFieldLabel("startDate")).toBe(TASK_DETAIL_TEXT.fieldStartDate);
+    expect(historyFieldLabel("endDate")).toBe(TASK_DETAIL_TEXT.fieldEndDate);
+    expect(historyFieldLabel("completionCriteria")).toBe(TASK_DETAIL_TEXT.fieldCompletionCriteria);
+    expect(historyFieldLabel("taskType")).toBe(TASK_DETAIL_TEXT.taskType);
+    expect(historyFieldLabel("estimatedEffort")).toBe(TASK_DETAIL_TEXT.effort);
+    expect(historyFieldLabel("unknownFutureKey")).toBe("unknownFutureKey");
+    expect(historyFieldLabel("toString")).toBe("toString");
   });
 
   it("사용자 입력은 그대로 문자열로 둔다(HTML로 해석하지 않음), 긴 값은 줄인다", () => {
     const [line] = historyLines({ before: null, after: { name: "<script>alert(1)</script>" }, userName });
+    expect(line.label).toBe(TASK_DETAIL_TEXT.fieldName);
     expect(line.to).toBe("<script>alert(1)</script>");
     const [long] = historyLines({ before: { description: "x".repeat(200) }, after: { description: null }, userName });
+    expect(long.label).toBe(TASK_DETAIL_TEXT.description);
     expect(long.from).toHaveLength(81);
     expect(long.to).toBe(TASK_DETAIL_TEXT.none);
   });

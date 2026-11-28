@@ -156,6 +156,23 @@ describe("입력 검증", () => {
     expect(validateWbsForm(values({ description: "a".repeat(2001) }))).toEqual({ ok: false, message: WBS_FORM_TEXT.descriptionTooLong });
   });
 
+  it("완료 조건 2000자 경계 및 유형·우선순위 기본값", () => {
+    const ok = validateWbsForm(values({ completionCriteria: "c".repeat(2000) }));
+    expect(ok).toMatchObject({
+      ok: true,
+      attributes: { taskType: "task", priority: "medium", completionCriteria: "c".repeat(2000) },
+    });
+    expect(validateWbsForm(values({ completionCriteria: "c".repeat(2001) }))).toEqual({
+      ok: false,
+      message: WBS_FORM_TEXT.completionCriteriaTooLong,
+    });
+    const custom = validateWbsForm(values({ taskType: "defect", priority: "high", completionCriteria: "QA 통과" }));
+    expect(custom).toMatchObject({
+      ok: true,
+      attributes: { taskType: "defect", priority: "high", completionCriteria: "QA 통과" },
+    });
+  });
+
   it("기간: 필수, 같은 날은 통과, 시작 > 종료는 거부", () => {
     expect(validateWbsForm(values({ endDate: "" }))).toEqual({ ok: false, message: WBS_FORM_TEXT.dateRequired });
     expect(validateWbsForm(values({ startDate: "2026-12-02" }))).toEqual({ ok: false, message: WBS_FORM_TEXT.dateOrder });

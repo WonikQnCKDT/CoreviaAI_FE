@@ -209,7 +209,7 @@ export default function ServerTaskDetailDialog({ projectId, taskId, viewer, memb
                   <ul className="mt-0.5 text-foreground-700">
                     {historyLines({ before: h.before, after: h.after, userName }).map((line) => (
                       <li key={line.field} className="break-all">
-                        {line.field}: {line.from && line.to ? `${line.from} → ${line.to}` : line.from || line.to}
+                        {line.label}: {line.from && line.to ? `${line.from} → ${line.to}` : line.from || line.to}
                       </li>
                     ))}
                   </ul>

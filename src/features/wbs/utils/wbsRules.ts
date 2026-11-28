@@ -1,6 +1,16 @@
 import type { ApiFailure } from "@/shared/api/client";
 import type { ProjectActor } from "@/features/project/api/projectApi";
-import type { ApplyDraftBody, DraftInput, DraftMilestone, DraftTask, WbsItem, WbsTaskFields } from "@/features/wbs/api/wbsApi";
+import type {
+  ApplyDraftBody,
+  DraftInput,
+  DraftMilestone,
+  DraftTask,
+  TaskPriority,
+  TaskType,
+  WbsItem,
+  WbsTaskCreateAttributes,
+  WbsTaskFields,
+} from "@/features/wbs/api/wbsApi";
 import { WBS_DRAFT_TEXT, WBS_FORM_TEXT, WBS_TEXT } from "@/features/wbs/i18n/ko";
 import { formatLabel } from "@/shared/i18n/store";
 import type { TaskStatus } from "@/types";
@@ -320,6 +330,9 @@ export interface WbsFormValues {
   endDate: string;
   /** 입력칸 그대로(빈 문자열 = 미입력) */
   effort: string;
+  taskType?: TaskType;
+  priority?: TaskPriority;
+  completionCriteria?: string;
 }
 
 export const EFFORT_PATTERN = /^\d{1,5}(\.\d)?$/;
@@ -332,11 +345,15 @@ export const parseEffort = function (raw: string): { ok: true; value: number | n
   return num >= 0.1 ? { ok: true, value: num } : { ok: false };
 };
 
-export const validateWbsForm = function (values: WbsFormValues): { ok: true; fields: WbsTaskFields } | { ok: false; message: string } {
+export const validateWbsForm = function (
+  values: WbsFormValues,
+): { ok: true; fields: WbsTaskFields; attributes: WbsTaskCreateAttributes } | { ok: false; message: string } {
   const name = values.name.trim();
   if (!name) return { ok: false, message: WBS_FORM_TEXT.nameRequired };
   if (name.length > 200) return { ok: false, message: WBS_FORM_TEXT.nameTooLong };
   if (values.description.trim().length > 2000) return { ok: false, message: WBS_FORM_TEXT.descriptionTooLong };
+  const completionCriteria = values.completionCriteria ?? "";
+  if (completionCriteria.trim().length > 2000) return { ok: false, message: WBS_FORM_TEXT.completionCriteriaTooLong };
   if (!values.startDate || !values.endDate) return { ok: false, message: WBS_FORM_TEXT.dateRequired };
   if (values.startDate > values.endDate) return { ok: false, message: WBS_FORM_TEXT.dateOrder };
   const effort = parseEffort(values.effort);
@@ -350,6 +367,11 @@ export const validateWbsForm = function (values: WbsFormValues): { ok: true; fie
       startDate: values.startDate,
       endDate: values.endDate,
       estimatedEffort: effort.value,
+    },
+    attributes: {
+      taskType: values.taskType ?? "task",
+      priority: values.priority ?? "medium",
+      completionCriteria,
     },
   };
 };
