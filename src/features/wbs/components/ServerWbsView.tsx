@@ -14,6 +14,7 @@ import {
   type WbsTaskFields,
 } from "@/features/wbs/api/wbsApi";
 import ServerTaskDetailDialog from "@/features/board/components/ServerTaskDetailDialog";
+import ServerMilestonePanel from "@/features/wbs/components/ServerMilestonePanel";
 import WbsProgressDialog from "@/features/wbs/components/WbsProgressDialog";
 import WbsReparentDialog from "@/features/wbs/components/WbsReparentDialog";
 import WbsTaskFormDialog, { type WbsFormTarget } from "@/features/wbs/components/WbsTaskFormDialog";
@@ -302,7 +303,7 @@ export default function ServerWbsView({ project }: { project: Project & { server
       </div>
 
       {note && <p className="rounded-md bg-background-100 px-3 py-2 text-[12px] text-foreground-600">{note}</p>}
-      <p className="text-[11.5px] text-foreground-500">{WBS_TEXT.milestoneNote}</p>
+      <p className="text-[11.5px] text-foreground-500">{WBS_TEXT.dependencyNote}</p>
       {notice && (
         <p
           role={notice.tone === "error" ? "alert" : "status"}
@@ -311,6 +312,8 @@ export default function ServerWbsView({ project }: { project: Project & { server
           {notice.text}
         </p>
       )}
+
+      <ServerMilestonePanel projectId={projectId} tree={tree} viewer={viewer} />
 
       {tree.length === 0 && <p className="text-[12px] text-foreground-600">{pm ? WBS_TEXT.emptyHintPm : WBS_TEXT.emptyHintViewer}</p>}
 
