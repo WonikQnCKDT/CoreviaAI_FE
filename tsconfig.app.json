@@ -32,7 +32,8 @@
     "noUncheckedSideEffectImports": false,
     "paths": {
       "@/*": ["./src/*"],
+      "@test/*": ["./test/*"]
     }
   },
-  "include": ["src", "vite-env.d.ts"]
+  "include": ["src", "test", "vite-env.d.ts"]
 }

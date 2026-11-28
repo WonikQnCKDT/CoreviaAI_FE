@@ -64,7 +64,7 @@ const send = async function <T>({
 }: RequestOptions): Promise<ApiResult<T>> {
   const controller = new AbortController();
   let timedOut = false;
-  const timer = window.setTimeout(() => {
+  const timer = globalThis.setTimeout(() => {
     timedOut = true;
     controller.abort();
   }, timeoutMs);
@@ -98,7 +98,7 @@ const send = async function <T>({
     if (signal?.aborted) return { ok: false, failure: { kind: "aborted" } };
     return { ok: false, failure: { kind: "network" } };
   } finally {
-    window.clearTimeout(timer);
+    globalThis.clearTimeout(timer);
     signal?.removeEventListener("abort", forwardAbort);
   }
 };
