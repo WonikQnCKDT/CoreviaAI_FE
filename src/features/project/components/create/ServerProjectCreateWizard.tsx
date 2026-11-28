@@ -12,23 +12,33 @@ import {
 } from "@/features/project/api/projectApi";
 import { generateProjectCode, issueYear } from "@/features/project/utils/projectCode";
 import {
+  actorsInUse,
+  addMember,
   applyTemplate,
+  changeMemberRole,
   changeMethodology,
+  featureChoices,
+  hasPhases,
   initialForm,
   interpretCreateFailure,
   lookupFailureMessage,
+  memberRoleOptions,
+  removeMember,
   requiredBlockers,
   selectableActors,
-  featureChoices,
-  hasPhases,
   selectableMethodologies,
-  SERVER_DIRECTORY,
+  setGateApprover,
   toCreateInput,
+  toggleActor,
+  toggleDepartment,
   validateCreateForm,
   type CreateErrors,
+  type CreateField,
   type ServerCreateForm,
 } from "@/features/project/utils/serverCreate";
-import { PROJECT_CREATE_TEXT, PROJECT_DIRECTORY_TEXT, PROJECT_FEATURE_LABEL, PROJECT_TEMPLATE_LABEL } from "@/features/project/i18n/ko";
+import ServerDepartmentSelect from "@/features/project/components/create/ServerDepartmentSelect";
+import ServerMemberInvite from "@/features/project/components/create/ServerMemberInvite";
+import { PROJECT_CREATE_TEXT, PROJECT_FEATURE_LABEL, PROJECT_TEMPLATE_LABEL } from "@/features/project/i18n/ko";
 import { METHODOLOGY_LABEL, ROLE_LABEL, VISIBILITY_LABEL } from "@/shared/i18n/catalog/status";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 import { formatLabel } from "@/shared/i18n/store";
@@ -55,18 +65,6 @@ const Section = ({ title, children }: { title: string; children: ReactNode }) =>
     <h3 className="text-[12.5px] font-semibold text-foreground-900">{title}</h3>
     {children}
   </section>
-);
-
-/** 조회 API가 없어 고를 수 없는 선택 항목 */
-const UnavailableItem = ({ title, reason }: { title: string; reason: string }) => (
-  <Section title={title}>
-    <p className="flex items-start gap-1.5 rounded-lg border border-background-300 bg-background-100 px-3 py-2 text-[11.5px] leading-5 text-foreground-600">
-      <i className="ri-information-line mt-0.5 shrink-0" aria-hidden="true" />
-      <span>
-        {reason} {PROJECT_CREATE_TEXT.omittedNote}
-      </span>
-    </p>
-  </Section>
 );
 
 /**
@@ -115,7 +113,9 @@ const ServerProjectCreateWizard = function () {
     };
   }, [loadOptions]);
 
-  const dirty = Boolean(form && (form.name.trim() || form.startDate || form.endDate));
+  const dirty = Boolean(
+    form && (form.name.trim() || form.startDate || form.endDate || form.departmentIds.length > 0 || form.members.length > 0),
+  );
   useEffect(() => {
     if (dirty) setUnsavedGuard(UNSAVED_MESSAGE);
     else clearUnsavedGuard(UNSAVED_MESSAGE);
@@ -140,6 +140,17 @@ const ServerProjectCreateWizard = function () {
     if (submit.phase === "failed") setSubmit({ phase: "idle" });
   };
 
+  /** 폼 규칙 함수(serverCreate)로 바꾸고, 관련 칸의 오류를 지운다. */
+  const change = (next: (prev: ServerCreateForm) => ServerCreateForm, fields: CreateField[]) => {
+    setForm((prev) => (prev ? next(prev) : prev));
+    setErrors((prev) => {
+      const remaining = { ...prev };
+      fields.forEach((field) => delete remaining[field]);
+      return remaining;
+    });
+    if (submit.phase === "failed") setSubmit({ phase: "idle" });
+  };
+
   const close = useCallback(() => {
     clearUnsavedGuard(UNSAVED_MESSAGE);
     navigate("/projects");
@@ -155,8 +166,8 @@ const ServerProjectCreateWizard = function () {
   }, [close, submit.phase]);
 
   const checkCode = async () => {
-    if (!form || codeCheck.phase === "checking") return;
-    const found = validateCreateForm(form);
+    if (!form || !options || codeCheck.phase === "checking") return;
+    const found = validateCreateForm(form, options);
     if (found.code) {
       setErrors((prev) => ({ ...prev, code: found.code }));
       return;
@@ -174,7 +185,7 @@ const ServerProjectCreateWizard = function () {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!form || !options || submitting || blockers.length > 0) return;
-    const found = validateCreateForm(form);
+    const found = validateCreateForm(form, options);
     setErrors(found);
     const input = toCreateInput(form, options);
     if (Object.keys(found).length > 0 || !input) return;
@@ -221,7 +232,10 @@ const ServerProjectCreateWizard = function () {
     }
     const actors = selectableActors(options);
     const methodologies = selectableMethodologies(options);
-    const features = featureChoices(options, hasPhases(form, options));
+    const withPhases = hasPhases(form, options);
+    const features = featureChoices(options, withPhases);
+    const inUse = actorsInUse(form);
+    const roleOptions = memberRoleOptions(form, options);
     const fieldError = (key: keyof CreateErrors) =>
       errors[key] ? (
         <p id={`server-create-${key}-error`} role="alert" className="mt-1 text-[11px] text-rose-600">
@@ -366,7 +380,7 @@ const ServerProjectCreateWizard = function () {
                 className="field text-[12.5px]"
                 value={form.template ?? ""}
                 disabled={submitting}
-                onChange={(event) => setForm((prev) => (prev ? applyTemplate(prev, event.target.value as ProjectTemplate, options) : prev))}
+                onChange={(event) => change((prev) => applyTemplate(prev, event.target.value as ProjectTemplate, options), ["members", "approver"])}
               >
                 {options.templates.map(({ value }) => (
                   <option key={value} value={value}>
@@ -384,7 +398,7 @@ const ServerProjectCreateWizard = function () {
                 className="field text-[12.5px]"
                 value={form.methodology ?? ""}
                 disabled={submitting}
-                onChange={(event) => setForm((prev) => (prev ? changeMethodology(prev, event.target.value as MethodKey, options) : prev))}
+                onChange={(event) => change((prev) => changeMethodology(prev, event.target.value as MethodKey, options), ["approver"])}
               >
                 {options.methodologies.map(({ value, enabled }) => (
                   <option key={value} value={value} disabled={!enabled || !methodologies.includes(value)}>
@@ -402,14 +416,16 @@ const ServerProjectCreateWizard = function () {
             <div className="flex flex-wrap gap-2">
               {actors.map(({ value, required }) => {
                 const checked = form.actors.includes(value);
+                // PM(필수)과 멤버 역할로 쓰는 액터는 해제할 수 없다
+                const locked = checked && (required || inUse.has(value));
                 return (
                   <label key={value} className="flex min-h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-background-300 px-2.5 text-[12px]">
                     <input
                       type="checkbox"
                       className="h-4 w-4 accent-primary-600"
                       checked={checked}
-                      disabled={required || submitting}
-                      onChange={() => update({ actors: checked ? form.actors.filter((actor) => actor !== value) : [...form.actors, value] })}
+                      disabled={locked || submitting}
+                      onChange={() => change((prev) => toggleActor(prev, value), ["actors", "members"])}
                     />
                     {actorLabel(value)}
                   </label>
@@ -420,7 +436,7 @@ const ServerProjectCreateWizard = function () {
           {fieldError("actors")}
           {!errors.actors && (
             <p id="server-create-actors-hint" className="text-[11px] text-foreground-500">
-              {PROJECT_CREATE_TEXT.actorsHint}
+              {PROJECT_CREATE_TEXT.actorsHint} {inUse.size > 0 && PROJECT_CREATE_TEXT.actorInUse}
             </p>
           )}
         </Section>
@@ -457,15 +473,69 @@ const ServerProjectCreateWizard = function () {
           </p>
         </Section>
 
-        {!SERVER_DIRECTORY.departments.available && (
-          <UnavailableItem title={PROJECT_CREATE_TEXT.departmentsSection} reason={SERVER_DIRECTORY.departments.reason()} />
-        )}
-        {!SERVER_DIRECTORY.users.available && (
-          <>
-            <UnavailableItem title={PROJECT_CREATE_TEXT.membersSection} reason={SERVER_DIRECTORY.users.reason()} />
-            <UnavailableItem title={PROJECT_CREATE_TEXT.approverSection} reason={PROJECT_DIRECTORY_TEXT.approverUnavailable} />
-          </>
-        )}
+        <Section title={PROJECT_CREATE_TEXT.departmentsSection}>
+          <p className="text-[11px] text-foreground-500">{PROJECT_CREATE_TEXT.departmentsHint}</p>
+          <ServerDepartmentSelect
+            selectedIds={form.departmentIds}
+            disabled={submitting}
+            onToggle={(departmentId) => change((prev) => toggleDepartment(prev, departmentId), ["departments"])}
+          />
+          {fieldError("departments")}
+        </Section>
+
+        <Section title={PROJECT_CREATE_TEXT.membersSection}>
+          <p className="text-[11px] text-foreground-500">{PROJECT_CREATE_TEXT.membersHint}</p>
+          <ServerMemberInvite
+            members={form.members}
+            roleOptions={roleOptions}
+            disabled={submitting}
+            onAdd={(user) =>
+              change(
+                (prev) => addMember(prev, { userId: user.id, name: user.name, departmentName: user.departmentName, jobTitle: user.jobTitle }, options),
+                ["members"],
+              )
+            }
+            onRemove={(userId) => change((prev) => removeMember(prev, userId), ["members", "approver"])}
+            onChangeRole={(userId, actor) => change((prev) => changeMemberRole(prev, userId, actor, options), ["members"])}
+          />
+          {fieldError("members")}
+        </Section>
+
+        <Section title={PROJECT_CREATE_TEXT.approverSection}>
+          {!withPhases && <p className="text-[11.5px] text-foreground-500">{PROJECT_CREATE_TEXT.approverNoPhases}</p>}
+          {withPhases && form.members.length === 0 && <p className="text-[11.5px] text-foreground-500">{PROJECT_CREATE_TEXT.approverNoMembers}</p>}
+          {withPhases && form.members.length > 0 && (
+            <div>
+              <label htmlFor="server-create-approver" className="mb-1 block text-[11.5px] font-medium text-foreground-800">
+                {PROJECT_CREATE_TEXT.approverLabel}
+              </label>
+              <select
+                id="server-create-approver"
+                className="field text-[12.5px]"
+                value={form.gateApproverUserId === null ? "" : String(form.gateApproverUserId)}
+                disabled={submitting}
+                onChange={(event) =>
+                  change((prev) => setGateApprover(prev, event.target.value === "" ? null : Number(event.target.value), options), ["approver"])
+                }
+                aria-invalid={Boolean(errors.approver)}
+                aria-describedby={errors.approver ? "server-create-approver-error" : "server-create-approver-hint"}
+              >
+                <option value="">{PROJECT_CREATE_TEXT.approverNone}</option>
+                {form.members.map(({ userId, name }) => (
+                  <option key={userId} value={userId}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+              {!errors.approver && (
+                <p id="server-create-approver-hint" className="mt-1 text-[11px] text-foreground-500">
+                  {PROJECT_CREATE_TEXT.approverHint}
+                </p>
+              )}
+            </div>
+          )}
+          {fieldError("approver")}
+        </Section>
 
         {submit.phase === "failed" && (
           <p role="alert" className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-[11.5px] leading-5 text-rose-700">

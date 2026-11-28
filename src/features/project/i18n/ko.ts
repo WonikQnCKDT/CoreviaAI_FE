@@ -31,10 +31,33 @@ export const PROJECT_CREATE_TEXT = defineLabels("project.create", {
   featureNeedsPhases: "단계 필요",
   pmSection: "PM",
   pmSelf: "{name} (나) — 만든 사람이 첫 PM이 됩니다.",
+  actorInUse: "멤버 역할로 쓰는 액터는 해제할 수 없습니다. 그 멤버의 역할을 바꾸거나 제외해 주세요.",
   departmentsSection: "주관 부서 (선택)",
+  departmentsHint: "여러 부서를 고를 수 있고(최대 20개), 비워 두고 만든 뒤 지정할 수도 있습니다.",
+  departmentsFilter: "부서 이름으로 거르기",
+  departmentsLoading: "부서 목록을 불러오는 중입니다",
+  departmentsFailed: "부서 목록을 불러오지 못했습니다. 주관 부서 없이 만들거나 다시 시도해 주세요.",
+  departmentsEmpty: "고를 수 있는 활성 부서가 없습니다.",
+  departmentsNoMatch: "이름이 맞는 부서가 없습니다.",
+  departmentsSelected: "{count}개 선택 (최대 20개)",
+  departmentsLimit: "주관 부서는 최대 20개까지 지정할 수 있습니다.",
+  removeDepartment: "{name} 주관 부서 해제",
   membersSection: "멤버 초대 (선택)",
+  membersHint: "이름으로 찾아 추가합니다. 역할은 위에서 지정한 액터 중 PM을 뺀 것에서 고릅니다. 비워 두고 만든 뒤 초대할 수도 있습니다.",
+  membersSearch: "초대할 사용자 찾기",
+  membersNeedActor: "PM 외 액터를 하나 이상 지정해야 멤버를 초대할 수 있습니다.",
+  membersLimit: "생성 시 초대할 수 있는 멤버는 최대 100명입니다.",
+  membersEmpty: "아직 초대한 멤버가 없습니다.",
+  memberRole: "{name} 역할",
+  removeMember: "{name} 멤버 제외",
+  memberRoleInvalid: "지정하지 않은 액터를 역할로 가진 멤버가 있습니다. 역할을 다시 골라 주세요.",
   approverSection: "게이트 승인자 (선택)",
-  omittedNote: "선택 항목이라 비운 채로 만들 수 있습니다.",
+  approverLabel: "게이트 승인자",
+  approverHint: "초대한 멤버 중 PM이 아닌 한 명을 고르거나 지정하지 않을 수 있습니다.",
+  approverNone: "지정 안 함",
+  approverNoPhases: "단계가 없는 운영 방식이라 게이트 승인자를 지정하지 않습니다.",
+  approverNoMembers: "멤버를 초대하면 그중에서 승인자를 고를 수 있습니다.",
+  approverNotMember: "게이트 승인자는 초대한 멤버 중에서만 지정할 수 있습니다.",
   submit: "프로젝트 만들기",
   submitting: "만드는 중",
   cancel: "취소",
@@ -73,13 +96,10 @@ export const PROJECT_FEATURE_LABEL = defineLabels("project.feature", {
 });
 
 /**
- * 서버에 조회 API가 없어 쓸 수 없는 항목의 이유.
- * 03 v9 기준 USER가 부를 수 있는 부서 목록·사용자 검색 API가 없다(/api/admin/** 는 시스템 관리자 전용).
+ * 멤버·설정 화면의 멤버 초대 안내(SCRUM-106에서 사용자 검색 컴포넌트로 연결하기 전까지).
  */
 export const PROJECT_DIRECTORY_TEXT = defineLabels("project.directory", {
-  departmentsUnavailable: "주관 부서를 고를 수 있는 부서 조회 API가 아직 없어 부서 없이 만듭니다. 서버에 일반 사용자용 부서 목록 API가 생기면 선택할 수 있습니다.",
   usersUnavailable: "초대할 사용자를 찾는 사용자 검색 API가 아직 없어 멤버 초대를 할 수 없습니다. 서버에 일반 사용자용 사용자 검색 API가 생기면 초대할 수 있습니다.",
-  approverUnavailable: "게이트 승인자는 초대한 멤버 중에서 고르므로, 멤버 초대를 할 수 없는 지금은 지정할 수 없습니다.",
 });
 
 /** 초대할 사용자 이름 검색(UserSearchPicker). {keyword}·{count}는 FE가 값을 넣는 자리 */
