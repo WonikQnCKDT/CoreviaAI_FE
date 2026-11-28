@@ -55,10 +55,37 @@ export const selectableMethodologies = function (options: CreationOptions): Meth
   return options.methodologies.filter(({ enabled }) => enabled).map(({ value }) => value);
 };
 
-/** 선택한 운영 방식에서 고를 수 있는 기능 */
-export const selectableFeatures = function (options: CreationOptions, methodology: MethodKey | null): ProjectFeature[] {
-  if (!methodology) return [];
-  return options.features.filter(({ enabled, methodologies }) => enabled && methodologies.includes(methodology)).map(({ value }) => value);
+/**
+ * 생성 요청에 담아 보낼 단계 이름. 단계 없음 운영 방식이면 빈 목록, 그 밖에는 선택한 템플릿의 기본 단계다.
+ * BE는 이 목록이 비어 있지 않을 때만 "단계 있음"으로 보고 requiresPhases 기능·게이트 승인자를 허용한다
+ * (ProjectCreationPolicy.validateFeatures·validateGateApprover). 서버가 템플릿 기본값을 대신 넣지 않도록 항상 명시해 보낸다.
+ */
+export const plannedPhases = function (form: Pick<ServerCreateForm, "template" | "methodology">, options: CreationOptions): string[] {
+  if (!form.template || !form.methodology || form.methodology === "none") return [];
+  return [...(options.templates.find(({ value }) => value === form.template)?.defaultPhases ?? [])];
+};
+
+export const hasPhases = (form: Pick<ServerCreateForm, "template" | "methodology">, options: CreationOptions) =>
+  plannedPhases(form, options).length > 0;
+
+/** 기능을 고를 수 없는 이유. disabled: 서버가 아직 열지 않은 기능(예: Git 연동), needsPhases: 단계가 있어야 하는 기능 */
+export type FeatureBlock = "disabled" | "needsPhases" | null;
+
+/** 기능 선택지 전체와 고를 수 있는지(BE ProjectFeature.selectableFor와 같은 규칙: enabled && (!requiresPhases || 단계 있음)) */
+export const featureChoices = function (options: CreationOptions, withPhases: boolean): { value: ProjectFeature; block: FeatureBlock }[] {
+  return options.features.map(({ value, enabled, requiresPhases }) => {
+    let block: FeatureBlock = null;
+    if (!enabled) block = "disabled";
+    else if (requiresPhases && !withPhases) block = "needsPhases";
+    return { value, block };
+  });
+};
+
+/** 지금 단계 구성에서 고를 수 있는 기능 */
+export const selectableFeatures = function (options: CreationOptions, withPhases: boolean): ProjectFeature[] {
+  return featureChoices(options, withPhases)
+    .filter(({ block }) => block === null)
+    .map(({ value }) => value);
 };
 
 /**
@@ -81,7 +108,7 @@ export const applyTemplate = function (form: ServerCreateForm, template: Project
   const methodology = found && methodologies.includes(found.defaultMethodology) ? found.defaultMethodology : (methodologies[0] ?? null);
   const actorValues = selectableActors(options).map(({ value }) => value);
   const actors = [...new Set<ProjectActor>(["pm", ...(found?.defaultActors ?? [])])].filter((actor) => actorValues.includes(actor));
-  const allowedFeatures = selectableFeatures(options, methodology);
+  const allowedFeatures = selectableFeatures(options, hasPhases({ template, methodology }, options));
   const features = (found?.defaultFeatures ?? []).filter((feature) => allowedFeatures.includes(feature));
   return { ...form, template, methodology, actors, features };
 };
@@ -103,9 +130,9 @@ export const initialForm = function (options: CreationOptions, suggestedCode: st
   return first ? applyTemplate(base, first, options) : base;
 };
 
-/** 운영 방식을 바꾸면 그 방식에서 쓸 수 없는 기능을 뺀다(예: 산출물은 폭포수만). */
+/** 운영 방식을 바꿔 단계가 없어지면 단계가 필요한 기능(예: 산출물·게이트)을 선택 해제한다. */
 export const changeMethodology = function (form: ServerCreateForm, methodology: MethodKey, options: CreationOptions): ServerCreateForm {
-  const allowed = selectableFeatures(options, methodology);
+  const allowed = selectableFeatures(options, hasPhases({ template: form.template, methodology }, options));
   return { ...form, methodology, features: form.features.filter((feature) => allowed.includes(feature)) };
 };
 
@@ -124,10 +151,13 @@ export const validateCreateForm = function (form: ServerCreateForm): CreateError
 
 /**
  * 화면 입력 → 생성 요청. 서버 선택지로 고른 값만 담는다.
- * 부서·멤버·승인자는 조회 API가 없어 항상 비운다(샘플 ID를 서버로 보내지 않는다). 단계는 템플릿 기본값을 따른다.
+ * 부서·멤버·승인자는 조회 API가 없어 항상 비운다(샘플 ID를 서버로 보내지 않는다).
+ * 단계는 plannedPhases로 명시하고, 지금 단계 구성에서 쓸 수 없는 기능은 보내지 않는다.
  */
-export const toCreateInput = function (form: ServerCreateForm): NewProjectInput | null {
+export const toCreateInput = function (form: ServerCreateForm, options: CreationOptions): NewProjectInput | null {
   if (!form.template || !form.methodology) return null;
+  const phases = plannedPhases(form, options);
+  const allowedFeatures = selectableFeatures(options, phases.length > 0);
   return {
     name: form.name,
     code: form.code,
@@ -139,9 +169,10 @@ export const toCreateInput = function (form: ServerCreateForm): NewProjectInput 
     methodology: form.methodology,
     departmentType: "sw",
     actors: form.actors,
-    features: form.features,
+    features: form.features.filter((feature) => allowedFeatures.includes(feature)),
     members: [],
     gateApproverUserId: null,
+    phases,
   };
 };
 

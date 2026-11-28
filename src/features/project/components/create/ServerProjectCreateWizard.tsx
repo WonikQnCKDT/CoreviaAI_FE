@@ -8,7 +8,6 @@ import {
   fetchCreationOptions,
   type CreationOptions,
   type ProjectActor,
-  type ProjectFeature,
   type ProjectTemplate,
 } from "@/features/project/api/projectApi";
 import { generateProjectCode, issueYear } from "@/features/project/utils/projectCode";
@@ -20,7 +19,8 @@ import {
   lookupFailureMessage,
   requiredBlockers,
   selectableActors,
-  selectableFeatures,
+  featureChoices,
+  hasPhases,
   selectableMethodologies,
   SERVER_DIRECTORY,
   toCreateInput,
@@ -176,7 +176,7 @@ const ServerProjectCreateWizard = function () {
     if (!form || !options || submitting || blockers.length > 0) return;
     const found = validateCreateForm(form);
     setErrors(found);
-    const input = toCreateInput(form);
+    const input = toCreateInput(form, options);
     if (Object.keys(found).length > 0 || !input) return;
 
     actionController.current?.abort();
@@ -221,7 +221,7 @@ const ServerProjectCreateWizard = function () {
     }
     const actors = selectableActors(options);
     const methodologies = selectableMethodologies(options);
-    const features = selectableFeatures(options, form.methodology);
+    const features = featureChoices(options, hasPhases(form, options));
     const fieldError = (key: keyof CreateErrors) =>
       errors[key] ? (
         <p id={`server-create-${key}-error`} role="alert" className="mt-1 text-[11px] text-rose-600">
@@ -427,18 +427,23 @@ const ServerProjectCreateWizard = function () {
 
         <Section title={PROJECT_CREATE_TEXT.featuresSection}>
           <div className="flex flex-wrap gap-2">
-            {features.map((feature: ProjectFeature) => {
-              const checked = form.features.includes(feature);
+            {features.map(({ value: feature, block }) => {
+              const checked = block === null && form.features.includes(feature);
+              const blockHint = block === "disabled" ? PROJECT_CREATE_TEXT.featureUnavailable : block === "needsPhases" ? PROJECT_CREATE_TEXT.featureNeedsPhases : null;
               return (
-                <label key={feature} className="flex min-h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-background-300 px-2.5 text-[12px]">
+                <label
+                  key={feature}
+                  className={`flex min-h-9 items-center gap-1.5 rounded-lg border border-background-300 px-2.5 text-[12px] ${block ? "cursor-not-allowed bg-background-100 text-foreground-400" : "cursor-pointer"}`}
+                >
                   <input
                     type="checkbox"
                     className="h-4 w-4 accent-primary-600"
                     checked={checked}
-                    disabled={submitting}
+                    disabled={submitting || block !== null}
                     onChange={() => update({ features: checked ? form.features.filter((item) => item !== feature) : [...form.features, feature] })}
                   />
                   {PROJECT_FEATURE_LABEL[feature]}
+                  {blockHint && <span className="text-[10.5px]">({blockHint})</span>}
                 </label>
               );
             })}

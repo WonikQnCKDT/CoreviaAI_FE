@@ -75,17 +75,25 @@ interface OptionDto<T extends string> {
   enabled: boolean;
 }
 
+/**
+ * BE CreationOptionsResponse 그대로(TemplateOptionResponse·MethodologyOptionResponse·DepartmentTypeOptionResponse·
+ * ActorOptionResponse·FeatureOptionResponse record). 화면이 쓰지 않는 필드(템플릿 name·필수 산출물 등)도 계약 확인용으로 적어 둔다.
+ */
 interface CreationOptionsDto {
   templates: {
     value: TemplateDto;
+    name: string;
     defaultMethodology: MethodologyDto;
+    defaultDepartmentType: DepartmentTypeDto | null;
+    defaultPhases: string[];
     defaultActors: ActorDto[];
     defaultFeatures: FeatureDto[];
-    defaultPhases?: string[];
+    requiredDeliverables: { phaseName: string; name: string }[];
   }[];
   methodologies: OptionDto<MethodologyDto>[];
-  departmentTypes: (OptionDto<DepartmentTypeDto> & { actors: (OptionDto<ActorDto> & { required?: boolean })[] })[];
-  features: (OptionDto<FeatureDto> & { methodologies: MethodologyDto[] })[];
+  departmentTypes: (OptionDto<DepartmentTypeDto> & { actors: (OptionDto<ActorDto> & { required: boolean })[] })[];
+  /** requiresPhases: 단계가 하나 이상인 프로젝트에서만 고를 수 있다(BE ProjectFeature.selectableFor) */
+  features: (OptionDto<FeatureDto> & { requiresPhases: boolean })[];
 }
 
 interface ProjectMemberDto {
@@ -220,8 +228,8 @@ export interface CreationOptions {
   departmentTypes: (CreationOption<DepartmentType> & {
     actors: (CreationOption<ProjectActor> & { required: boolean })[];
   })[];
-  /** methodologies: 이 기능을 고를 수 있는 운영 방식 */
-  features: (CreationOption<ProjectFeature> & { methodologies: MethodKey[] })[];
+  /** requiresPhases: 단계가 하나 이상일 때만 고를 수 있다(예: 산출물·게이트). 운영 방식이 아니라 단계 유무로 판정한다 */
+  features: (CreationOption<ProjectFeature> & { requiresPhases: boolean })[];
 }
 
 /** 멤버 제외 409(MEMBER_HAS_ASSIGNED_TASKS)일 때 재배정해야 하는 업무 */
@@ -331,8 +339,6 @@ const toActors = (actors: ActorDto[] | null | undefined) =>
   (actors ?? []).map(toActor).filter((actor): actor is ProjectActor => actor !== null);
 const toFeatures = (features: FeatureDto[] | null | undefined) =>
   (features ?? []).filter((feature) => has(FEATURE_FROM_DTO, feature)).map((feature) => FEATURE_FROM_DTO[feature]);
-const toMethodologies = (values: MethodologyDto[] | null | undefined) =>
-  (values ?? []).filter((value) => has(METHOD_FROM_DTO, value)).map((value) => METHOD_FROM_DTO[value]);
 const toRefs = (refs: NamedRefDto[] | null | undefined): NamedRef[] => (refs ?? []).map(({ id, name }) => ({ id, name }));
 
 const toSummary = function (dto: ProjectSummaryDto): ServerProjectSummary {
@@ -436,10 +442,11 @@ const toCreationOptions = function ({ templates, methodologies, departmentTypes,
       })),
     features: (features ?? [])
       .filter(({ value }) => has(FEATURE_FROM_DTO, value))
-      .map(({ value, enabled, methodologies: allowed }) => ({
+      .map(({ value, enabled, requiresPhases }) => ({
         value: FEATURE_FROM_DTO[value],
         enabled: Boolean(enabled),
-        methodologies: toMethodologies(allowed),
+        // 값이 없으면 단계가 필요하다고 본다(단계 없는 프로젝트에 켜서 서버 400을 받는 것보다 안전하다)
+        requiresPhases: requiresPhases !== false,
       })),
   };
 };

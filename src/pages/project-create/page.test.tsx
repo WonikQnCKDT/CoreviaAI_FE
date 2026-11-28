@@ -5,41 +5,14 @@ import { useParams } from "react-router-dom";
 import ProjectCreatePage from "@/pages/project-create/page";
 import ProjectsPage from "@/pages/projects/page";
 import { useDemoStore } from "@/stores/DemoStore";
-import { PROJECT_CREATE_TEXT, PROJECT_DIRECTORY_TEXT } from "@/features/project/i18n/ko";
+import { PROJECT_CREATE_TEXT, PROJECT_DIRECTORY_TEXT, PROJECT_FEATURE_LABEL } from "@/features/project/i18n/ko";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 import { formatLabel } from "@/shared/i18n/store";
 import { jsonFail, jsonOk, renderApp, stubFetch } from "@/test/appHarness";
+import { creationOptionsDto } from "@/test/projectFixtures";
 
-/** 03 v9 서버 응답 형식 그대로 */
-const CREATION_OPTIONS = {
-  templates: [
-    { value: "IT_PROJECT", defaultMethodology: "WATERFALL", defaultActors: ["PM", "BUSINESS_OWNER", "DEVELOPER", "QA"], defaultFeatures: ["WBS", "KANBAN", "DELIVERABLE"], defaultPhases: ["분석", "설계", "개발", "테스트", "이행"] },
-    { value: "EMPTY", defaultMethodology: "NONE", defaultActors: ["PM"], defaultFeatures: ["KANBAN", "BOARD"], defaultPhases: [] },
-  ],
-  methodologies: [
-    { value: "NONE", enabled: true },
-    { value: "WATERFALL", enabled: true },
-    { value: "AGILE", enabled: false },
-  ],
-  departmentTypes: [
-    {
-      value: "SW",
-      enabled: true,
-      actors: [
-        { value: "PM", enabled: true, required: true },
-        { value: "BUSINESS_OWNER", enabled: true, required: false },
-        { value: "DEVELOPER", enabled: true, required: false },
-        { value: "QA", enabled: true, required: false },
-      ],
-    },
-  ],
-  features: [
-    { value: "WBS", enabled: true, methodologies: ["NONE", "WATERFALL"] },
-    { value: "KANBAN", enabled: true, methodologies: ["NONE", "WATERFALL"] },
-    { value: "BOARD", enabled: true, methodologies: ["NONE", "WATERFALL"] },
-    { value: "DELIVERABLE", enabled: true, methodologies: ["WATERFALL"] },
-  ],
-};
+/** 실제 BE 응답 형식(기본 시드) */
+const CREATION_OPTIONS = creationOptionsDto();
 
 const createdDetail = (name: string) => ({
   id: 77,
@@ -93,8 +66,9 @@ describe("api 모드 프로젝트 생성", () => {
     stubFetch({ "GET /api/projects/creation-options": () => jsonOk(CREATION_OPTIONS) });
     renderApp({ mode: "api", route: "/projects/new", routes: API_ROUTES });
 
-    expect(await screen.findByLabelText(PROJECT_CREATE_TEXT.template)).toHaveProperty("value", "itProject");
-    expect(screen.getByLabelText(PROJECT_CREATE_TEXT.methodology)).toHaveProperty("value", "waterfall");
+    // 서버가 준 첫 템플릿(id 오름차순, 빈 템플릿)의 기본값
+    expect(await screen.findByLabelText(PROJECT_CREATE_TEXT.template)).toHaveProperty("value", "empty");
+    expect(screen.getByLabelText(PROJECT_CREATE_TEXT.methodology)).toHaveProperty("value", "none");
     expect(screen.getByText(formatLabel(PROJECT_CREATE_TEXT.pmSelf, { name: "홍길동" }))).toBeTruthy();
     expect(screen.getByText(new RegExp(PROJECT_DIRECTORY_TEXT.departmentsUnavailable.slice(0, 20)))).toBeTruthy();
     expect(screen.getByText(new RegExp(PROJECT_DIRECTORY_TEXT.usersUnavailable.slice(0, 20)))).toBeTruthy();
@@ -122,14 +96,57 @@ describe("api 모드 프로젝트 생성", () => {
       departmentIds: [],
       members: [],
       gateApproverUserId: null,
-      template: "IT_PROJECT",
-      methodology: "WATERFALL",
+      template: "EMPTY",
+      methodology: "NONE",
+      phases: [],
+      // 회귀(SCRUM-98): 템플릿 기본 기능이 빠지지 않고 간다
+      features: ["KANBAN", "BOARD", "MEETING", "ISSUE", "FILE"],
     });
     // 샘플 ID(u1·u2 같은 문자열)가 본문 어디에도 없다.
     expect(JSON.stringify(post?.body)).not.toMatch(/"u\d+"/);
     await waitFor(() => expect(calls.some(({ method, path }) => method === "GET" && path.startsWith("/api/projects?"))).toBe(true));
     expect(await screen.findAllByText("구매 발주 시스템")).not.toHaveLength(0);
     expect(unexpected).toEqual([]);
+  });
+
+  it("회귀(SCRUM-98): 실제 서버 선택지로 기능 체크박스가 나오고, 템플릿 기본 기능 자동 체크·단계 필요 기능·비활성 기능을 구분한다", async () => {
+    const { calls } = stubFetch({
+      "GET /api/projects/creation-options": () => jsonOk(CREATION_OPTIONS),
+      "POST /api/projects": ({ body }) => jsonOk(createdDetail((body as { name: string }).name)),
+      "GET /api/projects": () => jsonOk({ items: [], nextCursor: null, hasNext: false }),
+    });
+    renderApp({ mode: "api", route: "/projects/new", routes: API_ROUTES });
+
+    const checkbox = (name: string) => screen.getByRole("checkbox", { name: new RegExp(`^${name}`) });
+    await screen.findByLabelText(PROJECT_CREATE_TEXT.template);
+    // 빈 템플릿(단계 없음): 기본 기능 체크, 산출물은 단계 필요로 비활성, Git은 준비 중으로 비활성, WBS는 고를 수 있다
+    expect(checkbox(PROJECT_FEATURE_LABEL.kanban)).toHaveProperty("checked", true);
+    expect(checkbox(PROJECT_FEATURE_LABEL.wbs)).toMatchObject({ checked: false, disabled: false });
+    expect(checkbox(PROJECT_FEATURE_LABEL.deliverable)).toMatchObject({ checked: false, disabled: true });
+    expect(checkbox(PROJECT_FEATURE_LABEL.git)).toMatchObject({ checked: false, disabled: true });
+
+    // IT 템플릿(폭포수·5단계): 산출물 포함 기본 기능이 자동 체크된다
+    fireEvent.change(screen.getByLabelText(PROJECT_CREATE_TEXT.template), { target: { value: "itProject" } });
+    expect(checkbox(PROJECT_FEATURE_LABEL.wbs)).toHaveProperty("checked", true);
+    expect(checkbox(PROJECT_FEATURE_LABEL.deliverable)).toMatchObject({ checked: true, disabled: false });
+    // 생성 전에 개별로 바꿀 수 있다
+    fireEvent.click(checkbox(PROJECT_FEATURE_LABEL.board));
+    expect(checkbox(PROJECT_FEATURE_LABEL.board)).toHaveProperty("checked", false);
+
+    // 단계 없음으로 바꾸면 산출물은 선택 해제·비활성
+    fireEvent.change(screen.getByLabelText(PROJECT_CREATE_TEXT.methodology), { target: { value: "none" } });
+    expect(checkbox(PROJECT_FEATURE_LABEL.deliverable)).toMatchObject({ checked: false, disabled: true });
+
+    fireEvent.change(screen.getByLabelText(PROJECT_CREATE_TEXT.name), { target: { value: "기능 확인" } });
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(PROJECT_CREATE_TEXT.submit) }));
+    await screen.findByText(formatLabel(PROJECT_CREATE_TEXT.created, { name: "기능 확인" }));
+    const post = calls.find(({ method, path }) => method === "POST" && path === "/api/projects");
+    expect(post?.body).toMatchObject({
+      template: "IT_PROJECT",
+      methodology: "NONE",
+      phases: [],
+      features: ["WBS", "KANBAN", "MEETING", "ISSUE", "FILE"],
+    });
   });
 
   it("코드 중복(409)이면 코드 칸에 오류를 보이고 화면에 남는다(성공 안내 없음)", async () => {

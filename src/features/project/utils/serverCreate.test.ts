@@ -6,15 +6,19 @@ import { AUTH_TEXT } from "@/features/auth/i18n/ko";
 import {
   applyTemplate,
   changeMethodology,
+  featureChoices,
+  hasPhases,
   initialForm,
   interpretCreateFailure,
+  plannedPhases,
   requiredBlockers,
+  selectableFeatures,
   SERVER_DIRECTORY,
   toCreateInput,
   validateCreateForm,
 } from "@/features/project/utils/serverCreate";
 
-/** 03 v9 생성 선택지(서버 응답을 바꾼 화면 모델) */
+/** 생성 선택지(서버 응답을 바꾼 화면 모델). 서버 형식 자체는 projectApi.test.ts가 실제 BE 응답으로 검증한다 */
 const options = (overrides: Partial<CreationOptions> = {}): CreationOptions => ({
   templates: [
     {
@@ -44,12 +48,13 @@ const options = (overrides: Partial<CreationOptions> = {}): CreationOptions => (
     },
     { value: "manufacturing", enabled: false, actors: [] },
   ],
+  // BE FeatureOptionResponse(value, enabled, requiresPhases)를 화면 모델로 바꾼 값
   features: [
-    { value: "wbs", enabled: true, methodologies: ["none", "waterfall"] },
-    { value: "kanban", enabled: true, methodologies: ["none", "waterfall"] },
-    { value: "board", enabled: true, methodologies: ["none", "waterfall"] },
-    { value: "deliverable", enabled: true, methodologies: ["waterfall"] },
-    { value: "git", enabled: false, methodologies: [] },
+    { value: "wbs", enabled: true, requiresPhases: false },
+    { value: "kanban", enabled: true, requiresPhases: false },
+    { value: "board", enabled: true, requiresPhases: false },
+    { value: "deliverable", enabled: true, requiresPhases: true },
+    { value: "git", enabled: false, requiresPhases: false },
   ],
   ...overrides,
 });
@@ -87,9 +92,53 @@ describe("initialForm·applyTemplate", () => {
     expect(initialForm(opts, "X1").methodology).toBe("none");
   });
 
-  it("운영 방식을 단계 없음으로 바꾸면 폭포수 전용 기능(산출물)을 뺀다", () => {
+  it("운영 방식을 단계 없음으로 바꾸면 단계가 필요한 기능(산출물)을 선택 해제한다", () => {
     const form = changeMethodology(initialForm(options(), "X1"), "none", options());
     expect(form.features).toEqual(["wbs", "kanban"]);
+  });
+
+  it("단계 없음 → 폭포수로 되돌려도 해제한 기능을 임의로 다시 켜지 않는다", () => {
+    const none = changeMethodology(initialForm(options(), "X1"), "none", options());
+    expect(changeMethodology(none, "waterfall", options()).features).toEqual(["wbs", "kanban"]);
+  });
+
+  it("단계가 없는 템플릿 기본값에 단계가 필요한 기능이 있으면 자동 체크하지 않는다", () => {
+    const opts = options({
+      templates: [{ value: "empty", defaultMethodology: "none", defaultActors: ["pm"], defaultFeatures: ["wbs", "deliverable"], defaultPhases: [] }],
+    });
+    expect(initialForm(opts, "X1").features).toEqual(["wbs"]);
+  });
+});
+
+describe("단계 유무와 기능 선택 (BE ProjectFeature.selectableFor와 같은 규칙)", () => {
+  it("폭포수 + 기본 단계가 있는 템플릿이면 단계 있음, 단계 없음 운영 방식이면 템플릿과 무관하게 단계 없음", () => {
+    expect(plannedPhases({ template: "itProject", methodology: "waterfall" }, options())).toEqual(["분석", "설계", "개발", "테스트", "이행"]);
+    expect(hasPhases({ template: "itProject", methodology: "waterfall" }, options())).toBe(true);
+    expect(plannedPhases({ template: "itProject", methodology: "none" }, options())).toEqual([]);
+    // 기본 단계가 없는 템플릿이면 폭포수여도 단계가 없다(서버는 단계 목록으로만 판정한다)
+    expect(hasPhases({ template: "empty", methodology: "waterfall" }, options())).toBe(false);
+    expect(hasPhases({ template: null, methodology: "waterfall" }, options())).toBe(false);
+    expect(hasPhases({ template: "itProject", methodology: null }, options())).toBe(false);
+  });
+
+  it("단계가 없으면 requiresPhases 기능(산출물)은 고를 수 없고 WBS 등은 고를 수 있으며, enabled=false(Git)는 늘 비활성", () => {
+    expect(featureChoices(options(), false)).toEqual([
+      { value: "wbs", block: null },
+      { value: "kanban", block: null },
+      { value: "board", block: null },
+      { value: "deliverable", block: "needsPhases" },
+      { value: "git", block: "disabled" },
+    ]);
+    expect(selectableFeatures(options(), false)).toEqual(["wbs", "kanban", "board"]);
+    expect(selectableFeatures(options(), true)).toEqual(["wbs", "kanban", "board", "deliverable"]);
+  });
+
+  it("서버가 기능을 하나도 주지 않으면 고를 기능이 없다(빈 기능 구성은 허용)", () => {
+    expect(selectableFeatures(options({ features: [] }), true)).toEqual([]);
+  });
+
+  it("회귀: 기본 템플릿으로 시작하면 기능 체크가 0개가 되지 않는다", () => {
+    expect(initialForm(options(), "X1").features.length).toBeGreaterThan(0);
   });
 });
 
@@ -146,7 +195,7 @@ describe("validateCreateForm", () => {
 
 describe("toCreateInput", () => {
   it("부서·멤버·승인자는 항상 비워 샘플 ID를 서버로 보내지 않는다", () => {
-    const input = toCreateInput({ ...initialForm(options(), "PRT-2026-001"), name: "구매 발주", startDate: "2026-12-01" });
+    const input = toCreateInput({ ...initialForm(options(), "PRT-2026-001"), name: "구매 발주", startDate: "2026-12-01" }, options());
     expect(input).toEqual({
       name: "구매 발주",
       code: "PRT-2026-001",
@@ -161,11 +210,22 @@ describe("toCreateInput", () => {
       features: ["wbs", "kanban", "deliverable"],
       members: [],
       gateApproverUserId: null,
+      phases: ["분석", "설계", "개발", "테스트", "이행"],
     });
   });
 
+  it("단계 없음 운영 방식이면 phases를 빈 배열로 보내 서버가 템플릿 단계를 넣지 않게 하고, 단계가 필요한 기능은 빼고 보낸다", () => {
+    const form = { ...initialForm(options(), "X1"), name: "a", methodology: "none" as const, features: ["wbs" as const, "deliverable" as const] };
+    expect(toCreateInput(form, options())).toMatchObject({ methodology: "none", phases: [], features: ["wbs"] });
+  });
+
+  it("기능을 모두 해제해도 빈 기능 구성으로 만들 수 있다", () => {
+    expect(toCreateInput({ ...initialForm(options(), "X1"), name: "a", features: [] }, options())?.features).toEqual([]);
+  });
+
   it("템플릿·운영 방식을 고르지 못했으면 요청을 만들지 않는다", () => {
-    expect(toCreateInput({ ...initialForm(options({ templates: [], methodologies: [] }), "X1"), name: "a" })).toBeNull();
+    const opts = options({ templates: [], methodologies: [] });
+    expect(toCreateInput({ ...initialForm(opts, "X1"), name: "a" }, opts)).toBeNull();
   });
 });
 

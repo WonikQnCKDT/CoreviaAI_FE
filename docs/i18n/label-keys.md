@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (1035개)
+## 등록 필요 (1037개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -755,8 +755,10 @@
 | `project.create.departmentsSection` | 주관 부서 (선택) | project.create |
 | `project.create.description` | 입력한 내용으로 서버에 프로젝트를 만듭니다. 만든 사람이 첫 PM이 됩니다. | project.create |
 | `project.create.endDate` | 종료일 (선택) | project.create |
-| `project.create.featuresHint` | 선택한 운영 방식에서 쓸 수 있는 기능만 고를 수 있습니다. | project.create |
+| `project.create.featureNeedsPhases` | 단계 필요 | project.create |
+| `project.create.featuresHint` | 템플릿 기본 기능이 체크됩니다. 만들기 전에 하나씩 바꿀 수 있고, 산출물·게이트처럼 단계가 필요한 기능은 단계가 있는 운영 방식(폭포수)에서만 고를 수 있습니다. | project.create |
 | `project.create.featuresSection` | 기능 구성 | project.create |
+| `project.create.featureUnavailable` | 준비 중 | project.create |
 | `project.create.forbidden` | 이 계정은 프로젝트를 만들 수 없습니다. 활성 일반 사용자만 만들 수 있습니다. | project.create |
 | `project.create.loadingOptions` | 생성 선택지를 불러오는 중입니다 | project.create |
 | `project.create.membersSection` | 멤버 초대 (선택) | project.create |
