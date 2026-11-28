@@ -15,6 +15,7 @@ import {
 } from "@/features/wbs/api/wbsApi";
 import ServerTaskDetailDialog from "@/features/board/components/ServerTaskDetailDialog";
 import WbsProgressDialog from "@/features/wbs/components/WbsProgressDialog";
+import WbsReparentDialog from "@/features/wbs/components/WbsReparentDialog";
 import WbsTaskFormDialog, { type WbsFormTarget } from "@/features/wbs/components/WbsTaskFormDialog";
 import { useServerWbs } from "@/features/wbs/hooks/useServerWbs";
 import { WBS_TEXT } from "@/features/wbs/i18n/ko";
@@ -23,9 +24,13 @@ import {
   canEditItem,
   canEditProgress,
   canManageWbs,
+  canReparent,
+  deriveDisplayStatus,
   interpretWbsFailure,
   moveTarget,
+  reparentCandidates,
   viewerNote,
+  type ReparentOption,
   type WbsAction,
 } from "@/features/wbs/utils/wbsRules";
 import type { ApiResult } from "@/shared/api/client";
@@ -48,6 +53,7 @@ export default function ServerWbsView({ project }: { project: Project & { server
   const { state, reload, replaceTree, viewer } = useServerWbs(projectId);
   const [formTarget, setFormTarget] = useState<WbsFormTarget | null>(null);
   const [progressTarget, setProgressTarget] = useState<WbsItem | null>(null);
+  const [reparentTarget, setReparentTarget] = useState<WbsItem | null>(null);
   const [dialogError, setDialogError] = useState("");
   const [detailTaskId, setDetailTaskId] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
@@ -92,6 +98,7 @@ export default function ServerWbsView({ project }: { project: Project & { server
   const closeDialogs = () => {
     setFormTarget(null);
     setProgressTarget(null);
+    setReparentTarget(null);
     setDialogError("");
   };
 
@@ -198,6 +205,21 @@ export default function ServerWbsView({ project }: { project: Project & { server
     );
   };
 
+  const submitReparent = async (option: ReparentOption) => {
+    if (!reparentTarget) return;
+    const item = reparentTarget;
+    const ok = await run(
+      "move",
+      () => moveWbsTask({ projectId, taskId: item.id, parentTaskId: option.parentTaskId, index: option.index, version: item.version }),
+      (change) => {
+        replaceTree(change.tasks);
+        return WBS_TEXT.moved;
+      },
+      { inDialog: true },
+    );
+    if (ok) closeDialogs();
+  };
+
   const actions = (item: WbsItem) => {
     const buttons: { key: string; label: string; icon: string; onClick: () => void; disabled?: boolean }[] = [];
     if (canAddSubtask(viewer, item)) {
@@ -211,6 +233,7 @@ export default function ServerWbsView({ project }: { project: Project & { server
     }
     if (pm) {
       buttons.push(
+        { key: "reparent", label: "상위 작업 변경", icon: "ri-node-tree", onClick: () => setReparentTarget(item), disabled: !canReparent(tree, item) },
         { key: "up", label: WBS_TEXT.moveUp, icon: "ri-arrow-up-s-line", onClick: () => move(item, "up"), disabled: moveTarget(tree, item, "up") === null },
         { key: "down", label: WBS_TEXT.moveDown, icon: "ri-arrow-down-s-line", onClick: () => move(item, "down"), disabled: moveTarget(tree, item, "down") === null },
         { key: "delete", label: WBS_TEXT.delete, icon: "ri-delete-bin-line", onClick: () => remove(item) },
@@ -260,7 +283,9 @@ export default function ServerWbsView({ project }: { project: Project & { server
       <td className="td min-w-[110px]" title={item.subtasks.length > 0 ? WBS_TEXT.derivedProgress : undefined}>
         <ProgressBar value={item.progress} showLabel />
       </td>
-      <td className="td"><StatusBadge status={item.status} /></td>
+      <td className="td" title={item.subtasks.length > 0 ? "하위 작업 상태 기준 자동 계산" : undefined}>
+        <StatusBadge status={deriveDisplayStatus(item)} />
+      </td>
       <td className="td">{actions(item)}</td>
     </tr>
   );
@@ -352,6 +377,17 @@ export default function ServerWbsView({ project }: { project: Project & { server
       )}
       {progressTarget && (
         <WbsProgressDialog item={progressTarget} submitting={busy} error={dialogError} onClose={closeDialogs} onSubmit={submitProgress} />
+      )}
+      {reparentTarget && (
+        <WbsReparentDialog
+          item={reparentTarget}
+          options={reparentCandidates(tree, reparentTarget)}
+          phases={phases}
+          submitting={busy}
+          error={dialogError}
+          onClose={closeDialogs}
+          onSubmit={submitReparent}
+        />
       )}
     </div>
   );
