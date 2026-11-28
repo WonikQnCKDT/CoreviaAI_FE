@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import EmptyState from "@/components/ui/EmptyState";
 import { fetchAdminLabels, type AdminLabel, type MissingLanguage } from "@/features/admin/api/adminLabelApi";
 import LabelFormDialog, { type LabelFormMode } from "@/features/admin/components/LabelFormDialog";
+import LabelHistoryDialog from "@/features/admin/components/LabelHistoryDialog";
 import { useCursorList } from "@/features/admin/hooks/useCursorList";
 import { ADMIN_LABEL_TEXT, ADMIN_TEXT } from "@/features/admin/i18n/ko";
 import { formatDateTime } from "@/features/admin/utils/adminFormat";
@@ -37,6 +38,7 @@ const ServerLabelsPanel = function () {
   const [keyword, setKeyword] = useState("");
   const [missing, setMissing] = useState<"" | MissingLanguage>("");
   const [formMode, setFormMode] = useState<LabelFormMode | null>(null);
+  const [historyLabel, setHistoryLabel] = useState<AdminLabel | null>(null);
   const [notice, setNotice] = useState<Notice>(null);
   const [applying, setApplying] = useState(false);
 
@@ -129,8 +131,8 @@ const ServerLabelsPanel = function () {
                 <th className="th">{ADMIN_LABEL_TEXT.textEn}</th>
                 <th className="th">{ADMIN_LABEL_TEXT.textZhTw}</th>
                 <th className="th w-32">{ADMIN_LABEL_TEXT.updatedAt}</th>
-                <th className="th w-20">
-                  <span className="sr-only">{BUTTON_TEXT.edit}</span>
+                <th className="th w-36">
+                  <span className="sr-only">{ADMIN_TEXT.colManage}</span>
                 </th>
               </tr>
             </thead>
@@ -153,14 +155,24 @@ const ServerLabelsPanel = function () {
                     <time dateTime={label.updatedAt}>{formatDateTime({ iso: label.updatedAt })}</time>
                   </td>
                   <td className="td">
-                    <button
-                      type="button"
-                      className="btn-ghost min-h-8 px-2 py-1 text-xs"
-                      aria-label={`${label.labelKey} ${ADMIN_LABEL_TEXT.edit}`}
-                      onClick={() => setFormMode({ kind: "edit", label })}
-                    >
-                      {BUTTON_TEXT.edit}
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        className="btn-ghost min-h-8 px-2 py-1 text-xs"
+                        aria-label={`${label.labelKey} ${ADMIN_LABEL_TEXT.edit}`}
+                        onClick={() => setFormMode({ kind: "edit", label })}
+                      >
+                        {BUTTON_TEXT.edit}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-ghost min-h-8 px-2 py-1 text-xs"
+                        aria-label={formatLabel(ADMIN_LABEL_TEXT.historyButtonAria, { key: label.labelKey })}
+                        onClick={() => setHistoryLabel(label)}
+                      >
+                        {ADMIN_TEXT.history}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -246,6 +258,7 @@ const ServerLabelsPanel = function () {
       </section>
 
       <LabelFormDialog mode={formMode} onClose={() => setFormMode(null)} onSaved={handleSaved} onStale={reload} />
+      <LabelHistoryDialog label={historyLabel} onClose={() => setHistoryLabel(null)} />
     </div>
   );
 };

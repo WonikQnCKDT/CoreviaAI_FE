@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { changeCodeSortOrder, fetchCodeGroups, fetchGroupCodes } from "@/features/admin/api/adminCodeApi";
+import { changeCodeSortOrder, fetchCodeGroups, fetchCodeHistories, fetchGroupCodes } from "@/features/admin/api/adminCodeApi";
 
 const ok = (response: unknown) =>
   new Response(JSON.stringify({ success: true, response, error: null }), { status: 200 });
@@ -100,6 +100,81 @@ describe("changeCodeSortOrder (PATCH .../codes/{code})", () => {
     expect(await changeCodeSortOrder({ groupCode: "TASK_STATUS", code: "GONE", sortOrder: 1 })).toEqual({
       ok: false,
       failure: { kind: "http", status: 404, code: null, message: "코드를 찾을 수 없습니다" },
+    });
+  });
+});
+
+describe("fetchCodeHistories (GET .../codes/{code}/histories)", () => {
+  it("커서와 크기를 보내고 정렬 순서 변경 이력을 화면 모델로 바꾼다", async () => {
+    fetchMock.mockResolvedValue(
+      ok({
+        items: [
+          {
+            id: 42,
+            action: "CODE_CHANGED",
+            actorUserId: 1,
+            actorName: "시스템 관리자",
+            details: { groupCode: "RISK_LEVEL", code: "NORMAL", sortOrder: { before: 1, after: 3 } },
+            ipAddress: "127.0.0.1",
+            occurredAt: "2026-11-28T11:20:00Z",
+          },
+          {
+            id: 41,
+            action: "CODE_CHANGED",
+            actorUserId: null,
+            actorName: null,
+            details: null,
+            ipAddress: null,
+            occurredAt: "2026-11-27T11:20:00Z",
+          },
+        ],
+        nextCursor: "djE6NDE",
+        hasNext: true,
+      }),
+    );
+    const result = await fetchCodeHistories({ groupCode: "RISK_LEVEL", code: "NORMAL", cursor: "c0", size: 10 });
+    expect(lastRequest().url.pathname).toBe("/api/admin/code-groups/RISK_LEVEL/codes/NORMAL/histories");
+    expect(Object.fromEntries(lastRequest().url.searchParams)).toEqual({ cursor: "c0", size: "10" });
+    expect(result).toEqual({
+      ok: true,
+      data: {
+        items: [
+          {
+            id: 42,
+            action: "CODE_CHANGED",
+            actorUserId: 1,
+            actorName: "시스템 관리자",
+            sortOrder: { before: 1, after: 3 },
+            ipAddress: "127.0.0.1",
+            occurredAt: "2026-11-28T11:20:00Z",
+          },
+          {
+            id: 41,
+            action: "CODE_CHANGED",
+            actorUserId: null,
+            actorName: null,
+            sortOrder: null,
+            ipAddress: null,
+            occurredAt: "2026-11-27T11:20:00Z",
+          },
+        ],
+        nextCursor: "djE6NDE",
+        hasNext: true,
+      },
+    });
+  });
+
+  it("경로 조각을 인코딩하고 커서가 없으면 생략한다", async () => {
+    fetchMock.mockResolvedValue(ok({ items: [], nextCursor: null, hasNext: false }));
+    await fetchCodeHistories({ groupCode: "A/B", code: "C?D" });
+    expect(lastRequest().raw).toBe("/api/admin/code-groups/A%2FB/codes/C%3FD/histories?size=20");
+  });
+
+  it("존재하지 않는 코드나 비관리자 요청은 404 실패를 돌려준다", async () => {
+    fetchMock.mockResolvedValue(fail(404, "코드를 찾을 수 없습니다"));
+    expect(await fetchCodeHistories({ groupCode: "RISK_LEVEL", code: "GONE" })).toMatchObject({
+      ok: false,
+      failure: { kind: "http", status: 404 },
     });
   });
 });

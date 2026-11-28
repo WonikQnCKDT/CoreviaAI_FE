@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createAdminLabel, fetchAdminLabels, updateAdminLabel } from "@/features/admin/api/adminLabelApi";
+import { createAdminLabel, fetchAdminLabels, fetchLabelHistories, updateAdminLabel } from "@/features/admin/api/adminLabelApi";
 
 const ok = (response: unknown) =>
   new Response(JSON.stringify({ success: true, response, error: null }), { status: 200 });
@@ -103,5 +103,74 @@ describe("updateAdminLabel (PATCH)", () => {
     expect(
       await updateAdminLabel({ labelId: 3, texts: { textKo: "저장", textEn: "", textZhTw: "" }, version: 1 }),
     ).toMatchObject({ ok: false, failure: { status: 409 } });
+  });
+});
+
+describe("fetchLabelHistories (GET /api/admin/i18n/labels/{labelId}/histories)", () => {
+  it("등록·수정 이력을 화면 모델로 변환하고 커서와 크기를 보낸다", async () => {
+    fetchMock.mockResolvedValue(
+      ok({
+        items: [
+          {
+            id: 55,
+            action: "I18N_LABEL_CHANGED",
+            actorUserId: 1,
+            actorName: "시스템 관리자",
+            details: { labelKey: "button.save", lang: "en", text: { before: "Save", after: "Save Now" } },
+            ipAddress: "127.0.0.1",
+            occurredAt: "2026-11-28T11:25:00Z",
+          },
+          {
+            id: 54,
+            action: "I18N_LABEL_CREATED",
+            actorUserId: null,
+            actorName: null,
+            details: { labelKey: "button.save", textKo: "저장", textEn: "Save", textZhTw: null },
+            ipAddress: null,
+            occurredAt: "2026-11-28T11:20:00Z",
+          },
+        ],
+        nextCursor: "djE6NTQ",
+        hasNext: true,
+      }),
+    );
+    const result = await fetchLabelHistories({ labelId: 3, cursor: "c1", size: 15 });
+    expect(lastRequest().url.pathname).toBe("/api/admin/i18n/labels/3/histories");
+    expect(Object.fromEntries(lastRequest().url.searchParams)).toEqual({ cursor: "c1", size: "15" });
+    expect(result).toEqual({
+      ok: true,
+      data: {
+        items: [
+          {
+            id: 55,
+            action: "I18N_LABEL_CHANGED",
+            actorUserId: 1,
+            actorName: "시스템 관리자",
+            detail: { kind: "changed", lang: "en", before: "Save", after: "Save Now" },
+            ipAddress: "127.0.0.1",
+            occurredAt: "2026-11-28T11:25:00Z",
+          },
+          {
+            id: 54,
+            action: "I18N_LABEL_CREATED",
+            actorUserId: null,
+            actorName: null,
+            detail: { kind: "created", textKo: "저장", textEn: "Save", textZhTw: null },
+            ipAddress: null,
+            occurredAt: "2026-11-28T11:20:00Z",
+          },
+        ],
+        nextCursor: "djE6NTQ",
+        hasNext: true,
+      },
+    });
+  });
+
+  it("없는 라벨은 404 실패를 돌려준다", async () => {
+    fetchMock.mockResolvedValue(fail(404, "라벨을 찾을 수 없습니다"));
+    expect(await fetchLabelHistories({ labelId: 999 })).toMatchObject({
+      ok: false,
+      failure: { kind: "http", status: 404 },
+    });
   });
 });

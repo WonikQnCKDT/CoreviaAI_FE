@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (1484개)
+## 등록 필요 (1492개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -19,6 +19,7 @@
 | `admin.activateDepartmentLead` | {name} 부서를 활성화합니다. | admin |
 | `admin.activateDepartmentTitle` | 부서 활성화 | admin |
 | `admin.activeMembersNote` | 활성 인원은 그 부서에 직접 소속된 사람만 셉니다. | admin |
+| `admin.actorUnknown` | 알 수 없는 사용자 | admin |
 | `admin.addChildDepartment` | 하위 부서 추가 | admin |
 | `admin.addDepartment` | 부서 추가 | admin |
 | `admin.addUser` | 사용자 추가 | admin |
@@ -44,6 +45,8 @@
 | `admin.code.fixedNote` | 코드 값·라벨 키·사용 여부는 바꿀 수 없습니다(서버 마이그레이션으로만 변경). 표시 텍스트는 다국어 라벨에서 라벨 키로 관리합니다. 정렬 순서를 바꾸면 감사 로그에 기록됩니다. | admin.code |
 | `admin.code.groupCodeListAria` | {groupCode} 코드 목록 | admin.code |
 | `admin.code.groupsLabel` | 코드 그룹 | admin.code |
+| `admin.code.historyButtonAria` | {code} 변경 이력 | admin.code |
+| `admin.code.historyDescription` | 정렬 순서 변경 이력을 최신순으로 봅니다. | admin.code |
 | `admin.code.inUse` | 사용 | admin.code |
 | `admin.code.lastWriteWins` | 다른 관리자가 같은 코드의 순서를 동시에 바꾸면 나중에 저장한 값이 남습니다. | admin.code |
 | `admin.code.loadCodesFailed` | 코드를 불러오지 못했습니다 | admin.code |
@@ -127,6 +130,9 @@
 | `admin.fieldName` | 이름 | admin |
 | `admin.fieldParentDepartment` | 상위 부서 | admin |
 | `admin.history` | 변경 이력 | admin |
+| `admin.history.action.CODE_CHANGED` | 정렬 순서 변경 | admin.history.action |
+| `admin.history.action.I18N_LABEL_CHANGED` | 문구 수정 | admin.history.action |
+| `admin.history.action.I18N_LABEL_CREATED` | 라벨 등록 | admin.history.action |
 | `admin.history.action.PASSWORD_RESET` | 비밀번호 초기화 | admin.history.action |
 | `admin.history.action.PROJECT_CREATION_GRANTED` | 프로젝트 생성 권한 부여 (폐지된 기능) | admin.history.action |
 | `admin.history.action.PROJECT_CREATION_REVOKED` | 프로젝트 생성 권한 회수 (폐지된 기능) | admin.history.action |
@@ -156,6 +162,8 @@
 | `admin.label.empty` | 조건에 맞는 라벨이 없습니다 | admin.label |
 | `admin.label.emptyHint` | 검색어나 누락 필터를 바꿔 보세요. | admin.label |
 | `admin.label.emptyMeansMissing` | 영어·번체 중국어를 비우면 번역 누락으로 저장되고 화면에는 한국어로 표시됩니다. | admin.label |
+| `admin.label.historyButtonAria` | {key} 변경 이력 | admin.label |
+| `admin.label.historyDescription` | 라벨 등록 및 언어별 문구 수정 이력을 최신순으로 봅니다. | admin.label |
 | `admin.label.key` | 라벨 키 | admin.label |
 | `admin.label.keyFixed` | 라벨 키는 바꿀 수 없습니다. | admin.label |
 | `admin.label.keyFormat` | 라벨 키는 영문자로 시작하고 점(.)으로 구분한 영문·숫자·밑줄·하이픈 100자 이하로 입력해 주세요. | admin.label |

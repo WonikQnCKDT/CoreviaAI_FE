@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import EmptyState from "@/components/ui/EmptyState";
 import { changeCodeSortOrder, MAX_SORT_ORDER, MIN_SORT_ORDER, type AdminCode } from "@/features/admin/api/adminCodeApi";
+import CodeHistoryDialog from "@/features/admin/components/CodeHistoryDialog";
 import { useCodeGroups, useGroupCodes } from "@/features/admin/hooks/useCommonCodes";
 import { ADMIN_CODE_TEXT, ADMIN_NOTICE_TEXT, ADMIN_TEXT } from "@/features/admin/i18n/ko";
 import { formatDateTime } from "@/features/admin/utils/adminFormat";
@@ -19,6 +20,7 @@ const ServerCodesPanel = function () {
   const [drafts, setDrafts] = useState<RowMap>({});
   const [rowErrors, setRowErrors] = useState<RowMap>({});
   const [savingCode, setSavingCode] = useState<string | null>(null);
+  const [historyCode, setHistoryCode] = useState<AdminCode | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
 
@@ -36,6 +38,7 @@ const ServerCodesPanel = function () {
     setDrafts({});
     setRowErrors({});
     setSavingCode(null);
+    setHistoryCode(null);
   }, [groupCode]);
 
   useEffect(() => () => controllerRef.current?.abort(), []);
@@ -160,6 +163,9 @@ const ServerCodesPanel = function () {
               <th className="th w-24">{ADMIN_CODE_TEXT.colActive}</th>
               <th className="th w-56">{ADMIN_CODE_TEXT.colSortOrder}</th>
               <th className="th w-36">{ADMIN_CODE_TEXT.colUpdatedAt}</th>
+              <th className="th w-24">
+                <span className="sr-only">{ADMIN_TEXT.history}</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -225,6 +231,16 @@ const ServerCodesPanel = function () {
                   <td className="td text-xs tabular-nums text-foreground-600">
                     <time dateTime={updatedAt}>{formatDateTime({ iso: updatedAt })}</time>
                   </td>
+                  <td className="td">
+                    <button
+                      type="button"
+                      className="btn-ghost min-h-8 px-2 py-1 text-xs"
+                      aria-label={formatLabel(ADMIN_CODE_TEXT.historyButtonAria, { code: value })}
+                      onClick={() => setHistoryCode(code)}
+                    >
+                      {ADMIN_TEXT.history}
+                    </button>
+                  </td>
                 </tr>
               );
             })}
@@ -270,6 +286,11 @@ const ServerCodesPanel = function () {
           </div>
         </section>
       </div>
+
+      <CodeHistoryDialog
+        target={groupCode && historyCode ? { groupCode, code: historyCode } : null}
+        onClose={() => setHistoryCode(null)}
+      />
     </div>
   );
 };

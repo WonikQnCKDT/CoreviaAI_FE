@@ -102,6 +102,7 @@ export const ADMIN_TEXT = defineLabels("admin", {
   // 사용자 변경 이력
   historyDescription: "최신 변경이 위에 옵니다. 비밀번호 초기화는 기록만 남고 내용은 저장하지 않습니다.",
   historyArrowAria: "에서",
+  actorUnknown: "알 수 없는 사용자",
   booleanTrue: "있음",
   booleanFalse: "없음",
 
@@ -175,6 +176,8 @@ export const ADMIN_CODE_TEXT = defineLabels("admin.code", {
   sortOrderInputAria: "{code} 정렬 순서",
   codeListAria: "코드 목록",
   groupCodeListAria: "{groupCode} 코드 목록",
+  historyDescription: "정렬 순서 변경 이력을 최신순으로 봅니다.",
+  historyButtonAria: "{code} 변경 이력",
 });
 
 /** 다국어 라벨 화면 문구 (02-4) */
@@ -209,6 +212,8 @@ export const ADMIN_LABEL_TEXT = defineLabels("admin.label", {
   created: "{key} 라벨을 등록했습니다.",
   applyNow: "지금 화면에 적용",
   textOnlyNote: "문구는 HTML로 해석하지 않고 글자 그대로 표시합니다. 변경 이력은 감사 로그에 남습니다.",
+  historyDescription: "라벨 등록 및 언어별 문구 수정 이력을 최신순으로 봅니다.",
+  historyButtonAria: "{key} 변경 이력",
 });
 
 /** 에러 로그 화면 문구 (02-5) */
@@ -272,6 +277,9 @@ export const HISTORY_ACTION_TEXT: Record<string, string> = defineLabels("admin.h
   // 프로젝트 생성 권한은 폐지됐지만(FR-PRJ-01, BE V5 마이그레이션) 그 전에 쌓인 감사 로그를 읽을 수 있게 남긴다.
   PROJECT_CREATION_GRANTED: "프로젝트 생성 권한 부여 (폐지된 기능)",
   PROJECT_CREATION_REVOKED: "프로젝트 생성 권한 회수 (폐지된 기능)",
+  CODE_CHANGED: "정렬 순서 변경",
+  I18N_LABEL_CREATED: "라벨 등록",
+  I18N_LABEL_CHANGED: "문구 수정",
 });
 
 export const HISTORY_FIELD_TEXT: Record<string, string> = defineLabels("admin.history.field", {
