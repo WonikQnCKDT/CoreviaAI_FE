@@ -66,3 +66,14 @@ export const creationOptionsDto = () => ({
     { value: "GIT", enabled: false, requiresPhases: false },
   ],
 });
+
+/** GET /api/departments 응답 항목(BE DepartmentResponse: id, parentId, name) */
+export const departmentDto = (id: number, name: string, parentId: number | null = null) => ({ id, parentId, name });
+
+/** GET /api/users/search 응답 항목(BE UserSearchResponse: id, name, departmentName, jobTitle — 이 4개뿐) */
+export const userSearchDto = (id: number, name: string, departmentName: string | null = "개발팀", jobTitle: string | null = null) => ({
+  id,
+  name,
+  departmentName,
+  jobTitle,
+});

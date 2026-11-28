@@ -82,6 +82,18 @@ export const PROJECT_DIRECTORY_TEXT = defineLabels("project.directory", {
   approverUnavailable: "게이트 승인자는 초대한 멤버 중에서 고르므로, 멤버 초대를 할 수 없는 지금은 지정할 수 없습니다.",
 });
 
+/** 초대할 사용자 이름 검색(UserSearchPicker). {keyword}·{count}는 FE가 값을 넣는 자리 */
+export const USER_SEARCH_TEXT = defineLabels("project.userSearch", {
+  placeholder: "이름으로 찾기 (2자 이상)",
+  tooShort: "이름을 2자 이상 입력하면 찾습니다.",
+  loading: "찾는 중입니다",
+  empty: "'{keyword}'(으)로 초대할 수 있는 사용자를 찾지 못했습니다.",
+  failed: "사용자를 찾지 못했습니다.",
+  resultCount: "{count}명을 찾았습니다.",
+  limitNote: "최대 20명까지 보여 줍니다. 이름을 더 입력해 좁혀 주세요.",
+  noDepartment: "부서 없음",
+});
+
 /** api 모드 멤버·설정 화면 문구 */
 export const PROJECT_SETTINGS_TEXT = defineLabels("project.settings", {
   inviteTitle: "멤버 초대",

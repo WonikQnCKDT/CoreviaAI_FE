@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (1037개)
+## 등록 필요 (1045개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -804,6 +804,14 @@
 | `project.settings.serverMembers` | 서버 멤버 목록 기준 | project.settings |
 | `project.template.empty` | 빈 템플릿 | project.template |
 | `project.template.itProject` | IT 프로젝트 템플릿 | project.template |
+| `project.userSearch.empty` | '{keyword}'(으)로 초대할 수 있는 사용자를 찾지 못했습니다. | project.userSearch |
+| `project.userSearch.failed` | 사용자를 찾지 못했습니다. | project.userSearch |
+| `project.userSearch.limitNote` | 최대 20명까지 보여 줍니다. 이름을 더 입력해 좁혀 주세요. | project.userSearch |
+| `project.userSearch.loading` | 찾는 중입니다 | project.userSearch |
+| `project.userSearch.noDepartment` | 부서 없음 | project.userSearch |
+| `project.userSearch.placeholder` | 이름으로 찾기 (2자 이상) | project.userSearch |
+| `project.userSearch.resultCount` | {count}명을 찾았습니다. | project.userSearch |
+| `project.userSearch.tooShort` | 이름을 2자 이상 입력하면 찾습니다. | project.userSearch |
 | `status.activityIssue.open` | 접수 | status.activityIssue |
 | `status.activityIssue.progress` | 처리중 | status.activityIssue |
 | `status.activityIssue.resolved` | 해결 | status.activityIssue |
