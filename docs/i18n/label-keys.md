@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (1492개)
+## 등록 필요 (1495개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -1498,6 +1498,9 @@
 | `wbs.server.progress` | 진척률 | wbs.server |
 | `wbs.server.progressSaved` | 진척률을 {value}%로 저장했습니다. | wbs.server |
 | `wbs.server.reparent` | 상위 작업 변경 | wbs.server |
+| `wbs.server.reparentDescription` | {name}의 위치를 변경합니다. 다른 단계의 상위 작업 아래로 옮기면 해당 단계로 함께 이동합니다. | wbs.server |
+| `wbs.server.reparentRoot` | 최상위 작업으로 올리기 | wbs.server |
+| `wbs.server.reparentTarget` | 이동할 상위 작업 | wbs.server |
 | `wbs.server.retry` | 다시 시도 | wbs.server |
 | `wbs.server.serverError` | 서버 오류로 처리하지 못했습니다. 잠시 후 다시 시도해 주세요. | wbs.server |
 | `wbs.server.timeout` | 응답이 늦어 요청을 멈췄습니다. 잠시 후 다시 시도해 주세요. | wbs.server |
