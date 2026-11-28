@@ -33,6 +33,12 @@ jobs:
       - name: Check TypeScript types
         run: npm run type-check
 
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Run integration tests
+        run: npm run test:integration
+
       - name: Build frontend
         run: npm run build
 
