@@ -31,14 +31,20 @@ interface MemberHistoryListProps {
 const MemberHistoryList = function ({ projectId, refreshKey }: MemberHistoryListProps) {
   const [state, setState] = useState<HistoryState>({ phase: "loading" });
   const controllerRef = useRef<AbortController | null>(null);
+  /** '더 보기' 요청. 처음부터 다시 받기(controllerRef)와 따로 두어 서로의 취소 핸들을 덮어쓰지 않는다 */
+  const moreRef = useRef<AbortController | null>(null);
   const stateRef = useRef(state);
   const titleId = useId();
   stateRef.current = state;
 
   const reload = useCallback(() => {
     controllerRef.current?.abort();
+    // 처음부터 다시 받으면 진행 중인 '더 보기'는 낡은 커서 기준이라 버린다.
+    moreRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
+    // 오류 화면에서 다시 시도하면 로딩으로 바꾼다. 이미 받은 이력은 새 목록이 올 때까지 그대로 둔다.
+    setState((prev) => (prev.phase === "ready" ? prev : { phase: "loading" }));
     fetchMemberHistories({ projectId, size: HISTORY_PAGE_SIZE, signal: controller.signal }).then((result) => {
       if (controller.signal.aborted) return;
       if (result.ok === false) {
@@ -52,14 +58,17 @@ const MemberHistoryList = function ({ projectId, refreshKey }: MemberHistoryList
 
   useEffect(() => {
     reload();
-    return () => controllerRef.current?.abort();
+    return () => {
+      controllerRef.current?.abort();
+      moreRef.current?.abort();
+    };
   }, [reload, refreshKey]);
 
   const loadMore = () => {
     const current = stateRef.current;
     if (current.phase !== "ready" || !current.hasNext || !current.nextCursor || current.more.phase === "loading") return;
     const controller = new AbortController();
-    controllerRef.current = controller;
+    moreRef.current = controller;
     setState({ ...current, more: { phase: "loading" } });
     fetchMemberHistories({ projectId, cursor: current.nextCursor, size: HISTORY_PAGE_SIZE, signal: controller.signal }).then((result) => {
       if (controller.signal.aborted) return;
