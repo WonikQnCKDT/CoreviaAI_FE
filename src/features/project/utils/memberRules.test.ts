@@ -5,6 +5,7 @@ import {
   canManageServerMembers,
   changeTypeLabel,
   formatOccurredAt,
+  inviteRoleOptions,
   isLastPm,
   pmCountOf,
   roleChangeKind,
@@ -88,5 +89,16 @@ describe("라벨", () => {
     expect(formatOccurredAt({ iso: "2026-11-27T01:00:00Z", locale: "ko-KR" })).toMatch(/2026/);
     expect(formatOccurredAt({ iso: "not-a-date", locale: "ko-KR" })).toBe("not-a-date");
     expect(formatOccurredAt({ iso: "", locale: "ko-KR" })).toBe("");
+  });
+});
+
+describe("inviteRoleOptions", () => {
+  it("지정한 액터 중 PM을 빼고 중복 없이 준다", () => {
+    expect(inviteRoleOptions(["pm", "dev", "qa", "dev"])).toEqual(["dev", "qa"]);
+  });
+
+  it("PM만 지정했거나 비어 있으면 고를 역할이 없다", () => {
+    expect(inviteRoleOptions(["pm"])).toEqual([]);
+    expect(inviteRoleOptions([])).toEqual([]);
   });
 });

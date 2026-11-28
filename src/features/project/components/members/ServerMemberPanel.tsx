@@ -46,6 +46,8 @@ interface ServerMemberPanelProps {
    * 고정 단계 이름이 아닌 단계의 승인자는 모를 수 있으므로 최종 판정은 서버(400·409)가 한다.
    */
   approverUserIds?: number[];
+  /** 값이 바뀌면 목록을 다시 받는다(멤버 초대 직후 등) */
+  refreshKey?: number;
   /** 역할·멤버가 바뀐 뒤(이력·화면 프로젝트를 다시 받도록) 알린다 */
   onChanged: () => void;
 }
@@ -62,6 +64,7 @@ const ServerMemberPanel = function ({
   viewerUserId,
   viewerIsExecutive,
   approverUserIds = [],
+  refreshKey = 0,
   onChanged,
 }: ServerMemberPanelProps) {
   const [list, setList] = useState<ListState>({ phase: "loading" });
@@ -93,11 +96,10 @@ const ServerMemberPanel = function ({
   // 프로젝트가 바뀌면 부모가 key로 새로 만든다. 다시 받을 때는 받은 목록을 유지한 채 바꾼다.
   useEffect(() => {
     reload();
-    return () => {
-      loadRef.current?.abort();
-      actionRef.current?.abort();
-    };
-  }, [reload]);
+    return () => loadRef.current?.abort();
+  }, [reload, refreshKey]);
+
+  useEffect(() => () => actionRef.current?.abort(), []);
 
   if (list.phase === "loading") {
     return (

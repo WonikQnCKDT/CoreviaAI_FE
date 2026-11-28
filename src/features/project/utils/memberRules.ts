@@ -72,3 +72,9 @@ export const formatOccurredAt = function ({ iso, locale = pageLocale() }: { iso:
   if (!iso || Number.isNaN(date.getTime())) return iso;
   return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(date);
 };
+
+/** 한 번에 초대할 수 있는 최대 인원 (BE InviteMembersRequest, CreateProjectRequest.MAX_INITIAL_MEMBERS) */
+export const MAX_INVITE_MEMBERS = 100;
+
+/** 초대 역할 선택지: 지정한 액터 중 PM 제외(서버는 초대로 PM을 주면 400 PM_ROLE_NOT_INVITABLE), 중복 없이 지정 순서대로 */
+export const inviteRoleOptions = (actors: ProjectActor[]): ProjectActor[] => [...new Set(actors)].filter((actor) => actor !== "pm");

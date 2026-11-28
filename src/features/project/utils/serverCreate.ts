@@ -7,7 +7,7 @@ import {
   type ProjectFeature,
   type ProjectTemplate,
 } from "@/features/project/api/projectApi";
-import { PROJECT_CREATE_TEXT, PROJECT_DIRECTORY_TEXT } from "@/features/project/i18n/ko";
+import { PROJECT_CREATE_TEXT } from "@/features/project/i18n/ko";
 import { AUTH_TEXT } from "@/features/auth/i18n/ko";
 import type { MethodKey, Visibility } from "@/types";
 
@@ -15,14 +15,6 @@ import type { MethodKey, Visibility } from "@/types";
  * api 모드 프로젝트 생성 규칙 (03. 프로젝트 API v9, FR-PRJ-01).
  * 선택값은 모두 서버가 준 생성 선택지에서만 고른다. 데모 샘플 데이터(부서·사용자 ID)는 쓰지 않는다.
  */
-
-/**
- * 멤버·설정 화면(SCRUM-106 연결 전)의 멤버 초대 안내. 생성 화면은 부서 목록·사용자 검색 API(directoryApi)로 이미 연결했다.
- * SCRUM-106에서 멤버·설정의 초대를 UserSearchPicker로 연결하면 이 값을 없앤다.
- */
-export const SERVER_DIRECTORY = {
-  users: { available: false, reason: () => PROJECT_DIRECTORY_TEXT.usersUnavailable },
-} as const;
 
 /** BE CreateProjectRequest 상한 */
 export const MAX_CREATE_DEPARTMENTS = 20;

@@ -78,6 +78,23 @@ export const interpretRemoveFailure = function (failure: ApiFailure): MemberFail
   return otherView(failure);
 };
 
+/**
+ * POST .../members (한 명이라도 거부되면 아무도 초대하지 않는다)
+ * - 409는 ALREADY_PROJECT_MEMBER뿐이다(그 사이 다른 PM이 먼저 초대함) → 목록을 다시 받는다.
+ * - 400은 초대할 수 없는 사용자(비활성·경영진·관리자)·PM 역할·지정 외 액터·중복 등 여럿이라 서버 메시지를 쓴다.
+ */
+export const interpretInviteFailure = function (failure: ApiFailure): MemberFailureView {
+  const common = commonMessage(failure);
+  if (common !== null) return { message: common, stale: false, tasks: [] };
+  const stale = staleView(failure);
+  if (stale) return stale;
+  if (failure.kind === "http" && failure.status === 409) return { message: PROJECT_MEMBER_TEXT.alreadyMember, stale: true, tasks: [] };
+  if (failure.kind === "http" && failure.status === 400) {
+    return { message: fallback(failure, PROJECT_MEMBER_TEXT.inviteRejected), stale: false, tasks: [] };
+  }
+  return otherView(failure);
+};
+
 /** 목록·이력 조회 실패 문구 */
 export const memberLoadFailureMessage = function (failure: ApiFailure, text: string): string {
   const common = commonMessage(failure);

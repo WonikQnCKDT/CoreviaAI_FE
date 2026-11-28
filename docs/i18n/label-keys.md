@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (1146개)
+## 등록 필요 (1156개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -832,7 +832,6 @@
 | `project.create.template` | 템플릿 | project.create |
 | `project.create.title` | 새 프로젝트 | project.create |
 | `project.create.visibility` | 공개 범위 | project.create |
-| `project.directory.usersUnavailable` | 초대할 사용자를 찾는 사용자 검색 API가 아직 없어 멤버 초대를 할 수 없습니다. 서버에 일반 사용자용 사용자 검색 API가 생기면 초대할 수 있습니다. | project.directory |
 | `project.feature.board` | 게시판 | project.feature |
 | `project.feature.deliverable` | 산출물·게이트 | project.feature |
 | `project.feature.file` | 파일 | project.feature |
@@ -843,6 +842,7 @@
 | `project.feature.wbs` | WBS·간트 | project.feature |
 | `project.member.actor.customerLiaison` | 고객 담당자 | project.member.actor |
 | `project.member.actor.deptStaff` | 부서 담당자 | project.member.actor |
+| `project.member.alreadyMember` | 이미 프로젝트 멤버인 사용자가 있어 아무도 초대하지 않았습니다. 멤버 목록을 다시 불러왔으니 확인 후 다시 시도해 주세요. | project.member |
 | `project.member.approver` | 승인자 | project.member |
 | `project.member.approverHint` | 게이트 승인자는 PM이 될 수 없고 멤버에서 제외할 수 없습니다. 승인자를 먼저 변경해 주세요. | project.member |
 | `project.member.assignedTasks` | 담당 업무 {count}건 | project.member |
@@ -870,6 +870,17 @@
 | `project.member.historyFailed` | 변경 이력을 불러오지 못했습니다 | project.member |
 | `project.member.historyLoading` | 변경 이력을 불러오는 중입니다 | project.member |
 | `project.member.historyTitle` | 멤버·역할 변경 이력 | project.member |
+| `project.member.invited` | {count}명을 초대했습니다. | project.member |
+| `project.member.inviteEmpty` | 아직 고른 사용자가 없습니다. | project.member |
+| `project.member.inviteHint` | 이름으로 찾아 추가하고 각자 역할을 고른 뒤 한 번에 초대합니다. 역할은 프로젝트에 지정한 액터 중 PM을 뺀 것에서 고릅니다. PM은 초대한 뒤 역할 변경으로 추가합니다. | project.member |
+| `project.member.inviteLimit` | 한 번에 최대 {max}명까지 초대할 수 있습니다. | project.member |
+| `project.member.inviteNeedActor` | PM 외 액터가 지정되어 있지 않아 초대할 수 없습니다. | project.member |
+| `project.member.inviteRejected` | 초대할 수 없는 사용자이거나 고를 수 없는 역할이 있어 아무도 초대하지 않았습니다. | project.member |
+| `project.member.inviteRemove` | {name}을(를) 초대 목록에서 빼기 | project.member |
+| `project.member.inviteRole` | {name} 초대 역할 | project.member |
+| `project.member.inviteSearch` | 초대할 사용자 찾기 | project.member |
+| `project.member.inviteSubmit` | {count}명 초대 | project.member |
+| `project.member.inviting` | 초대 중 | project.member |
 | `project.member.lastPm` | 프로젝트에는 PM이 1명 이상 있어야 해서 마지막 PM은 해제하거나 제외할 수 없습니다. 다른 멤버를 먼저 PM으로 추가해 주세요. | project.member |
 | `project.member.lastPmHint` | 마지막 PM이라 역할을 바꾸거나 제외할 수 없습니다. 다른 멤버를 먼저 PM으로 추가해 주세요. | project.member |
 | `project.member.loadFailed` | 멤버 목록을 불러오지 못했습니다 | project.member |
@@ -899,7 +910,6 @@
 | `project.member.title` | 현재 멤버 ({count}명) | project.member |
 | `project.member.unknownName` | (이름 없음) | project.member |
 | `project.settings.approverNotConnected` | 게이트 승인자 변경은 서버 API가 아직 없어 이 화면에서 바꿀 수 없습니다(FR-PRJ-05). | project.settings |
-| `project.settings.inviteDisabled` | 초대 기능 사용 불가 | project.settings |
 | `project.settings.inviteTitle` | 멤버 초대 | project.settings |
 | `project.settings.pmOnlyInvite` | 멤버 초대는 프로젝트 PM만 할 수 있습니다. | project.settings |
 | `project.settings.serverMembers` | 서버 멤버 목록 기준 | project.settings |

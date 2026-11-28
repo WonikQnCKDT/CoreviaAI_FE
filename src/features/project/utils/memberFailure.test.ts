@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ApiFailure } from "@/shared/api/client";
 import { AUTH_TEXT } from "@/features/auth/i18n/ko";
 import { PROJECT_MEMBER_TEXT } from "@/features/project/i18n/member";
-import { interpretRemoveFailure, interpretRoleChangeFailure, memberLoadFailureMessage } from "@/features/project/utils/memberFailure";
+import { interpretInviteFailure, interpretRemoveFailure, interpretRoleChangeFailure, memberLoadFailureMessage } from "@/features/project/utils/memberFailure";
 
 /** 서버 오류 본문은 message·status(·보조 데이터)만 준다. client는 code를 null로 채운다. */
 const http = (status: number, message: string | null = null, data?: unknown): ApiFailure => ({
@@ -74,6 +74,26 @@ describe("interpretRemoveFailure (DELETE .../members/{userId})", () => {
 
   it("서버 메시지가 있는 그 밖의 오류는 메시지를 그대로 보여 준다", () => {
     expect(interpretRemoveFailure(http(500, "일시적인 오류"))).toEqual({ message: "일시적인 오류", stale: false, tasks: [] });
+  });
+});
+
+describe("interpretInviteFailure (POST .../members)", () => {
+  it("409는 이미 멤버(ALREADY_PROJECT_MEMBER)라 FE 안내 문구를 쓰고 목록을 다시 받는다", () => {
+    expect(interpretInviteFailure(http(409, "이미 프로젝트 멤버인 사용자입니다"))).toEqual({
+      message: PROJECT_MEMBER_TEXT.alreadyMember,
+      stale: true,
+      tasks: [],
+    });
+  });
+
+  it("400(초대 불가 사용자·PM 역할·지정 외 액터·중복)은 서버 사유를, 없으면 FE 문구를 쓴다", () => {
+    expect(interpretInviteFailure(http(400, "PM은 초대로 지정할 수 없습니다"))).toEqual({ message: "PM은 초대로 지정할 수 없습니다", stale: false, tasks: [] });
+    expect(interpretInviteFailure(http(400)).message).toBe(PROJECT_MEMBER_TEXT.inviteRejected);
+  });
+
+  it("403(PM 아님)은 다시 받고, 연결 문제는 공통 문구", () => {
+    expect(interpretInviteFailure(http(403))).toMatchObject({ message: PROJECT_MEMBER_TEXT.pmOnly, stale: true });
+    expect(interpretInviteFailure({ kind: "timeout" })).toEqual({ message: AUTH_TEXT.timeout, stale: false, tasks: [] });
   });
 });
 

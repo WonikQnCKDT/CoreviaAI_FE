@@ -4,11 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import ProjectSettingsPage from "@/pages/project-detail/settings";
 import { useDemoStore } from "@/stores/DemoStore";
-import { PROJECT_DIRECTORY_TEXT, PROJECT_SETTINGS_TEXT } from "@/features/project/i18n/ko";
+import { PROJECT_SETTINGS_TEXT } from "@/features/project/i18n/ko";
 import { PROJECT_MEMBER_TEXT } from "@/features/project/i18n/member";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 import { formatLabel } from "@/shared/i18n/store";
 import { jsonFail, jsonOk, renderApp, stubFetch } from "@/test/appHarness";
+import { userSearchDto } from "@/test/projectFixtures";
 import type { ServerProjectDetail } from "@/features/project/api/projectApi";
 
 /** 실제 BE DTO 형식(ProjectMemberResponse) — actor는 서버 enum 값이다 */
@@ -112,13 +113,129 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("api 모드 멤버 초대 (2차에서 연결)", () => {
-  it("PM에게 멤버 초대를 보여 주되, 사용자 검색 API가 없어 비활성으로 두고 이유를 표시한다", async () => {
-    render({ members: [PM_ME, DEV] });
+const SEARCH_RESULT = [userSearchDto(11, "이개발"), userSearchDto(21, "박신입", "품질팀", "선임"), userSearchDto(22, "최현업", null)];
 
-    const invite = await screen.findByRole("button", { name: new RegExp(`^${PROJECT_SETTINGS_TEXT.inviteTitle}`) });
-    expect(invite).toHaveProperty("disabled", true);
-    expect(screen.getByText(PROJECT_DIRECTORY_TEXT.usersUnavailable)).toBeTruthy();
+const searchAndPick = async (name: string) => {
+  const input = await screen.findByRole("combobox", { name: PROJECT_MEMBER_TEXT.inviteSearch });
+  fireEvent.focus(input);
+  fireEvent.change(input, { target: { value: "검색어" } });
+  fireEvent.click(await screen.findByRole("option", { name: new RegExp(name) }));
+};
+
+const inviteButton = (count: number) =>
+  screen.getByRole("button", { name: new RegExp(formatLabel(PROJECT_MEMBER_TEXT.inviteSubmit, { count })) });
+
+describe("api 모드 멤버 초대", () => {
+  it("PM이 사용자를 찾아 역할을 고르고 초대하면 서버 액터로 보내고 멤버·이력을 다시 받는다", async () => {
+    const { calls } = render({
+      members: [PM_ME, DEV],
+      handlers: {
+        "GET /api/users/search": () => jsonOk(SEARCH_RESULT),
+        "POST /api/projects/77/members": () =>
+          jsonOk([
+            { userId: 21, name: "박신입", actor: "QA", assignedTaskCount: 0 },
+            { userId: 22, name: "최현업", actor: "DEVELOPER", assignedTaskCount: 0 },
+          ]),
+      },
+    });
+
+    await searchAndPick("박신입");
+    // 이미 멤버인 이개발은 검색 결과에서 빠진다
+    const input = screen.getByRole("combobox", { name: PROJECT_MEMBER_TEXT.inviteSearch });
+    fireEvent.change(input, { target: { value: "검색어2" } });
+    await screen.findByRole("option", { name: /최현업/ });
+    expect(screen.queryByRole("option", { name: /이개발/ })).toBeNull();
+    expect(screen.queryByRole("option", { name: /박신입/ })).toBeNull();
+    fireEvent.click(screen.getByRole("option", { name: /최현업/ }));
+
+    const role = screen.getByRole("combobox", { name: formatLabel(PROJECT_MEMBER_TEXT.inviteRole, { name: "박신입" }) }) as HTMLSelectElement;
+    // 지정한 액터(PM·개발자·QA) 중 PM을 뺀 것만 고를 수 있다
+    expect([...role.options].map((option) => option.value)).toEqual(["dev", "qa"]);
+    fireEvent.change(role, { target: { value: "qa" } });
+    fireEvent.click(inviteButton(2));
+
+    expect(await screen.findByText(formatLabel(PROJECT_MEMBER_TEXT.invited, { count: 2 }))).toBeTruthy();
+    expect(calls.find(({ method }) => method === "POST")?.body).toEqual({
+      members: [
+        { userId: 21, actor: "QA" },
+        { userId: 22, actor: "DEVELOPER" },
+      ],
+    });
+    expect(screen.getByText(PROJECT_MEMBER_TEXT.inviteEmpty)).toBeTruthy();
+    await waitFor(() => expect(calls.filter(({ path }) => path.startsWith("/api/projects/77/members?")).length).toBe(2));
+    await waitFor(() => expect(calls.filter(({ path }) => path.startsWith("/api/projects/77/members/histories")).length).toBe(2));
+  });
+
+  it("고른 사람이 없으면 초대 버튼을 막고, 초대 목록에서 뺄 수 있다", async () => {
+    render({ members: [PM_ME, DEV], handlers: { "GET /api/users/search": () => jsonOk(SEARCH_RESULT) } });
+
+    expect(await screen.findByText(PROJECT_MEMBER_TEXT.inviteEmpty)).toBeTruthy();
+    expect(inviteButton(0)).toHaveProperty("disabled", true);
+    await searchAndPick("박신입");
+    fireEvent.click(screen.getByRole("button", { name: formatLabel(PROJECT_MEMBER_TEXT.inviteRemove, { name: "박신입" }) }));
+    expect(screen.getByText(PROJECT_MEMBER_TEXT.inviteEmpty)).toBeTruthy();
+  });
+
+  it("이미 멤버(409)면 안내하고 고른 목록을 그대로 두며 멤버 목록을 다시 받는다", async () => {
+    const { calls } = render({
+      members: [PM_ME, DEV],
+      handlers: {
+        "GET /api/users/search": () => jsonOk(SEARCH_RESULT),
+        "POST /api/projects/77/members": () => jsonFail(409, "이미 프로젝트 멤버인 사용자입니다"),
+      },
+    });
+
+    await searchAndPick("박신입");
+    fireEvent.click(inviteButton(1));
+
+    expect(await screen.findByText(PROJECT_MEMBER_TEXT.alreadyMember)).toBeTruthy();
+    expect(screen.getByText("박신입")).toBeTruthy();
+    await waitFor(() => expect(calls.filter(({ path }) => path.startsWith("/api/projects/77/members?")).length).toBe(2));
+  });
+
+  it("초대할 수 없는 사용자(400)면 서버 사유를 보여 준다", async () => {
+    render({
+      members: [PM_ME, DEV],
+      handlers: {
+        "GET /api/users/search": () => jsonOk(SEARCH_RESULT),
+        "POST /api/projects/77/members": () => jsonFail(400, "프로젝트 멤버로 초대할 수 없는 사용자입니다"),
+      },
+    });
+
+    await searchAndPick("박신입");
+    fireEvent.click(inviteButton(1));
+
+    expect(await screen.findByText("프로젝트 멤버로 초대할 수 없는 사용자입니다")).toBeTruthy();
+  });
+
+  it("처리 중에는 다시 눌러도 한 번만 보낸다", async () => {
+    let resolve: (response: Response) => void = () => undefined;
+    const { calls } = render({
+      members: [PM_ME, DEV],
+      handlers: {
+        "GET /api/users/search": () => jsonOk(SEARCH_RESULT),
+        "POST /api/projects/77/members": () => new Promise<Response>((done) => (resolve = done)),
+      },
+    });
+
+    await searchAndPick("박신입");
+    fireEvent.click(inviteButton(1));
+    const busy = screen.getByRole("button", { name: new RegExp(PROJECT_MEMBER_TEXT.inviting) });
+    expect(busy).toHaveProperty("disabled", true);
+    fireEvent.click(busy);
+    expect(calls.filter(({ method }) => method === "POST")).toHaveLength(1);
+
+    resolve(jsonOk([{ userId: 21, name: "박신입", actor: "DEVELOPER", assignedTaskCount: 0 }]));
+    expect(await screen.findByText(formatLabel(PROJECT_MEMBER_TEXT.invited, { count: 1 }))).toBeTruthy();
+    expect(calls.filter(({ method }) => method === "POST")).toHaveLength(1);
+  });
+
+  it("PM이 아니면 초대 검색·버튼 없이 PM만 초대할 수 있다는 이유를 보여 준다", async () => {
+    const { calls } = render({ members: [PM_OTHER, { ...DEV, userId: ME, name: "홍길동" }] });
+
+    expect(await screen.findByText(PROJECT_SETTINGS_TEXT.pmOnlyInvite)).toBeTruthy();
+    expect(screen.queryByRole("combobox", { name: PROJECT_MEMBER_TEXT.inviteSearch })).toBeNull();
+    expect(calls.some(({ path }) => path.startsWith("/api/users/search"))).toBe(false);
   });
 });
 
@@ -149,7 +266,6 @@ describe("api 모드 멤버 목록·권한 (FR-PRJ-04)", () => {
 
     expect(await screen.findByText(new RegExp(PROJECT_MEMBER_TEXT.readOnly))).toBeTruthy();
     expect(screen.getByText(PROJECT_MEMBER_TEXT.pmGuideReadOnly)).toBeTruthy();
-    expect(screen.getByText(PROJECT_SETTINGS_TEXT.pmOnlyInvite)).toBeTruthy();
     expect(screen.queryByRole("combobox")).toBeNull();
     expect(screen.queryByRole("button", { name: new RegExp(PROJECT_MEMBER_TEXT.remove) })).toBeNull();
   });
@@ -322,12 +438,12 @@ describe("api 모드 멤버 변경 이력", () => {
 });
 
 describe("데모 모드 멤버·설정 (기존 시연 유지)", () => {
-  it("데모 프로젝트는 PM 위임을 그대로 쓰고 서버 멤버 화면·초대 안내를 보이지 않는다", async () => {
+  it("데모 프로젝트는 PM 위임을 그대로 쓰고 서버 멤버 화면·초대를 보이지 않는다", async () => {
     const { fetchMock } = stubFetch({});
     renderApp({ mode: "demo", route: "/projects/p1/settings", routes: ROUTES });
 
     expect(await screen.findByRole("button", { name: new RegExp(BUTTON_TEXT.delegatePm) })).toBeTruthy();
-    expect(screen.queryByText(PROJECT_DIRECTORY_TEXT.usersUnavailable)).toBeNull();
+    expect(screen.queryByRole("combobox", { name: PROJECT_MEMBER_TEXT.inviteSearch })).toBeNull();
     expect(screen.queryByText(PROJECT_MEMBER_TEXT.historyTitle)).toBeNull();
     expect(fetchMock).not.toHaveBeenCalled();
   });

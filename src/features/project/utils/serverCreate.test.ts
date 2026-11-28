@@ -18,7 +18,6 @@ import {
   removeMember,
   requiredBlockers,
   selectableFeatures,
-  SERVER_DIRECTORY,
   setGateApprover,
   toCreateInput,
   toggleActor,
@@ -66,13 +65,6 @@ const options = (overrides: Partial<CreationOptions> = {}): CreationOptions => (
     { value: "git", enabled: false, requiresPhases: false },
   ],
   ...overrides,
-});
-
-describe("멤버·설정 화면 초대 안내 (SCRUM-106 연결 전)", () => {
-  it("생성 화면과 달리 멤버·설정의 초대는 아직 연결하지 않아 이유를 준다", () => {
-    expect(SERVER_DIRECTORY.users.available).toBe(false);
-    expect(SERVER_DIRECTORY.users.reason()).toContain("사용자 검색 API");
-  });
 });
 
 describe("initialForm·applyTemplate", () => {

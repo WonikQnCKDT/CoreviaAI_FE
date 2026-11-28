@@ -49,6 +49,20 @@ export const PROJECT_MEMBER_TEXT = defineLabels("project.member", {
   hasTasks: "담당 중인 업무가 있어 제외할 수 없습니다. 아래 업무를 다른 멤버에게 먼저 재배정해 주세요.",
   removeConflict: "마지막 PM이거나 게이트 승인자라 제외할 수 없습니다. 다른 PM을 먼저 추가하거나 승인자를 먼저 변경해 주세요.",
 
+  // 초대
+  inviteHint: "이름으로 찾아 추가하고 각자 역할을 고른 뒤 한 번에 초대합니다. 역할은 프로젝트에 지정한 액터 중 PM을 뺀 것에서 고릅니다. PM은 초대한 뒤 역할 변경으로 추가합니다.",
+  inviteSearch: "초대할 사용자 찾기",
+  inviteEmpty: "아직 고른 사용자가 없습니다.",
+  inviteRole: "{name} 초대 역할",
+  inviteRemove: "{name}을(를) 초대 목록에서 빼기",
+  inviteSubmit: "{count}명 초대",
+  inviting: "초대 중",
+  invited: "{count}명을 초대했습니다.",
+  inviteNeedActor: "PM 외 액터가 지정되어 있지 않아 초대할 수 없습니다.",
+  inviteLimit: "한 번에 최대 {max}명까지 초대할 수 있습니다.",
+  alreadyMember: "이미 프로젝트 멤버인 사용자가 있어 아무도 초대하지 않았습니다. 멤버 목록을 다시 불러왔으니 확인 후 다시 시도해 주세요.",
+  inviteRejected: "초대할 수 없는 사용자이거나 고를 수 없는 역할이 있어 아무도 초대하지 않았습니다.",
+
   // 이력
   historyTitle: "멤버·역할 변경 이력",
   historyDescription: "초대·역할 변경·PM 추가·해제·재지정·제외를 최신순으로 보여 줍니다.",
