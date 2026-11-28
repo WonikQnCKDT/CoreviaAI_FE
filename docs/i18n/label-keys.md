@@ -10,7 +10,7 @@
 - 등록하지 않은 키도 FE는 한국어 기본 문구로 표시하므로 화면이 깨지지 않습니다.
 - `{name}`처럼 중괄호로 감싼 부분은 FE가 값을 넣는 자리입니다. 번역문에도 같은 이름으로 남겨 주세요.
 
-## 등록 필요 (1156개)
+## 등록 필요 (1209개)
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
@@ -1121,6 +1121,59 @@
 | `wbs.form.startDate` | 시작일 | wbs.form |
 | `wbs.form.submit` | 저장 | wbs.form |
 | `wbs.form.submitting` | 저장 중 | wbs.form |
+| `wbs.milestone.add` | 마일스톤 추가 | wbs.milestone |
+| `wbs.milestone.aiSource` | AI 초안 | wbs.milestone |
+| `wbs.milestone.cancel` | 취소 | wbs.milestone |
+| `wbs.milestone.columnActions` | 관리 | wbs.milestone |
+| `wbs.milestone.columnDday` | D-day | wbs.milestone |
+| `wbs.milestone.columnName` | 마일스톤 | wbs.milestone |
+| `wbs.milestone.columnTargetDate` | 목표일 | wbs.milestone |
+| `wbs.milestone.columnTasks` | 연결 작업 | wbs.milestone |
+| `wbs.milestone.concurrent` | 다른 사용자가 먼저 수정했습니다. 최신 마일스톤을 다시 불러왔으니 확인한 뒤 다시 시도해 주세요. | wbs.milestone |
+| `wbs.milestone.confirmDelete` | '{name}' 마일스톤을 삭제할까요? 연결 정보만 지워지고 작업은 남습니다. 되돌릴 수 없습니다. | wbs.milestone |
+| `wbs.milestone.created` | '{name}' 마일스톤을 등록했습니다. | wbs.milestone |
+| `wbs.milestone.createTitle` | 마일스톤 추가 | wbs.milestone |
+| `wbs.milestone.dateRequired` | 목표일을 입력해 주세요. | wbs.milestone |
+| `wbs.milestone.dDayLeft` | D-{days} | wbs.milestone |
+| `wbs.milestone.dDayPassed` | D+{days} | wbs.milestone |
+| `wbs.milestone.dDayToday` | D-day | wbs.milestone |
+| `wbs.milestone.dDayUnknown` | - | wbs.milestone |
+| `wbs.milestone.delayed` | 지연 | wbs.milestone |
+| `wbs.milestone.delayedTitle` | 연결 작업이 끝나지 않았는데 목표일이 도래했습니다. | wbs.milestone |
+| `wbs.milestone.delete` | 삭제 | wbs.milestone |
+| `wbs.milestone.deleted` | '{name}' 마일스톤을 삭제했습니다. | wbs.milestone |
+| `wbs.milestone.edit` | 수정 | wbs.milestone |
+| `wbs.milestone.editTasks` | 연결 작업 | wbs.milestone |
+| `wbs.milestone.editTitle` | 마일스톤 수정 | wbs.milestone |
+| `wbs.milestone.empty` | 등록된 마일스톤이 없습니다. | wbs.milestone |
+| `wbs.milestone.emptyHintPm` | 단계 종료일·오픈일처럼 기준이 되는 날짜를 마일스톤으로 추가하세요. | wbs.milestone |
+| `wbs.milestone.emptyHintViewer` | PM이 마일스톤을 등록하면 여기에 표시됩니다. | wbs.milestone |
+| `wbs.milestone.invalid` | 입력값을 확인해 주세요. | wbs.milestone |
+| `wbs.milestone.limitExceeded` | 프로젝트 마일스톤은 최대 200개까지 등록할 수 있습니다. | wbs.milestone |
+| `wbs.milestone.loadFailed` | 마일스톤을 불러오지 못했습니다. | wbs.milestone |
+| `wbs.milestone.loading` | 마일스톤을 불러오는 중입니다 | wbs.milestone |
+| `wbs.milestone.name` | 마일스톤명 | wbs.milestone |
+| `wbs.milestone.nameRequired` | 마일스톤명을 입력해 주세요. | wbs.milestone |
+| `wbs.milestone.nameTooLong` | 마일스톤명은 200자 이하로 입력해 주세요. | wbs.milestone |
+| `wbs.milestone.noTasks` | 연결 작업 없음 | wbs.milestone |
+| `wbs.milestone.notFound` | 마일스톤을 찾을 수 없습니다. 다른 사용자가 삭제했을 수 있어 목록을 새로 불러왔습니다. | wbs.milestone |
+| `wbs.milestone.noWbsTasks` | 연결할 WBS 작업이 없습니다. 먼저 WBS에 작업을 추가하세요. | wbs.milestone |
+| `wbs.milestone.pmOnly` | 마일스톤은 프로젝트 PM만 바꿀 수 있습니다. 권한이 바뀌었을 수 있어 마일스톤을 새로 불러왔습니다. | wbs.milestone |
+| `wbs.milestone.retry` | 다시 시도 | wbs.milestone |
+| `wbs.milestone.submit` | 저장 | wbs.milestone |
+| `wbs.milestone.submitting` | 저장 중 | wbs.milestone |
+| `wbs.milestone.targetDate` | 목표일 | wbs.milestone |
+| `wbs.milestone.tasks` | 연결 작업 (선택) | wbs.milestone |
+| `wbs.milestone.tasksHint` | WBS 작업·하위작업 중에서 고르세요. 최대 {max}개까지 연결할 수 있습니다. | wbs.milestone |
+| `wbs.milestone.tasksLimitReached` | 연결 작업은 최대 {max}개까지 고를 수 있습니다. | wbs.milestone |
+| `wbs.milestone.tasksSaved` | '{name}' 마일스톤의 연결 작업을 저장했습니다. | wbs.milestone |
+| `wbs.milestone.tasksSelected` | {count}개 선택 | wbs.milestone |
+| `wbs.milestone.tasksTitle` | '{name}' 연결 작업 | wbs.milestone |
+| `wbs.milestone.taskSummary` | 미완료 {incomplete} / 연결 {linked} | wbs.milestone |
+| `wbs.milestone.title` | 마일스톤 | wbs.milestone |
+| `wbs.milestone.unavailable` | 이 프로젝트에서는 마일스톤을 사용할 수 없습니다. | wbs.milestone |
+| `wbs.milestone.updated` | '{name}' 마일스톤을 수정했습니다. | wbs.milestone |
+| `wbs.milestone.viewerNote` | 마일스톤은 PM만 추가·수정·삭제할 수 있습니다. | wbs.milestone |
 | `wbs.server.addSubtask` | 하위작업 추가 | wbs.server |
 | `wbs.server.addTask` | 작업 추가 | wbs.server |
 | `wbs.server.aiDraftLink` | AI WBS 초안 | wbs.server |
@@ -1136,6 +1189,7 @@
 | `wbs.server.created` | '{name}'을(를) 등록했습니다. | wbs.server |
 | `wbs.server.delete` | 삭제 | wbs.server |
 | `wbs.server.deleted` | '{name}'을(를) 삭제했습니다. | wbs.server |
+| `wbs.server.dependencyNote` | 선후행 관계 편집은 아직 서버와 연결하지 않았습니다. | wbs.server |
 | `wbs.server.derivedProgress` | 하위작업 공수 가중 평균 | wbs.server |
 | `wbs.server.derivedSchedule` | 하위작업 기간으로 산출 | wbs.server |
 | `wbs.server.edit` | 수정 | wbs.server |
@@ -1150,7 +1204,6 @@
 | `wbs.server.loadFailed` | WBS를 불러오지 못했습니다. | wbs.server |
 | `wbs.server.loading` | WBS를 불러오는 중입니다 | wbs.server |
 | `wbs.server.memberNote` | 본인이 담당한 작업만 수정하고 그 아래 하위작업을 추가할 수 있습니다. | wbs.server |
-| `wbs.server.milestoneNote` | 선후행 관계·마일스톤 편집은 아직 서버와 연결하지 않았습니다. | wbs.server |
 | `wbs.server.moved` | 순서를 바꿨습니다. | wbs.server |
 | `wbs.server.moveDown` | 아래로 | wbs.server |
 | `wbs.server.moveUp` | 위로 | wbs.server |

@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "@/features/auth/authContext";
 import { useDemoStore } from "@/stores/DemoStore";
 import ProgressBar from "@/components/ui/ProgressBar";
 import Avatar from "@/components/ui/Avatar";
 import { Badge, HealthBadge, PriorityBadge, StatusBadge } from "@/components/ui/Badge";
 import InfoTip from "@/components/ui/InfoTip";
-import { addDays, ddayLabel, diffDays, formatDate, formatShort, TODAY } from "@/utils/date";
+import { addDays, ddayLabel, diffDays, formatDate, formatShort, referenceToday } from "@/utils/date";
 import { STAGES, STAGE_LABEL, riskLevel } from "@/utils/ui";
 import { displayProjectProgress, isLateTask, isMissingTask, leafTasks, stageProgress } from "@/features/task/utils/taskTree";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
@@ -13,8 +14,10 @@ import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 export default function ProjectOverviewPage() {
   const { projectId } = useParams();
   const navigate = useNavigate();
+  const { mode } = useAuth();
   const { projects, tasks, issues, users, openTask } = useDemoStore();
   const [codeCopied, setCodeCopied] = useState(false);
+  const baseToday = referenceToday(mode);
 
   const project = projects.find((p) => p.id === projectId);
 
@@ -33,13 +36,13 @@ export default function ProjectOverviewPage() {
     }
     const projectTasks = tasks.filter((t) => t.projectId === project.id);
     const leaves = leafTasks(projectTasks);
-    const late = leaves.filter((t) => isLateTask(t, TODAY));
-    const missing = leaves.filter((t) => isMissingTask(t, TODAY));
+    const late = leaves.filter((t) => isLateTask(t, baseToday));
+    const missing = leaves.filter((t) => isMissingTask(t, baseToday));
     const openIssues = issues.filter((i) => i.projectId === project.id && i.status !== "closed");
 
     const buckets = [3, 2, 1, 0].map((offset) => {
-      const start = addDays(TODAY, -7 * (offset + 1));
-      const end = addDays(TODAY, -7 * offset);
+      const start = addDays(baseToday, -7 * (offset + 1));
+      const end = addDays(baseToday, -7 * offset);
       const count = issues.filter(
         (i) => i.projectId === project.id && i.createdAt >= start && i.createdAt < end,
       ).length;
@@ -74,7 +77,7 @@ export default function ProjectOverviewPage() {
       workload,
       topShare: workload[0]?.share || 0,
     };
-  }, [project, tasks, issues, users]);
+  }, [project, tasks, issues, users, baseToday]);
 
   if (!project) return null;
 
@@ -173,7 +176,7 @@ export default function ProjectOverviewPage() {
             <Badge className="border-background-300 bg-background-100 text-foreground-600">멤버 전용</Badge>
           )}
           <span className="ml-auto text-[10.5px] text-foreground-500">
-            기준일 {formatDate(TODAY)}
+            기준일 {formatDate(baseToday)}
           </span>
         </div>
 
@@ -269,7 +272,7 @@ export default function ProjectOverviewPage() {
                     )}
                   </span>
                   <span className={`shrink-0 whitespace-nowrap ${isCurrent ? "font-medium text-primary-700" : ""}`}>
-                    {isCurrent ? "현재 단계" : milestone ? ddayLabel(milestone.date) : formatShort(project.startDate)}
+                    {isCurrent ? "현재 단계" : milestone ? ddayLabel(milestone.date, baseToday) : formatShort(project.startDate)}
                   </span>
                 </div>
               </Link>
@@ -367,7 +370,7 @@ export default function ProjectOverviewPage() {
                         <span className="block truncate text-[12.5px] font-medium text-foreground-900">{task.name}</span>
                         <span className="mt-0.5 block text-[10.5px] text-foreground-500">
                           {STAGE_LABEL[task.stage || "analysis"]} ·{" "}
-                          <span className="font-medium text-rose-600">{Math.abs(diffDays(TODAY, task.endDate))}일 경과</span>
+                          <span className="font-medium text-rose-600">{Math.abs(diffDays(baseToday, task.endDate))}일 경과</span>
                         </span>
                       </span>
                       <span className="flex shrink-0 items-center gap-1.5">

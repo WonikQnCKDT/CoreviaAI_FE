@@ -14,6 +14,16 @@ export function toISO(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+/** 현재 로컬 기준 오늘 날짜(YYYY-MM-DD). 서버 모드 기준일로 사용한다. */
+export function today(now: Date = new Date()): string {
+  return toISO(now);
+}
+
+/** 실행 모드에 맞는 기준일: 서버(api) 모드는 실제 오늘, 데모 모드는 고정 기준일(TODAY). */
+export function referenceToday(mode: "api" | "demo", now: Date = new Date()): string {
+  return mode === "api" ? today(now) : TODAY;
+}
+
 export function addDays(value: string, days: number): string {
   const d = parseDate(value);
   d.setDate(d.getDate() + days);
@@ -77,18 +87,18 @@ export function daysBetween(from: string, to: string): string[] {
   return result;
 }
 
-export function dday(value: string): number {
-  return diffDays(TODAY, value);
+export function dday(value: string, base: string = TODAY): number {
+  return diffDays(base, value);
 }
 
-export function ddayLabel(value: string): string {
-  const n = dday(value);
+export function ddayLabel(value: string, base: string = TODAY): string {
+  const n = dday(value, base);
   if (n === 0) return "D-Day";
   return n > 0 ? `D-${n}` : `D+${Math.abs(n)}`;
 }
 
-export function isOverdue(date: string): boolean {
-  return date < TODAY;
+export function isOverdue(date: string, base: string = TODAY): boolean {
+  return date < base;
 }
 
 export type DeadlineTone = "none" | "future" | "today" | "late" | "done";
