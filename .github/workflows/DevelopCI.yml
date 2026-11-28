@@ -40,11 +40,12 @@ jobs:
         run: npm run test:integration
 
       - name: Run tests with coverage
+        id: coverage
         run: npm run test:coverage
 
       - name: Vitest Coverage Report to PR
         uses: davelosert/vitest-coverage-report-action@v2
-        if: always() && github.event_name == 'pull_request'
+        if: (steps.coverage.outcome == 'success' || steps.coverage.outcome == 'failure') && github.event_name == 'pull_request'
         with:
           name: CoreviaAI_FE Test Coverage
           vite-config-path: ./vitest.config.ts

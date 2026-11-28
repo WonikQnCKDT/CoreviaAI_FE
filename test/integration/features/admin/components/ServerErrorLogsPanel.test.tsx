@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 describe("ServerErrorLogsPanel 에러 로그 조회 (FR-ADM-09, SCRUM-170)", () => {
-  it("기간·예외 유형·API 경로로 필터 조회하고 KST 자정 경계를 UTC로 전송한다", async () => {
+  it("기간·예외 유형·API 경로로 필터 조회하고 표시 시간대 자정 경계를 UTC로 전송한다", async () => {
     const { calls, unexpected } = stubFetch({
       "GET /api/admin/error-logs": () => jsonOk({ items: [logSummary()], nextCursor: null, hasNext: false }),
     });
@@ -37,8 +37,8 @@ describe("ServerErrorLogsPanel 에러 로그 조회 (FR-ADM-09, SCRUM-170)", () 
 
     await waitFor(() => expect(calls.length).toBeGreaterThanOrEqual(2));
     const filteredUrl = new URL(calls[calls.length - 1].path, "http://localhost");
-    expect(Date.parse(filteredUrl.searchParams.get("from") ?? "")).toBe(Date.parse("2026-11-24T15:00:00Z"));
-    expect(Date.parse(filteredUrl.searchParams.get("to") ?? "")).toBe(Date.parse("2026-11-25T15:00:00Z"));
+    expect(filteredUrl.searchParams.get("from")).toBe(new Date(2026, 10, 25).toISOString());
+    expect(filteredUrl.searchParams.get("to")).toBe(new Date(2026, 10, 26).toISOString());
     expect(filteredUrl.searchParams.get("errorType")).toBe("IllegalStateException");
     expect(filteredUrl.searchParams.get("apiPath")).toBe("/api/projects");
     expect(unexpected).toEqual([]);
