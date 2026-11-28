@@ -47,7 +47,7 @@ export default [
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['src/**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}', 'test/**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: {
@@ -83,6 +83,13 @@ export default [
       'no-useless-catch': 'off',
       'no-irregular-whitespace': 'off',
       'no-undef': 'error',
+    },
+  },
+  // Test files and test helpers do not participate in React Fast Refresh.
+  {
+    files: ['test/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
     },
   },
   // Only enforce this rule for the router config file to avoid false positives elsewhere.
