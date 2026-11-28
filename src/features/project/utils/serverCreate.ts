@@ -304,6 +304,7 @@ export const interpretCreateFailure = function (failure: ApiFailure): CreateFail
   if (failure.status === 409) return { message: failure.message || PROJECT_CREATE_TEXT.codeTakenGeneric, field: "code" };
   if (failure.status === 403) return { message: PROJECT_CREATE_TEXT.forbidden, field: null };
   if (failure.status === 400 && failure.message) return { message: failure.message, field: fieldOfServerMessage(failure.message) };
+  if (failure.status >= 500) return { message: AUTH_TEXT.unknown, field: null };
   return { message: failure.message || AUTH_TEXT.unknown, field: null };
 };
 
