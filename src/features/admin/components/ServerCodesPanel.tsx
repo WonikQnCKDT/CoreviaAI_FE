@@ -154,12 +154,12 @@ const ServerCodesPanel = function () {
         <table className="w-full min-w-[840px] border-collapse">
           <thead>
             <tr>
-              <th className="th">코드 값</th>
-              <th className="th">라벨 키</th>
+              <th className="th">{ADMIN_CODE_TEXT.colCodeValue}</th>
+              <th className="th">{ADMIN_CODE_TEXT.colLabelKey}</th>
               <th className="th">{ADMIN_CODE_TEXT.displayText}</th>
-              <th className="th w-24">사용 여부</th>
-              <th className="th w-56">정렬 순서</th>
-              <th className="th w-36">수정일</th>
+              <th className="th w-24">{ADMIN_CODE_TEXT.colActive}</th>
+              <th className="th w-56">{ADMIN_CODE_TEXT.colSortOrder}</th>
+              <th className="th w-36">{ADMIN_CODE_TEXT.colUpdatedAt}</th>
             </tr>
           </thead>
           <tbody>
@@ -192,7 +192,7 @@ const ServerCodesPanel = function () {
                       }}
                     >
                       <label htmlFor={inputId} className="sr-only">
-                        {value} 정렬 순서
+                        {formatLabel(ADMIN_CODE_TEXT.sortOrderInputAria, { code: value })}
                       </label>
                       <input
                         id={inputId}
@@ -260,7 +260,10 @@ const ServerCodesPanel = function () {
           </p>
           {renderGroups()}
         </nav>
-        <section className="card overflow-hidden" aria-label={groupCode ? `${groupCode} 코드 목록` : "코드 목록"}>
+        <section
+          className="card overflow-hidden"
+          aria-label={groupCode ? formatLabel(ADMIN_CODE_TEXT.groupCodeListAria, { groupCode }) : ADMIN_CODE_TEXT.codeListAria}
+        >
           {renderCodes()}
           <div className="border-t border-background-200 bg-background-100 px-4 py-2.5 text-xs leading-5 text-foreground-500">
             {ADMIN_CODE_TEXT.fixedNote} {ADMIN_CODE_TEXT.lastWriteWins}

@@ -5,6 +5,8 @@ import EmptyState from "@/components/ui/EmptyState";
 import { canEditProject, isProjectMember, isSystemAdmin } from "@/utils/permission";
 import { PROJECT_TEXT, useServerProjectDetail } from "@/features/project/hooks/useServerProjects";
 import { PROJECT_MENU_TEXT } from "@/shared/i18n/catalog/menu";
+import { COMMON_UI_TEXT } from "@/shared/i18n/catalog/common";
+import { formatLabel } from "@/shared/i18n/store";
 import type { ProjectOutletContext } from "@/features/project/hooks/useProjectOutlet";
 
 interface TabItem {
@@ -97,12 +99,12 @@ export default function ProjectDetailLayout() {
       <div className="card">
         <EmptyState
           icon="ri-lock-2-line"
-          title="프로젝트를 찾을 수 없거나 접근 권한이 없습니다"
-          description="삭제되었거나 공개 범위에서 제외된 프로젝트입니다. 프로젝트 목록에서 다시 확인해 주세요."
+          title={PROJECT_TEXT.notFoundTitle}
+          description={PROJECT_TEXT.notFoundDescription}
           tone="danger"
           action={
             <Link to="/projects" className="btn-outline">
-              프로젝트 목록으로
+              {COMMON_UI_TEXT.goToProjectsBack}
             </Link>
           }
         />
@@ -156,7 +158,7 @@ export default function ProjectDetailLayout() {
       {serverState.phase === "error" && (
         <div role="alert" className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs text-rose-700">
           <span>
-            최신 프로젝트 정보를 불러오지 못해 마지막으로 받은 내용을 보여주고 있습니다. {serverState.message}
+            {formatLabel(PROJECT_TEXT.staleDetailBanner, { message: serverState.message })}
           </span>
           <button type="button" className="shrink-0 font-medium underline underline-offset-2" onClick={reloadServer}>
             {PROJECT_TEXT.retry}

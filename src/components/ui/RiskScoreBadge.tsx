@@ -2,6 +2,8 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Health } from "@/types";
 import { HEALTH_CLASS, HEALTH_LABEL } from "@/utils/ui";
+import { COMMON_UI_TEXT } from "@/shared/i18n/catalog/common";
+import { formatLabel } from "@/shared/i18n/store";
 
 type Placement = "top" | "bottom";
 
@@ -25,7 +27,9 @@ export default function RiskScoreBadge({ score, health, label, className = "" }:
   });
 
   const hasScore = typeof score === "number" && Number.isFinite(score);
-  const tooltipText = hasScore ? `리스크 점수: ${Math.round(score as number)}점` : "리스크 점수 정보 없음";
+  const tooltipText = hasScore
+    ? formatLabel(COMMON_UI_TEXT.riskScore, { score: Math.round(score as number) })
+    : COMMON_UI_TEXT.riskScoreUnknown;
 
   const place = useCallback(() => {
     const el = anchorRef.current;

@@ -56,17 +56,16 @@ type CodeCheck = { phase: "idle" } | { phase: "checking" } | { phase: "done"; co
 type SubmitState = { phase: "idle" } | { phase: "submitting" } | { phase: "failed"; message: string };
 
 const VISIBILITIES: Visibility[] = ["company", "department", "members"];
-const UNSAVED_MESSAGE = "저장하지 않은 프로젝트 정보가 있습니다.";
 
 type WizardStepId = 0 | 1 | 2 | 3 | 4 | 5;
 
-const WIZARD_STEPS: { id: WizardStepId; label: string; errorKeys: (keyof CreateErrors)[] }[] = [
-  { id: 0, label: "기본 정보", errorKeys: ["name", "code", "period", "departments"] },
-  { id: 1, label: "템플릿·운영 방식", errorKeys: [] },
-  { id: 2, label: "액터", errorKeys: ["actors"] },
-  { id: 3, label: "기능 구성", errorKeys: [] },
-  { id: 4, label: "멤버", errorKeys: ["members"] },
-  { id: 5, label: "게이트 승인자", errorKeys: ["approver"] },
+const WIZARD_STEPS: { id: WizardStepId; readonly label: string; errorKeys: (keyof CreateErrors)[] }[] = [
+  { id: 0, get label() { return PROJECT_CREATE_TEXT.stepBasic; }, errorKeys: ["name", "code", "period", "departments"] },
+  { id: 1, get label() { return PROJECT_CREATE_TEXT.stepStructure; }, errorKeys: [] },
+  { id: 2, get label() { return PROJECT_CREATE_TEXT.stepActors; }, errorKeys: ["actors"] },
+  { id: 3, get label() { return PROJECT_CREATE_TEXT.stepFeatures; }, errorKeys: [] },
+  { id: 4, get label() { return PROJECT_CREATE_TEXT.stepMembers; }, errorKeys: ["members"] },
+  { id: 5, get label() { return PROJECT_CREATE_TEXT.stepApprover; }, errorKeys: ["approver"] },
 ];
 
 const LAST_STEP: WizardStepId = 5;
@@ -141,11 +140,12 @@ const ServerProjectCreateWizard = function () {
   const dirty = Boolean(
     form && (form.name.trim() || form.startDate || form.endDate || form.departmentIds.length > 0 || form.members.length > 0),
   );
+  const unsavedMessage = PROJECT_CREATE_TEXT.unsavedMessage;
   useEffect(() => {
-    if (dirty) setUnsavedGuard(UNSAVED_MESSAGE);
-    else clearUnsavedGuard(UNSAVED_MESSAGE);
-    return () => clearUnsavedGuard(UNSAVED_MESSAGE);
-  }, [dirty]);
+    if (dirty) setUnsavedGuard(unsavedMessage);
+    else clearUnsavedGuard(unsavedMessage);
+    return () => clearUnsavedGuard(unsavedMessage);
+  }, [dirty, unsavedMessage]);
 
   const options = optionsState.phase === "ready" ? optionsState.options : null;
   const blockers = options ? requiredBlockers(options) : [];
@@ -177,9 +177,9 @@ const ServerProjectCreateWizard = function () {
   };
 
   const close = useCallback(() => {
-    clearUnsavedGuard(UNSAVED_MESSAGE);
+    clearUnsavedGuard(unsavedMessage);
     navigate("/projects");
-  }, [navigate]);
+  }, [navigate, unsavedMessage]);
 
   // 데모 생성 화면과 같이 Esc로 닫는다. 만드는 중에는 닫지 않는다.
   useEffect(() => {
@@ -262,7 +262,7 @@ const ServerProjectCreateWizard = function () {
     }
     // 서버가 만든 프로젝트를 바로 화면 목록에 넣고, 목록 화면에서 서버 목록을 다시 받는다.
     syncServerProjectDetail({ detail: result.data, phases: null, members: null });
-    clearUnsavedGuard(UNSAVED_MESSAGE);
+    clearUnsavedGuard(unsavedMessage);
     const state: ProjectCreatedState = { projectCreated: { id: result.data.id, name: result.data.name } };
     navigate("/projects", { state });
   };
@@ -649,7 +649,7 @@ const ServerProjectCreateWizard = function () {
         </div>
 
         {options && form && (
-          <nav aria-label="프로젝트 생성 단계" className="border-b border-background-200 bg-background-100/60 px-5 py-2.5 md:px-6">
+          <nav aria-label={PROJECT_CREATE_TEXT.stepsNavAria} className="border-b border-background-200 bg-background-100/60 px-5 py-2.5 md:px-6">
             <ol className="flex flex-wrap items-center gap-1.5">
               {WIZARD_STEPS.map((item) => {
                 const active = step === item.id;
@@ -691,7 +691,7 @@ const ServerProjectCreateWizard = function () {
             disabled={!options || step === 0 || submitting}
           >
             <i className="ri-arrow-left-s-line" aria-hidden="true" />
-            이전
+            {PROJECT_CREATE_TEXT.prevStep}
           </button>
           <div className="flex items-center gap-2">
             <button type="button" className="btn-outline whitespace-nowrap" onClick={close} disabled={submitting}>
@@ -704,7 +704,7 @@ const ServerProjectCreateWizard = function () {
                 onClick={handleNext}
                 disabled={!options || blockers.length > 0 || submitting}
               >
-                다음
+                {PROJECT_CREATE_TEXT.nextStep}
                 <i className="ri-arrow-right-s-line" aria-hidden="true" />
               </button>
             ) : (

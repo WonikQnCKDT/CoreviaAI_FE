@@ -18,7 +18,9 @@ import { PROJECT_SORT_LABEL } from "@/shared/i18n/catalog/status";
 import { PROJECT_FOCUS_LABEL } from "@/shared/i18n/catalog/status";
 import { METHODOLOGY_LABEL } from "@/shared/i18n/catalog/status";
 import type { ProjectCreatedState } from "@/features/project/components/create/ServerProjectCreateWizard";
-import { PROJECT_CREATE_TEXT } from "@/features/project/i18n/ko";
+import { PROJECT_CREATE_TEXT, PROJECT_LIST_TEXT } from "@/features/project/i18n/ko";
+import { COMMON_UI_TEXT } from "@/shared/i18n/catalog/common";
+import { VISIBILITY_LABEL } from "@/shared/i18n/catalog/status";
 import { formatLabel } from "@/shared/i18n/store";
 import { useCommonCodes } from "@/shared/codes/useCommonCodes";
 import { RISK_LEVEL_TO_HEALTH } from "@/shared/codes/codeStore";
@@ -168,8 +170,10 @@ export default function ProjectsPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-[12px] text-foreground-500">
-            {isApi ? `볼 수 있는 프로젝트 ${projects.length}건` : `가상 프로젝트 ${projects.length}건`} · 진척률은 WBS 최하위 업무의
-            예상 작업량 가중 평균입니다
+            {formatLabel(isApi ? PROJECT_LIST_TEXT.visibleCountApi : PROJECT_LIST_TEXT.visibleCountDemo, {
+              count: projects.length,
+            })}{" "}
+            · {PROJECT_LIST_TEXT.progressFormulaNote}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -193,16 +197,16 @@ export default function ProjectsPage() {
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {([
-          { key: "all", label: "전체 프로젝트", value: counts.total, hint: "진행·완료 포함", tone: "default" },
-          { key: "ongoing", label: "진행 중", value: counts.ongoing, hint: "완료 전 · 마감일 이내", tone: "primary" },
-          { key: "late", label: "지연", value: counts.late, hint: "완료 전 · 마감일 경과", tone: "danger" },
-          { key: "done", label: "완료", value: counts.done, hint: "이행까지 종료된 프로젝트", tone: "success" },
+          { key: "all", label: PROJECT_FOCUS_LABEL.all, value: counts.total, hint: PROJECT_LIST_TEXT.hintAll, tone: "default" },
+          { key: "ongoing", label: PROJECT_FOCUS_LABEL.ongoing, value: counts.ongoing, hint: PROJECT_LIST_TEXT.hintOngoing, tone: "primary" },
+          { key: "late", label: PROJECT_FOCUS_LABEL.late, value: counts.late, hint: PROJECT_LIST_TEXT.hintLate, tone: "danger" },
+          { key: "done", label: PROJECT_FOCUS_LABEL.done, value: counts.done, hint: PROJECT_LIST_TEXT.hintDone, tone: "success" },
         ] as { key: FocusKey; label: string; value: number; hint: string; tone: "default" | "primary" | "danger" | "success" }[]).map((card) => (
           <div key={card.key} className={`rounded-xl ${focus === card.key ? "ring-2 ring-primary-300" : ""}`}>
             <StatCard
               label={card.label}
               value={card.value}
-              unit="건"
+              unit={COMMON_UI_TEXT.countUnit}
               hint={card.hint}
               tone={card.tone}
               onClick={() => setFocus(card.key)}
@@ -216,7 +220,7 @@ export default function ProjectsPage() {
           <span className="rounded-full border border-primary-200 bg-primary-50 px-2 py-[2px] text-[10.5px] font-medium text-primary-700">
             {FOCUS_LABEL[focus]}
           </span>
-          지표가 적용되었습니다.
+          {PROJECT_LIST_TEXT.focusAppliedSuffix}
           <button
             type="button"
             onClick={() => setFocus("all")}
@@ -233,13 +237,13 @@ export default function ProjectsPage() {
             <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-[14px] text-foreground-400" />
             <input
               className="field pl-8 text-[12.5px]"
-              placeholder="프로젝트명, 코드, 부서로 검색"
+              placeholder={PROJECT_LIST_TEXT.searchPlaceholder}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
           </div>
           <select className="field w-auto min-w-[104px] text-[12.5px]" value={status} onChange={(e) => setStatus(e.target.value as "all" | Health)}>
-            <option value="all">상태 전체</option>
+            <option value="all">{PROJECT_LIST_TEXT.allStatuses}</option>
             {statusOptions.map(({ key, label }) => (
               <option key={key} value={key}>
                 {label}
@@ -247,7 +251,7 @@ export default function ProjectsPage() {
             ))}
           </select>
           <select className="field w-auto min-w-[116px] text-[12.5px]" value={dept} onChange={(e) => setDept(e.target.value)}>
-            <option value="all">부서 전체</option>
+            <option value="all">{PROJECT_LIST_TEXT.allDepartments}</option>
             {depts.map((item) => (
               <option key={item} value={item}>
                 {item}
@@ -255,7 +259,7 @@ export default function ProjectsPage() {
             ))}
           </select>
           <select className="field w-auto min-w-[110px] text-[12.5px]" value={pm} onChange={(e) => setPm(e.target.value)}>
-            <option value="all">PM 전체</option>
+            <option value="all">{PROJECT_LIST_TEXT.allPms}</option>
             {pmList.map((user) => (
               <option key={user.id} value={user.id}>
                 {user.name}
@@ -263,7 +267,7 @@ export default function ProjectsPage() {
             ))}
           </select>
           <select className="field w-auto min-w-[112px] text-[12.5px]" value={risk} onChange={(e) => setRisk(e.target.value as "all" | Health)}>
-            <option value="all">리스크 전체</option>
+            <option value="all">{PROJECT_LIST_TEXT.allRisks}</option>
             {riskOptions.map(({ key, label }) => (
               <option key={key} value={key}>
                 {label}
@@ -294,18 +298,18 @@ export default function ProjectsPage() {
         ) : projects.length === 0 ? (
           <EmptyState
             icon="ri-folder-open-line"
-            title="볼 수 있는 프로젝트가 없습니다"
+            title={PROJECT_LIST_TEXT.emptyTitle}
             description={
               isSystemAdmin(currentUser)
-                ? "시스템 관리자 역할로는 프로젝트 데이터에 접근할 수 없습니다. 프로젝트 멤버로 참여한 계정으로 확인해 주세요."
-                : "참여 중이거나 공개 범위에 포함된 프로젝트가 여기에 표시됩니다."
+                ? PROJECT_LIST_TEXT.emptyAdminDescription
+                : PROJECT_LIST_TEXT.emptyUserDescription
             }
           />
         ) : rows.length === 0 ? (
           <EmptyState
             icon="ri-search-eye-line"
-            title="검색 결과가 없습니다"
-            description="검색어나 필터 조건을 변경해 다시 시도해 주세요."
+            title={PROJECT_LIST_TEXT.noMatchTitle}
+            description={PROJECT_LIST_TEXT.noMatchDescription}
             action={
               <button type="button" className="btn-outline" onClick={resetFilters}>
                 {BUTTON_TEXT.resetFilters}
@@ -317,14 +321,14 @@ export default function ProjectsPage() {
             <table className="w-full min-w-[1020px] border-collapse">
               <thead>
                 <tr>
-                  <th className="th">프로젝트명 · 코드</th>
-                  <th className="th w-[116px]">주관 부서</th>
-                  <th className="th w-[102px]">PM</th>
-                  <th className="th w-[92px]">운영 방식</th>
-                  <th className="th w-[82px]">현재 단계</th>
-                  <th className="th w-[184px]">기간</th>
-                  <th className="th w-[152px]">진척률</th>
-                  <th className="th w-[88px]">상태</th>
+                  <th className="th">{PROJECT_LIST_TEXT.colNameCode}</th>
+                  <th className="th w-[116px]">{PROJECT_LIST_TEXT.colDepartment}</th>
+                  <th className="th w-[102px]">{PROJECT_LIST_TEXT.colPm}</th>
+                  <th className="th w-[92px]">{PROJECT_LIST_TEXT.colMethodology}</th>
+                  <th className="th w-[82px]">{PROJECT_LIST_TEXT.colStage}</th>
+                  <th className="th w-[184px]">{PROJECT_LIST_TEXT.colPeriod}</th>
+                  <th className="th w-[152px]">{PROJECT_LIST_TEXT.colProgress}</th>
+                  <th className="th w-[88px]">{PROJECT_LIST_TEXT.colStatus}</th>
                 </tr>
               </thead>
               <tbody>
@@ -339,7 +343,7 @@ export default function ProjectsPage() {
                       <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-foreground-500">
                         <span className="font-mono">{project.code}</span>
                         {project.visibility === "members" && (
-                          <Badge className="border-background-300 bg-background-100 text-foreground-500">멤버 전용</Badge>
+                          <Badge className="border-background-300 bg-background-100 text-foreground-500">{VISIBILITY_LABEL.members}</Badge>
                         )}
                       </p>
                     </td>
@@ -354,7 +358,7 @@ export default function ProjectsPage() {
                     <td className="td">
                       {project.serverId !== undefined && !project.serverStageKnown ? (
                         // 목록 API에는 단계 정보가 없어, 상세에서 단계를 받기 전에는 표시하지 않는다.
-                        <span className="text-[12px] text-foreground-400" title="상세 화면에서 단계를 불러오면 표시됩니다">
+                        <span className="text-[12px] text-foreground-400" title={PROJECT_LIST_TEXT.stageUnknownHint}>
                           -
                         </span>
                       ) : (
@@ -378,9 +382,9 @@ export default function ProjectsPage() {
         )}
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-background-200 bg-background-100 px-4 py-2.5 text-[11.5px] text-foreground-500">
           <span>
-            총 {projects.length}건 중 {rows.length}건 표시
+            {formatLabel(PROJECT_LIST_TEXT.footerCount, { total: projects.length, shown: rows.length })}
           </span>
-          <span>행을 클릭하면 프로젝트 개요로 이동합니다</span>
+          <span>{PROJECT_LIST_TEXT.footerRowHint}</span>
         </div>
       </section>
     </div>

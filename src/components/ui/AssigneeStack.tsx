@@ -1,4 +1,5 @@
 import Avatar from "@/components/ui/Avatar";
+import { COMMON_UI_TEXT } from "@/shared/i18n/catalog/common";
 import { findAssignees } from "@/utils/assignee";
 import type { User } from "@/types";
 
@@ -22,10 +23,11 @@ export default function AssigneeStack({
   users,
   max = 2,
   avatarsOnly = false,
-  emptyLabel = "미지정",
+  emptyLabel,
   className = "",
 }: AssigneeStackProps) {
   const assignees = findAssignees(userIds, users);
+  const resolvedEmptyLabel = emptyLabel ?? COMMON_UI_TEXT.unassigned;
 
   if (assignees.length === 0) {
     return (
@@ -33,7 +35,7 @@ export default function AssigneeStack({
         <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-50 text-[10px] text-amber-600">
           <i className="ri-user-unfollow-line" aria-hidden="true" />
         </span>
-        <span className="truncate">{emptyLabel}</span>
+        <span className="truncate">{resolvedEmptyLabel}</span>
       </span>
     );
   }

@@ -10,11 +10,11 @@ import {
   takeReturnTo,
   type SessionNotice,
 } from "@/features/auth/utils/session";
-import { PASSWORD_POLICY_TEXT } from "@/features/auth/utils/password";
 import { useAuth } from "@/features/auth/authContext";
 import { AUTH_TEXT } from "@/features/auth/i18n/ko";
 import type { Project, User } from "@/types";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { formatLabel } from "@/shared/i18n/store";
 
 type FieldErrors = { account?: string; password?: string; form?: string };
 
@@ -158,7 +158,7 @@ export default function LoginPage() {
       case "locked":
         setLocked(true);
         setLockedMessage(outcome.message);
-        setErrors({ password: "계정이 잠겨 있습니다." });
+        setErrors({ password: AUTH_TEXT.accountLockedShort });
         return;
       case "rejected":
         setErrors({ [outcome.field]: outcome.message });
@@ -195,8 +195,8 @@ export default function LoginPage() {
             <BrandLogo className="h-[24px] w-auto" />
           </span>
           <span className="mt-3 text-[17px] font-semibold tracking-tight text-foreground-950">CoreviaAI</span>
-          <h1 className="mt-4 text-[20px] font-semibold text-foreground-950">로그인</h1>
-          <p className="mt-1 text-[12.5px] text-foreground-600">사내 계정으로 로그인해 주세요.</p>
+          <h1 className="mt-4 text-[20px] font-semibold text-foreground-950">{AUTH_TEXT.loginTitle}</h1>
+          <p className="mt-1 text-[12.5px] text-foreground-600">{AUTH_TEXT.loginSubtitle}</p>
         </div>
 
         {sessionNotice && (
@@ -224,7 +224,7 @@ export default function LoginPage() {
         <form className="card space-y-3.5 p-5 md:p-6" onSubmit={handleSubmit} noValidate aria-busy={submitting}>
           <div>
             <label htmlFor="login-account" className="mb-1.5 block text-[12px] font-medium text-foreground-800">
-              {isApi ? "아이디" : "아이디 (이메일)"}
+              {isApi ? AUTH_TEXT.loginIdLabel : AUTH_TEXT.loginIdEmailLabel}
             </label>
             <div className="relative">
               <i
@@ -238,7 +238,7 @@ export default function LoginPage() {
                 autoComplete="username"
                 maxLength={LOGIN_ID_MAX_LENGTH}
                 className={`field pl-9 text-[13px] ${errors.account ? "border-rose-300" : ""}`}
-                placeholder={isApi ? "아이디 입력" : "name@corevia.co.kr"}
+                placeholder={isApi ? AUTH_TEXT.loginIdPlaceholder : "name@corevia.co.kr"}
                 value={account}
                 onChange={(event) => {
                   setAccount(event.target.value);
@@ -258,7 +258,7 @@ export default function LoginPage() {
 
           <div>
             <label htmlFor="login-password" className="mb-1.5 block text-[12px] font-medium text-foreground-800">
-              비밀번호
+              {AUTH_TEXT.passwordLabel}
             </label>
             <div className="relative">
               <i
@@ -272,7 +272,7 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 maxLength={PASSWORD_INPUT_MAX_LENGTH}
                 className={`field px-9 text-[13px] ${errors.password ? "border-rose-300" : ""}`}
-                placeholder="비밀번호 입력"
+                placeholder={AUTH_TEXT.passwordPlaceholder}
                 value={password}
                 onChange={(event) => {
                   setPassword(event.target.value);
@@ -297,7 +297,7 @@ export default function LoginPage() {
               </p>
             )}
             <p id="login-password-hint" className="mt-1 text-[11px] leading-4 text-foreground-500">
-              5회 연속 실패하면 계정이 잠깁니다.
+              {AUTH_TEXT.lockoutHint}
             </p>
           </div>
 
@@ -383,7 +383,7 @@ export default function LoginPage() {
         )}
 
         <p className="mt-4 text-center text-[11px] leading-4 text-foreground-500">
-          비밀번호 규칙: {PASSWORD_POLICY_TEXT} · 회원가입·소셜 로그인은 제공하지 않습니다.
+          {formatLabel(AUTH_TEXT.loginFooterPolicy, { policy: AUTH_TEXT.passwordPolicy })}
         </p>
       </div>
     </div>

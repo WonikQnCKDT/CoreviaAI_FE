@@ -66,6 +66,75 @@ export const ADMIN_TEXT = defineLabels("admin", {
   departmentNameRequired: "부서 이름을 입력해 주세요.",
   departmentNameTooLong: "부서 이름은 50자 이하로 입력해 주세요.",
   showInactive: "비활성 부서 보기",
+
+  // 관리자 페이지 공통
+  noAccessTitle: "시스템 관리 권한이 없습니다",
+  noAccessDescription:
+    "시스템 관리는 시스템 관리자 역할에게만 표시되는 메뉴입니다. 권한이 필요하면 관리자에게 요청해 주세요. 시스템 관리자 역할은 프로젝트 데이터 접근 권한을 자동으로 부여하지 않습니다.",
+  apiHeaderNote: "시스템 관리자 전용 · 사용자·부서·공통 코드·다국어 라벨 변경은 서버에 바로 반영되고 감사 로그에 기록됩니다",
+  demoHeaderNote: "시스템 관리자 전용 · 변경 사항은 데모 저장소에만 반영됩니다",
+
+  // 사용자 테이블·필터·확인
+  usersListAria: "사용자 목록",
+  colUser: "사용자",
+  colDepartment: "부서",
+  colJobTitle: "직무",
+  colSystemRole: "시스템 역할",
+  colStatus: "상태",
+  colLastLogin: "마지막 로그인",
+  colManage: "관리",
+  userRoleAria: "{name} 시스템 역할",
+  inactiveSuffix: " (비활성)",
+  deptFilterExcludesChildren: "부서 필터는 하위 부서를 포함하지 않습니다.",
+  roleChangeConfirmLead: "{name}님의 시스템 역할을 {from}에서 {to}(으)로 바꿉니다.",
+  statusChangeConfirmLead: "{name} 계정을 {status} 상태로 바꿉니다.",
+
+  // 사용자 생성·수정 폼
+  userCreateDescription: "계정만 만들어집니다. 만든 뒤 임시 비밀번호를 발급해야 로그인할 수 있습니다.",
+  userEditDescription: "시스템 역할과 상태는 목록에서 따로 바꿉니다.",
+  fieldLoginId: "아이디",
+  fieldName: "이름",
+  fieldDepartmentOptional: "부서 (선택)",
+  fieldDepartmentSelect: "부서 선택",
+  fieldJobTitleOptional: "직무 (선택)",
+  loginIdFixedNote: "아이디 {loginId}는 바꿀 수 없습니다.",
+
+  // 사용자 변경 이력
+  historyDescription: "최신 변경이 위에 옵니다. 비밀번호 초기화는 기록만 남고 내용은 저장하지 않습니다.",
+  historyArrowAria: "에서",
+  booleanTrue: "있음",
+  booleanFalse: "없음",
+
+  // 비밀번호 초기화 모달
+  resetTitle: "비밀번호 초기화",
+  resetDescription: "임시 비밀번호를 발급하고 계정 잠금을 해제합니다. 대상 사용자는 다음 로그인 후 비밀번호를 변경해야 합니다.",
+  resetIssuedLead: "{name} 사용자의 임시 비밀번호입니다. 이 창을 닫으면 다시 볼 수 없으니 지금 대상 사용자에게 안전하게 전달해 주세요.",
+  resetCopied: "클립보드에 복사했습니다.",
+  resetCopyFailed: "복사하지 못했습니다. 직접 선택해 복사해 주세요.",
+  resetConfirmLead: "{name} 사용자의 비밀번호를 초기화합니다. 기존 세션은 모두 종료됩니다.",
+  resetServerUserIdLabel: "서버 사용자 ID",
+  resetServerUserIdHint:
+    "사용자 목록 API가 연결되기 전까지는 인증 서버의 사용자 ID를 직접 입력합니다. 이 브라우저에서 서버로 로그인한 적이 있는 사용자는 자동으로 채워집니다.",
+
+  // 부서 테이블·폼·확인
+  departmentsListAria: "부서 목록",
+  colActiveMembers: "활성 인원",
+  depthSubDepartment: "{depth}단계 하위 부서",
+  topLevelDepartment: "최상위 부서",
+  memberCountUnit: "{count}명",
+  activeMembersNote: "활성 인원은 그 부서에 직접 소속된 사람만 셉니다.",
+  deactivateDepartmentTitle: "부서 비활성화",
+  activateDepartmentTitle: "부서 활성화",
+  deactivateDepartmentLead: "{name} 부서를 비활성화합니다.",
+  activateDepartmentLead: "{name} 부서를 활성화합니다.",
+  deactivateDepartmentBody:
+    "비활성 부서에는 사용자를 새로 배치하거나 하위 부서를 만들 수 없습니다. 활성 사용자나 활성 하위 부서가 있으면 비활성화할 수 없습니다.",
+  departmentCreateDescription: "같은 상위 부서 안에서는 이름이 겹칠 수 없습니다.",
+  departmentEditDescription: "이름을 바꾸거나 다른 상위 부서 밑으로 옮깁니다.",
+  fieldDepartmentName: "부서 이름",
+  fieldParentDepartment: "상위 부서",
+  parentDepartmentCreateHint: "활성 부서만 상위 부서로 고를 수 있습니다.",
+  parentDepartmentEditHint: "활성 부서만 상위 부서로 고를 수 있습니다. 자기 자신과 하위 부서 밑으로는 옮길 수 없습니다.",
 });
 
 /** 변경 성공 안내. {name}·{role}·{status}는 FE가 값을 넣는 자리 */
@@ -98,6 +167,14 @@ export const ADMIN_CODE_TEXT = defineLabels("admin.code", {
     "코드 값·라벨 키·사용 여부는 바꿀 수 없습니다(서버 마이그레이션으로만 변경). 표시 텍스트는 다국어 라벨에서 라벨 키로 관리합니다. 정렬 순서를 바꾸면 감사 로그에 기록됩니다.",
   lastWriteWins: "다른 관리자가 같은 코드의 순서를 동시에 바꾸면 나중에 저장한 값이 남습니다.",
   displayText: "표시 문구",
+  colCodeValue: "코드 값",
+  colLabelKey: "라벨 키",
+  colActive: "사용 여부",
+  colSortOrder: "정렬 순서",
+  colUpdatedAt: "수정일",
+  sortOrderInputAria: "{code} 정렬 순서",
+  codeListAria: "코드 목록",
+  groupCodeListAria: "{groupCode} 코드 목록",
 });
 
 /** 다국어 라벨 화면 문구 (02-4) */

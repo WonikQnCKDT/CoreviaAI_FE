@@ -2,8 +2,9 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import Modal from "@/components/ui/Modal";
 import { useAuth } from "@/features/auth/authContext";
 import { AUTH_TEXT } from "@/features/auth/i18n/ko";
-import { PASSWORD_MAX_LENGTH, PASSWORD_POLICY_TEXT, passwordRequirements } from "@/features/auth/utils/password";
+import { PASSWORD_MAX_LENGTH, passwordRequirements } from "@/features/auth/utils/password";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { formatLabel } from "@/shared/i18n/store";
 
 interface PasswordChangeModalProps {
   open: boolean;
@@ -18,20 +19,38 @@ type SubmitState = { phase: "idle" } | { phase: "submitting" } | { phase: "faile
 
 const CURRENT_PASSWORD_MAX_LENGTH = 128;
 
-const FIELD_META: { key: FieldKey; label: string; autoComplete: string; placeholder: string; maxLength: number }[] = [
+const FIELD_META: { key: FieldKey; readonly label: string; autoComplete: string; readonly placeholder: string; maxLength: number }[] = [
   {
     key: "current",
-    label: "현재 비밀번호",
+    get label() {
+      return AUTH_TEXT.currentPasswordLabel;
+    },
     autoComplete: "current-password",
-    placeholder: "현재(또는 임시) 비밀번호 입력",
+    get placeholder() {
+      return AUTH_TEXT.currentPasswordPlaceholder;
+    },
     maxLength: CURRENT_PASSWORD_MAX_LENGTH,
   },
-  { key: "next", label: "새 비밀번호", autoComplete: "new-password", placeholder: "새 비밀번호 입력", maxLength: PASSWORD_MAX_LENGTH },
+  {
+    key: "next",
+    get label() {
+      return AUTH_TEXT.newPasswordLabel;
+    },
+    autoComplete: "new-password",
+    get placeholder() {
+      return AUTH_TEXT.newPasswordPlaceholder;
+    },
+    maxLength: PASSWORD_MAX_LENGTH,
+  },
   {
     key: "confirm",
-    label: "새 비밀번호 확인",
+    get label() {
+      return AUTH_TEXT.confirmPasswordLabel;
+    },
     autoComplete: "new-password",
-    placeholder: "새 비밀번호 다시 입력",
+    get placeholder() {
+      return AUTH_TEXT.confirmPasswordPlaceholder;
+    },
     maxLength: PASSWORD_MAX_LENGTH,
   },
 ];
@@ -66,18 +85,18 @@ const PasswordChangeModal = function ({ open, onClose, forced = false }: Passwor
   const validate = (): FieldErrors => {
     const { current, next, confirm } = values;
     const found: FieldErrors = {};
-    if (!current) found.current = "현재 비밀번호를 입력해 주세요.";
+    if (!current) found.current = AUTH_TEXT.currentPasswordRequired;
     if (!next) {
-      found.next = "새 비밀번호를 입력해 주세요.";
+      found.next = AUTH_TEXT.newPasswordRequired;
     } else if (next === current) {
       found.next = AUTH_TEXT.sameAsCurrent;
     } else if (requirements.some(({ met }) => !met)) {
-      found.next = "비밀번호 규칙을 모두 충족해야 합니다.";
+      found.next = AUTH_TEXT.newPasswordRulesUnmet;
     }
     if (!confirm) {
-      found.confirm = "새 비밀번호 확인을 입력해 주세요.";
+      found.confirm = AUTH_TEXT.confirmPasswordRequired;
     } else if (next !== confirm) {
-      found.confirm = "새 비밀번호와 일치하지 않습니다.";
+      found.confirm = AUTH_TEXT.confirmPasswordMismatch;
     }
     return found;
   };
@@ -140,8 +159,12 @@ const PasswordChangeModal = function ({ open, onClose, forced = false }: Passwor
   return (
     <Modal
       open={open}
-      title={forced ? AUTH_TEXT.forcedChangeTitle : "비밀번호 변경"}
-      description={forced ? AUTH_TEXT.forcedChangeDescription : `비밀번호는 ${PASSWORD_POLICY_TEXT}여야 합니다.`}
+      title={forced ? AUTH_TEXT.forcedChangeTitle : AUTH_TEXT.changeModalTitle}
+      description={
+        forced
+          ? AUTH_TEXT.forcedChangeDescription
+          : formatLabel(AUTH_TEXT.changeModalDescription, { policy: AUTH_TEXT.passwordPolicy })
+      }
       onClose={handleClose}
       dismissible={!forced}
       footer={
@@ -196,7 +219,7 @@ const PasswordChangeModal = function ({ open, onClose, forced = false }: Passwor
                 <button
                   type="button"
                   onClick={() => setVisible((prev) => ({ ...prev, [key]: !prev[key] }))}
-                  aria-label={isVisible ? `${label} 숨기기` : `${label} 표시`}
+                  aria-label={formatLabel(isVisible ? AUTH_TEXT.hideFieldPassword : AUTH_TEXT.showFieldPassword, { label })}
                   title={isVisible ? BUTTON_TEXT.hide : BUTTON_TEXT.show}
                   className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded text-foreground-500 hover:bg-background-200 hover:text-foreground-800"
                 >
@@ -205,7 +228,7 @@ const PasswordChangeModal = function ({ open, onClose, forced = false }: Passwor
               </div>
 
               {key === "next" && (
-                <ul id="pw-next-hint" className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1" aria-label="비밀번호 규칙">
+                <ul id="pw-next-hint" className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1" aria-label={AUTH_TEXT.passwordRulesAria}>
                   {requirements.map(({ key: ruleKey, label: ruleLabel, met }) => (
                     <li
                       key={ruleKey}
@@ -213,7 +236,7 @@ const PasswordChangeModal = function ({ open, onClose, forced = false }: Passwor
                     >
                       <i className={met ? "ri-checkbox-circle-fill" : "ri-checkbox-blank-circle-line"} aria-hidden="true" />
                       {ruleLabel}
-                      <span className="sr-only">{met ? "충족" : "미충족"}</span>
+                      <span className="sr-only">{met ? AUTH_TEXT.ruleMet : AUTH_TEXT.ruleUnmet}</span>
                     </li>
                   ))}
                 </ul>
@@ -238,8 +261,7 @@ const PasswordChangeModal = function ({ open, onClose, forced = false }: Passwor
         )}
 
         <p className="rounded-md border border-background-200 bg-background-100 px-2.5 py-2 text-[11px] leading-4 text-foreground-600">
-          비밀번호 규칙: {PASSWORD_POLICY_TEXT}. 대문자는 필수가 아닙니다. 변경하면 모든 기기에서 로그아웃되며 새 비밀번호로
-          다시 로그인해야 합니다.
+          {formatLabel(AUTH_TEXT.changeModalFooterNote, { policy: AUTH_TEXT.passwordPolicy })}
         </p>
       </form>
     </Modal>

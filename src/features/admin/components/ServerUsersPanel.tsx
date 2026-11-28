@@ -214,13 +214,13 @@ const ServerUsersPanel = function () {
           <table className="w-full min-w-[1060px] border-collapse">
             <thead>
               <tr>
-                <th className="th">사용자</th>
-                <th className="th w-40">부서</th>
-                <th className="th w-32">직무</th>
-                <th className="th w-40">시스템 역할</th>
-                <th className="th w-20">상태</th>
-                <th className="th w-36">마지막 로그인</th>
-                <th className="th w-80">관리</th>
+                <th className="th">{ADMIN_TEXT.colUser}</th>
+                <th className="th w-40">{ADMIN_TEXT.colDepartment}</th>
+                <th className="th w-32">{ADMIN_TEXT.colJobTitle}</th>
+                <th className="th w-40">{ADMIN_TEXT.colSystemRole}</th>
+                <th className="th w-20">{ADMIN_TEXT.colStatus}</th>
+                <th className="th w-36">{ADMIN_TEXT.colLastLogin}</th>
+                <th className="th w-80">{ADMIN_TEXT.colManage}</th>
               </tr>
             </thead>
             <tbody>
@@ -248,7 +248,7 @@ const ServerUsersPanel = function () {
                     <td className="td text-xs text-foreground-600">{jobTitle || <span className="text-foreground-400">{ADMIN_TEXT.none}</span>}</td>
                     <td className="td">
                       <label className="sr-only" htmlFor={`role-${id}`}>
-                        {name} 시스템 역할
+                        {formatLabel(ADMIN_TEXT.userRoleAria, { name })}
                       </label>
                       <select
                         id={`role-${id}`}
@@ -358,7 +358,7 @@ const ServerUsersPanel = function () {
         </div>
       )}
 
-      <section className="card overflow-hidden" aria-label="사용자 목록">
+      <section className="card overflow-hidden" aria-label={ADMIN_TEXT.usersListAria}>
         <div className="flex flex-wrap items-center gap-2 border-b border-background-200 px-4 py-3">
           <div className="relative min-w-[200px] flex-1">
             <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-sm text-foreground-400" aria-hidden="true" />
@@ -373,7 +373,7 @@ const ServerUsersPanel = function () {
             />
           </div>
           <select
-            aria-label="부서"
+            aria-label={ADMIN_TEXT.colDepartment}
             className="field w-auto min-w-[140px] text-sm"
             value={departmentId}
             onChange={(event) => setDepartmentId(event.target.value)}
@@ -382,12 +382,12 @@ const ServerUsersPanel = function () {
             {departments.map(({ department, path }) => (
               <option key={department.id} value={department.id}>
                 {path}
-                {department.status === "inactive" ? " (비활성)" : ""}
+                {department.status === "inactive" ? ADMIN_TEXT.inactiveSuffix : ""}
               </option>
             ))}
           </select>
           <select
-            aria-label="시스템 역할"
+            aria-label={ADMIN_TEXT.colSystemRole}
             className="field w-auto min-w-[130px] text-sm"
             value={systemRole}
             onChange={(event) => setSystemRole(event.target.value as "" | SystemRole)}
@@ -400,7 +400,7 @@ const ServerUsersPanel = function () {
             ))}
           </select>
           <select
-            aria-label="상태"
+            aria-label={ADMIN_TEXT.colStatus}
             className="field w-auto min-w-[110px] text-sm"
             value={status}
             onChange={(event) => setStatus(event.target.value as "" | RecordStatus)}
@@ -412,7 +412,7 @@ const ServerUsersPanel = function () {
         </div>
         {renderBody()}
         <div className="border-t border-background-200 bg-background-100 px-4 py-2.5 text-xs leading-5 text-foreground-500">
-          {ADMIN_TEXT.serverAppliedNote} 부서 필터는 하위 부서를 포함하지 않습니다.
+          {ADMIN_TEXT.serverAppliedNote} {ADMIN_TEXT.deptFilterExcludesChildren}
         </div>
       </section>
 
@@ -437,9 +437,11 @@ const ServerUsersPanel = function () {
         {pending?.kind === "role" && (
           <>
             <p>
-              <strong className="font-medium text-foreground-950">{pending.user.name}</strong>님의 시스템 역할을{" "}
-              {SYSTEM_ROLE_TEXT[pending.user.systemRole]}에서{" "}
-              <strong className="font-medium text-foreground-950">{SYSTEM_ROLE_TEXT[pending.systemRole]}</strong>(으)로 바꿉니다.
+              {formatLabel(ADMIN_TEXT.roleChangeConfirmLead, {
+                name: pending.user.name,
+                from: SYSTEM_ROLE_TEXT[pending.user.systemRole],
+                to: SYSTEM_ROLE_TEXT[pending.systemRole],
+              })}
             </p>
             <p>{ADMIN_TEXT.roleChangeConfirmBody}</p>
           </>
@@ -447,8 +449,10 @@ const ServerUsersPanel = function () {
         {pending?.kind === "status" && (
           <>
             <p>
-              <strong className="font-medium text-foreground-950">{pending.user.name}</strong> 계정을{" "}
-              {STATUS_TEXT[pending.status]} 상태로 바꿉니다.
+              {formatLabel(ADMIN_TEXT.statusChangeConfirmLead, {
+                name: pending.user.name,
+                status: STATUS_TEXT[pending.status],
+              })}
             </p>
             <p>{pending.status === "inactive" ? ADMIN_TEXT.deactivateConfirmBody : ADMIN_TEXT.activateConfirmBody}</p>
           </>

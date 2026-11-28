@@ -2,7 +2,9 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import Modal from "@/components/ui/Modal";
 import { useAuth } from "@/features/auth/authContext";
 import { AUTH_TEXT } from "@/features/auth/i18n/ko";
+import { ADMIN_TEXT } from "@/features/admin/i18n/ko";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { formatLabel } from "@/shared/i18n/store";
 /** 초기화 대상. 서버 사용자 ID를 알면 바로 요청하고, 모르면 입력받는다. */
 export interface ResetTarget {
   name: string;
@@ -116,13 +118,8 @@ const PasswordResetDialog = function <T extends ResetTarget>({
   return (
     <Modal
       open={Boolean(target)}
-      title="비밀번호 초기화"
-      description={
-        description ??
-        (isApi
-          ? "임시 비밀번호를 발급하고 계정 잠금을 해제합니다. 대상 사용자는 다음 로그인 후 비밀번호를 변경해야 합니다."
-          : AUTH_TEXT.resetDemoOnly)
-      }
+      title={ADMIN_TEXT.resetTitle}
+      description={description ?? (isApi ? ADMIN_TEXT.resetDescription : AUTH_TEXT.resetDemoOnly)}
       onClose={handleClose}
       footer={
         issued ? (
@@ -153,8 +150,7 @@ const PasswordResetDialog = function <T extends ResetTarget>({
       {issued ? (
         <div className="space-y-3">
           <p className="text-[13px] leading-6 text-foreground-700">
-            <span className="font-medium text-foreground-950">{target?.name}</span> 사용자의 임시 비밀번호입니다. 이 창을
-            닫으면 다시 볼 수 없으니 지금 대상 사용자에게 안전하게 전달해 주세요.
+            {formatLabel(ADMIN_TEXT.resetIssuedLead, { name: target?.name ?? "" })}
           </p>
           <div className="flex items-center gap-2 rounded-lg border border-background-300 bg-background-100 px-3 py-2.5">
             <code className="min-w-0 flex-1 select-all break-all font-mono text-[15px] tracking-wide text-foreground-950">
@@ -166,20 +162,19 @@ const PasswordResetDialog = function <T extends ResetTarget>({
             </button>
           </div>
           <p role="status" aria-live="polite" className="text-[12px] text-foreground-600">
-            {copy === "copied" && "클립보드에 복사했습니다."}
-            {copy === "failed" && "복사하지 못했습니다. 직접 선택해 복사해 주세요."}
+            {copy === "copied" && ADMIN_TEXT.resetCopied}
+            {copy === "failed" && ADMIN_TEXT.resetCopyFailed}
           </p>
         </div>
       ) : (
         <form id="password-reset-form" className="space-y-3" onSubmit={handleSubmit} noValidate aria-busy={submitting}>
           <p className="text-[13px] leading-6 text-foreground-700">
-            <span className="font-medium text-foreground-950">{target?.name}</span> 사용자의 비밀번호를 초기화합니다. 기존
-            세션은 모두 종료됩니다.
+            {formatLabel(ADMIN_TEXT.resetConfirmLead, { name: target?.name ?? "" })}
           </p>
           {isApi && !knownServerId && (
             <div>
               <label htmlFor="reset-server-user-id" className="mb-1.5 block text-[12px] font-medium text-foreground-800">
-                서버 사용자 ID
+                {ADMIN_TEXT.resetServerUserIdLabel}
               </label>
               <input
                 id="reset-server-user-id"
@@ -194,8 +189,7 @@ const PasswordResetDialog = function <T extends ResetTarget>({
                 aria-describedby="reset-server-user-id-hint"
               />
               <p id="reset-server-user-id-hint" className="mt-1 text-[11px] leading-4 text-foreground-500">
-                사용자 목록 API가 연결되기 전까지는 인증 서버의 사용자 ID를 직접 입력합니다. 이 브라우저에서 서버로
-                로그인한 적이 있는 사용자는 자동으로 채워집니다.
+                {ADMIN_TEXT.resetServerUserIdHint}
               </p>
             </div>
           )}

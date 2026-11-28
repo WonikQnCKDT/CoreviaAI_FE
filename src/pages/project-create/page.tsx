@@ -15,6 +15,8 @@ import InputSummary from "@/features/project/components/create/InputSummary";
 import ServerProjectCreateWizard from "@/features/project/components/create/ServerProjectCreateWizard";
 import { useAuth } from "@/features/auth/authContext";
 import { STEP_META, TOTAL_STEPS, type ProjectFormState } from "@/features/project/types";
+import { PROJECT_CREATE_TEXT } from "@/features/project/i18n/ko";
+import { SYSTEM_ROLE_LABEL } from "@/shared/i18n/catalog/status";
 import type { RoleKey, User } from "@/types";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
@@ -408,9 +410,9 @@ export default function ProjectCreatePage() {
   if (!canCreateProject(currentUser)) {
     return (
       <NoAccess
-        title="프로젝트를 만들 수 없는 계정입니다"
-        description="프로젝트는 활성 상태의 일반 사용자라면 누구나 만들 수 있습니다. 경영진은 프로젝트를 조회만 하고, 시스템 관리자는 프로젝트 데이터에 접근하지 않습니다."
-        requiredRole="일반 사용자"
+        title={PROJECT_CREATE_TEXT.noAccessTitle}
+        description={PROJECT_CREATE_TEXT.noAccessDescription}
+        requiredRole={SYSTEM_ROLE_LABEL.user}
       />
     );
   }
