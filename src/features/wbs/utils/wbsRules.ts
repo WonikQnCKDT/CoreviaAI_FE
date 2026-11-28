@@ -134,7 +134,8 @@ export interface WbsFailureView {
   reload: boolean;
 }
 
-const commonMessage = function (failure: ApiFailure): string {
+/** 네트워크·timeout·5xx 등 API와 상관없는 공통 실패 문구 */
+export const commonMessage = function (failure: ApiFailure): string {
   if (failure.kind === "network") return WBS_TEXT.network;
   if (failure.kind === "timeout") return WBS_TEXT.timeout;
   if (failure.kind === "http" && failure.status >= 500) return WBS_TEXT.serverError;
