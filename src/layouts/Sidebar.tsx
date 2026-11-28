@@ -1,6 +1,7 @@
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
 import BrandLogo from "@/components/ui/BrandLogo";
+import { useAuth } from "@/features/auth/authContext";
 import { useDemoStore } from "@/stores/DemoStore";
 import { canUseSystemAdmin, canViewPortfolio } from "@/utils/permission";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
@@ -22,6 +23,7 @@ interface NavEntry {
 
 export default function Sidebar({ mobileOpen, onClose, collapsed, onToggleCollapse, onResizeStart }: SidebarProps) {
   const location = useLocation();
+  const { mode } = useAuth();
   const { currentUser, projects } = useDemoStore();
 
   const canPortfolio = canViewPortfolio(projects, currentUser);
@@ -149,37 +151,39 @@ export default function Sidebar({ mobileOpen, onClose, collapsed, onToggleCollap
           )}
         </nav>
 
-        <div className="border-t border-background-200 px-2 py-2">
-          <div className={`flex items-center gap-1.5 px-1 pt-1 ${collapsed ? "lg:flex-col lg:gap-1 lg:px-0" : ""}`}>
-            <span
-              className={`flex items-center gap-1.5 whitespace-nowrap text-[11px] text-foreground-500 ${
-                collapsed ? "lg:hidden" : ""
-              }`}
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden="true" />
-              {MENU_TEXT.demoEnvironment}
-            </span>
-            <Link
-              to="/demo-settings"
-              onClick={onClose}
-              title={MENU_TEXT.demoSettings}
-              aria-label={MENU_TEXT.demoSettings}
-              className={`group relative ml-auto flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-foreground-500 hover:bg-background-100 hover:text-foreground-900 ${
-                collapsed ? "lg:mx-auto" : ""
-              }`}
-            >
-              <i className="ri-settings-3-line text-[14px]" aria-hidden="true" />
-              {collapsed && (
-                <span
-                  role="tooltip"
-                  className="pointer-events-none absolute left-full top-1/2 z-50 ml-2 hidden -translate-y-1/2 whitespace-nowrap rounded-md bg-foreground-950 px-2 py-1 text-[11.5px] font-medium text-background-50 opacity-0 shadow-panel transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 lg:block"
-                >
-                  {MENU_TEXT.demoSettings}
-                </span>
-              )}
-            </Link>
+        {mode === "demo" && (
+          <div className="border-t border-background-200 px-2 py-2">
+            <div className={`flex items-center gap-1.5 px-1 pt-1 ${collapsed ? "lg:flex-col lg:gap-1 lg:px-0" : ""}`}>
+              <span
+                className={`flex items-center gap-1.5 whitespace-nowrap text-[11px] text-foreground-500 ${
+                  collapsed ? "lg:hidden" : ""
+                }`}
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden="true" />
+                {MENU_TEXT.demoEnvironment}
+              </span>
+              <Link
+                to="/demo-settings"
+                onClick={onClose}
+                title={MENU_TEXT.demoSettings}
+                aria-label={MENU_TEXT.demoSettings}
+                className={`group relative ml-auto flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-foreground-500 hover:bg-background-100 hover:text-foreground-900 ${
+                  collapsed ? "lg:mx-auto" : ""
+                }`}
+              >
+                <i className="ri-settings-3-line text-[14px]" aria-hidden="true" />
+                {collapsed && (
+                  <span
+                    role="tooltip"
+                    className="pointer-events-none absolute left-full top-1/2 z-50 ml-2 hidden -translate-y-1/2 whitespace-nowrap rounded-md bg-foreground-950 px-2 py-1 text-[11.5px] font-medium text-background-50 opacity-0 shadow-panel transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 lg:block"
+                  >
+                    {MENU_TEXT.demoSettings}
+                  </span>
+                )}
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
       </aside>
     </>
   );

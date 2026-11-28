@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useAuth } from "@/features/auth/authContext";
 import { useDemoStore } from "@/stores/DemoStore";
-import { addDays, diffDays, formatShort, parseDate, TODAY } from "@/utils/date";
+import { addDays, diffDays, formatShort, parseDate, referenceToday } from "@/utils/date";
 import { STAGES } from "@/utils/ui";
 import GanttToolbar from "@/features/task/components/GanttToolbar";
 import WorkPlanTabs from "@/features/task/components/WorkPlanTabs";
@@ -28,13 +29,15 @@ interface GanttRow {
 
 export default function GanttPage() {
   const { projectId } = useParams();
+  const { mode } = useAuth();
   const { projects, tasks, users, openTask } = useDemoStore();
   const project = projects.find((p) => p.id === projectId);
   const [view, setView] = useState<ViewMode>("week");
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const baseToday = referenceToday(mode);
 
-  const rangeStart = addDays(project?.startDate || TODAY, -7);
-  const rangeEnd = addDays(project?.endDate || TODAY, 7);
+  const rangeStart = addDays(project?.startDate || baseToday, -7);
+  const rangeEnd = addDays(project?.endDate || baseToday, 7);
   const totalDays = Math.max(diffDays(rangeStart, rangeEnd) + 1, 1);
   const dayWidth = DAY_WIDTH[view];
   const chartWidth = totalDays * dayWidth;
@@ -67,9 +70,9 @@ export default function GanttPage() {
 
   useEffect(() => {
     if (!scrollRef.current) return;
-    const offset = diffDays(rangeStart, TODAY) * dayWidth;
+    const offset = diffDays(rangeStart, baseToday) * dayWidth;
     scrollRef.current.scrollLeft = Math.max(offset - 240, 0);
-  }, [rangeStart, dayWidth, view]);
+  }, [rangeStart, baseToday, dayWidth, view]);
 
   const headerCells = useMemo(() => {
     const cells: { label: string; width: number; start: string }[] = [];
@@ -118,7 +121,7 @@ export default function GanttPage() {
     return { left, width: Math.max(width, 6) };
   };
 
-  const todayLeft = diffDays(rangeStart, TODAY) * dayWidth;
+  const todayLeft = diffDays(rangeStart, baseToday) * dayWidth;
 
   return (
     <div className="space-y-3">
@@ -220,7 +223,7 @@ export default function GanttPage() {
               const end = value?.endDate || task.endDate;
               const bar = position(start, end);
               const progress = value?.progress ?? task.progress;
-              const late = isLateTask(task, TODAY);
+              const late = isLateTask(task, baseToday);
 
               return (
                 <div key={row.key} className="relative flex border-b border-background-200" style={{ height }}>
