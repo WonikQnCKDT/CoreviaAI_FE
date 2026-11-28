@@ -21,7 +21,7 @@ interface UserFormDialogProps {
   mode: UserFormMode | null;
   departments: DepartmentNode[];
   onClose: () => void;
-  onSaved: (args: { user: AdminUser; created: boolean }) => void;
+  onSaved: (args: { user: AdminUser; created: boolean; temporaryPassword?: string | null }) => void;
   /** 409 동시 수정 등으로 최신 값을 다시 받아야 할 때 */
   onStale: (userId: number) => void;
 }
@@ -114,28 +114,46 @@ const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale 
 
     const { loginId, name, systemRole, departmentId, jobTitle } = values;
     const department = departmentId ? Number(departmentId) : null;
-    const result =
-      mode.kind === "create"
-        ? await createAdminUser({
-            input: { loginId, name, systemRole, departmentId: department, jobTitle },
-            signal: controller.signal,
-          })
-        : await updateAdminUserProfile({
-            userId: mode.user.id,
-            input: { name, departmentId: department, jobTitle },
-            signal: controller.signal,
-          });
+    if (mode.kind === "create") {
+      const result = await createAdminUser({
+        input: { loginId, name, systemRole, departmentId: department, jobTitle },
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
+      if (result.ok === true) {
+        setSubmit({ phase: "idle" });
+        onSaved({
+          user: result.data.user,
+          created: true,
+          temporaryPassword: result.data.temporaryPassword,
+        });
+        return;
+      }
+      const { message, field } = interpretCreateUserFailure(result.failure);
+      if (field) {
+        setErrors({ [field]: message });
+        setSubmit({ phase: "idle" });
+        return;
+      }
+      setSubmit({ phase: "failed", message });
+      return;
+    }
+
+    const result = await updateAdminUserProfile({
+      userId: mode.user.id,
+      input: { name, departmentId: department, jobTitle },
+      signal: controller.signal,
+    });
     if (controller.signal.aborted) return;
 
     if (result.ok === true) {
       setSubmit({ phase: "idle" });
-      onSaved({ user: result.data, created: mode.kind === "create" });
+      onSaved({ user: result.data, created: false });
       return;
     }
 
-    const { message, field, stale } =
-      mode.kind === "create" ? interpretCreateUserFailure(result.failure) : interpretUpdateProfileFailure(result.failure);
-    if (mode.kind === "edit" && stale) onStale(mode.user.id);
+    const { message, field, stale } = interpretUpdateProfileFailure(result.failure);
+    if (stale) onStale(mode.user.id);
     if (field) {
       setErrors({ [field]: message });
       setSubmit({ phase: "idle" });

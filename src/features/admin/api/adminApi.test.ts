@@ -159,6 +159,18 @@ describe("createAdminUser (POST /api/admin/users)", () => {
     expect(lastRequest().body).toMatchObject({ systemRole: "SYSTEM_ADMIN", departmentId: null });
   });
 
+  it("응답에 temporaryPassword가 있으면 사용자 정보와 함께 돌려준다", async () => {
+    fetchMock.mockResolvedValue(ok({ ...userDto({ id: 9 }), temporaryPassword: "Tmp!Password99" }));
+    const result = await createAdminUser({
+      input: { loginId: "hong.gd", name: "홍길동", systemRole: "user", departmentId: 3, jobTitle: "" },
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.user.id).toBe(9);
+      expect(result.data.temporaryPassword).toBe("Tmp!Password99");
+    }
+  });
+
   it("409 아이디 중복을 실패로 돌려준다", async () => {
     fetchMock.mockResolvedValue(fail(409, "이미 사용 중인 아이디입니다"));
     const result = await createAdminUser({

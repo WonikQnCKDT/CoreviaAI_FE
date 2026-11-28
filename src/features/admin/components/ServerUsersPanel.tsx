@@ -36,6 +36,7 @@ type Notice = { text: string } | null;
 interface ResetTarget {
   name: string;
   serverUserId: number;
+  initialTemporaryPassword?: string | null;
 }
 
 /** api 모드 사용자 관리. 데이터는 모두 서버(GET /api/admin/users)에서 온다. */
@@ -139,13 +140,26 @@ const ServerUsersPanel = function () {
     setConfirmState({ phase: "failed", message });
   };
 
-  const handleSaved = ({ user, created }: { user: AdminUser; created: boolean }) => {
+  const handleSaved = ({
+    user,
+    created,
+    temporaryPassword,
+  }: {
+    user: AdminUser;
+    created: boolean;
+    temporaryPassword?: string | null;
+  }) => {
     setFormMode(null);
     if (created) {
       prependItem(user);
-      // 사용자 추가 흐름: 계정 생성 → 임시 비밀번호 발급 → 사용자가 첫 로그인 후 변경
-      setResetDescription(ADMIN_TEXT.createdThenReset);
-      setResetTarget({ name: user.name, serverUserId: user.id });
+      if (temporaryPassword) {
+        // 생성 응답에 포함된 임시 비밀번호를 한 번만 표시하고 닫으면 메모리에서 지운다.
+        setResetDescription(undefined);
+        setResetTarget({ name: user.name, serverUserId: user.id, initialTemporaryPassword: temporaryPassword });
+      } else {
+        setResetDescription(ADMIN_TEXT.createdThenReset);
+        setResetTarget({ name: user.name, serverUserId: user.id });
+      }
       return;
     }
     replaceItem(sameUser(user.id), user);
