@@ -8,11 +8,14 @@ import {
   canEditItem,
   canEditProgress,
   canManageWbs,
+  canReparent,
+  deriveDisplayStatus,
   interpretDraftFailure,
   interpretWbsFailure,
   moveTarget,
   parseEffort,
   parseProgress,
+  reparentCandidates,
   toReview,
   validateDraftInput,
   validateWbsForm,
@@ -296,5 +299,61 @@ describe("AI 초안 검토·반영 본문", () => {
     expect(noDate).toMatchObject({ ok: false });
     const reversed = buildApplyBody({ draftToken: "tok", tasks: [{ ...draftTask({ startDate: "2026-12-09" }), selected: true, assigneeUserId: null }], milestones: [] });
     expect(reversed).toMatchObject({ ok: false });
+  });
+});
+
+describe("상위 작업 변경 후보 (reparentCandidates) & 파생 상태 (deriveDisplayStatus)", () => {
+  it("하위작업이 있는 최상위 작업은 2단계 제한으로 다른 작업 아래로 옮길 수 없다", () => {
+    const child = item({ id: 2, parentTaskId: 1, name: "하위" });
+    const parent = item({ id: 1, name: "상위", subtasks: [child] });
+    const other = item({ id: 3, name: "다른 작업" });
+    const tree = [parent, other];
+
+    expect(canReparent(tree, parent)).toBe(false);
+    expect(reparentCandidates(tree, parent)).toEqual([]);
+
+    // 하위작업은 최상위로 올리거나 다른 최상위 작업 아래로 옮길 수 있다
+    expect(reparentCandidates(tree, child)).toEqual([
+      { parentTaskId: null, phaseId: 10, name: "", index: 2 },
+      { parentTaskId: 3, phaseId: 10, name: "다른 작업", index: 0 },
+    ]);
+
+    // 하위작업이 없는 최상위 작업은 다른 최상위 작업 아래로 옮길 수 있다
+    expect(reparentCandidates(tree, other)).toEqual([
+      { parentTaskId: 1, phaseId: 10, name: "상위", index: 1 },
+    ]);
+  });
+
+  it("상위 작업 표시 상태는 하위작업 상태 기준으로 계산한다", () => {
+    const leaf = item({ id: 1, status: "progress", subtasks: [] });
+    expect(deriveDisplayStatus(leaf)).toBe("progress");
+
+    const allDone = item({
+      id: 2,
+      status: "todo",
+      subtasks: [item({ id: 21, parentTaskId: 2, status: "done" }), item({ id: 22, parentTaskId: 2, status: "done" })],
+    });
+    expect(deriveDisplayStatus(allDone)).toBe("done");
+
+    const allTodo = item({
+      id: 3,
+      status: "progress",
+      subtasks: [item({ id: 31, parentTaskId: 3, status: "todo" }), item({ id: 32, parentTaskId: 3, status: "todo" })],
+    });
+    expect(deriveDisplayStatus(allTodo)).toBe("todo");
+
+    const reviewAndDone = item({
+      id: 4,
+      status: "todo",
+      subtasks: [item({ id: 41, parentTaskId: 4, status: "review" }), item({ id: 42, parentTaskId: 4, status: "done" })],
+    });
+    expect(deriveDisplayStatus(reviewAndDone)).toBe("review");
+
+    const mixed = item({
+      id: 5,
+      status: "todo",
+      subtasks: [item({ id: 51, parentTaskId: 5, status: "todo" }), item({ id: 52, parentTaskId: 5, status: "done" })],
+    });
+    expect(deriveDisplayStatus(mixed)).toBe("progress");
   });
 });

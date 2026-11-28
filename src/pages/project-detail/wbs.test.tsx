@@ -340,6 +340,52 @@ describe("api 모드 AI WBS 초안", () => {
   });
 });
 
+describe("서버 WBS 계층 변경 & 파생 상태 (FR-WBS-01)", () => {
+  it("PM이 '상위 작업 변경'으로 작업을 다른 상위 작업 아래로 옮기면 PUT .../position을 호출한다", async () => {
+    const t1 = task({ id: 101, name: "상위 작업 A", version: 2 });
+    const t2 = task({ id: 102, name: "이동할 작업 B", sortOrder: 2, version: 3 });
+    const movedTree = [
+      task({
+        id: 101,
+        name: "상위 작업 A",
+        version: 2,
+        subtasks: [task({ id: 102, parentTaskId: 101, name: "이동할 작업 B", sortOrder: 1, version: 4 })],
+      }),
+    ];
+    const { calls } = renderServerWith({
+      ...baseHandlers("PM", [t1, t2]),
+      "PUT /api/projects/77/wbs/tasks/102/position": () => jsonOk({ taskId: 102, tasks: movedTree }),
+    });
+
+    fireEvent.click(await screen.findByRole("button", { name: "상위 작업 변경: 이동할 작업 B" }));
+    const dialog = screen.getByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "저장" }));
+
+    await waitFor(() => {
+      const moveCall = calls.find((c) => c.method === "PUT" && c.path === "/api/projects/77/wbs/tasks/102/position");
+      expect(moveCall).toBeTruthy();
+      expect(moveCall?.body).toEqual({ parentTaskId: 101, index: 0, version: 3 });
+    });
+  });
+
+  it("하위작업이 모두 완료된 상위 작업은 서버 상태가 TODO여도 완료로 표시한다", async () => {
+    const parent = task({
+      id: 201,
+      name: "통합 상위 작업",
+      status: "TODO",
+      progress: 100,
+      subtasks: [
+        task({ id: 202, parentTaskId: 201, name: "하위 1", status: "DONE", progress: 100 }),
+        task({ id: 203, parentTaskId: 201, name: "하위 2", status: "DONE", progress: 100 }),
+      ],
+    });
+    renderServerWith(baseHandlers("PM", [parent]));
+
+    const parentRow = (await screen.findByText("통합 상위 작업")).closest("tr") as HTMLElement;
+    expect(within(parentRow).getByText("완료")).toBeTruthy();
+  });
+});
+
 describe("데모 모드 WBS (기존 시연 유지)", () => {
   it("데모 프로젝트는 데모 WBS를 그대로 보여 주고 서버를 부르지 않는다", async () => {
     const { fetchMock } = stubFetch({});

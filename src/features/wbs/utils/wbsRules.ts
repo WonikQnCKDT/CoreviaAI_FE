@@ -3,6 +3,7 @@ import type { ProjectActor } from "@/features/project/api/projectApi";
 import type { ApplyDraftBody, DraftInput, DraftMilestone, DraftTask, WbsItem, WbsTaskFields } from "@/features/wbs/api/wbsApi";
 import { WBS_DRAFT_TEXT, WBS_FORM_TEXT, WBS_TEXT } from "@/features/wbs/i18n/ko";
 import { formatLabel } from "@/shared/i18n/store";
+import type { TaskStatus } from "@/types";
 
 /* =====================================================================
  * 권한 (요구사항 명세서 3.3 WBS-01, BE WbsEditor)
@@ -65,6 +66,48 @@ export const moveTarget = function (tree: WbsItem[], item: WbsItem, direction: "
   const serverSiblings = (item.parentTaskId === null ? tree : visible).filter((t) => t.id !== item.id);
   const neighborIndex = serverSiblings.findIndex((t) => t.id === neighbor.id);
   return { parentTaskId: item.parentTaskId, index: direction === "up" ? neighborIndex : neighborIndex + 1 };
+};
+
+export interface ReparentOption {
+  parentTaskId: number | null;
+  phaseId: number | null;
+  name: string;
+  index: number;
+}
+
+/**
+ * 상위 작업 변경 후보(2단계 계층 규칙):
+ * - 하위작업이 있는 최상위 작업은 다른 작업 아래로 옮길 수 없다.
+ * - 하위작업은 최상위로 올리거나 다른 최상위 작업 아래로 옮길 수 있다.
+ * - 하위작업이 없는 최상위 작업은 다른 최상위 작업 아래로 옮길 수 있다.
+ */
+export const reparentCandidates = function (tree: WbsItem[], item: WbsItem): ReparentOption[] {
+  if (item.parentTaskId === null && item.subtasks.length > 0) return [];
+  const options: ReparentOption[] = [];
+  if (item.parentTaskId !== null) {
+    options.push({ parentTaskId: null, phaseId: item.phaseId, name: "", index: tree.length });
+  }
+  for (const root of tree) {
+    if (root.id === item.id || root.id === item.parentTaskId) continue;
+    options.push({ parentTaskId: root.id, phaseId: root.phaseId, name: root.name, index: root.subtasks.length });
+  }
+  return options;
+};
+
+export const canReparent = (tree: WbsItem[], item: WbsItem) => reparentCandidates(tree, item).length > 0;
+
+/**
+ * WBS 화면 표시용 상태:
+ * - 하위작업이 없으면 서버 상태를 그대로 보여 준다.
+ * - 하위작업이 있으면 하위작업 상태를 기준으로 계산한다(모두 완료 → 완료, 모두 대기 → 대기, 검토·완료만 → 검토, 그 외 → 진행).
+ */
+export const deriveDisplayStatus = function (item: WbsItem): TaskStatus {
+  if (item.subtasks.length === 0) return item.status;
+  const statuses = item.subtasks.map((sub) => sub.status);
+  if (statuses.every((s) => s === "done")) return "done";
+  if (statuses.every((s) => s === "todo")) return "todo";
+  if (statuses.every((s) => s === "review" || s === "done")) return "review";
+  return "progress";
 };
 
 /* =====================================================================
