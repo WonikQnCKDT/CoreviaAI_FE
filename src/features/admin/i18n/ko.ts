@@ -1,8 +1,11 @@
+import { defineLabels } from "@/shared/i18n/defineLabels";
+import { RECORD_STATUS_LABEL, SYSTEM_ROLE_LABEL } from "@/shared/i18n/catalog/status";
+
 /**
- * 시스템 관리(사용자·부서) 화면 문구 (ko).
- * 공통 localization 구조가 생기기 전까지 이 기능의 새 문구를 여기에 모은다.
+ * 시스템 관리 화면 문구. 값은 한국어 기본 문구이고, 화면은 라벨 키(admin.*)로 다국어 문구를 읽는다(02-4, FR-ADM-06).
+ * 객체에서 값을 읽을 때마다 현재 언어로 바뀌므로 모듈 상단에서 값을 미리 꺼내 두지 않는다.
  */
-export const ADMIN_TEXT = {
+export const ADMIN_TEXT = defineLabels("admin", {
   // 공통
   loading: "불러오는 중입니다",
   loadMore: "더 보기",
@@ -17,7 +20,7 @@ export const ADMIN_TEXT = {
 
   // 사용자
   usersTitle: "사용자",
-  usersDescription: "계정·시스템 역할·프로젝트 생성 권한을 관리합니다. 사용자는 삭제하지 않고 비활성화합니다.",
+  usersDescription: "계정·부서·직무·시스템 역할을 관리합니다. 사용자는 삭제하지 않고 비활성화합니다.",
   addUser: "사용자 추가",
   searchPlaceholder: "아이디 또는 이름 검색",
   allDepartments: "부서 전체",
@@ -30,10 +33,8 @@ export const ADMIN_TEXT = {
   neverLoggedIn: "로그인 기록 없음",
   self: "나",
   ownAccountLocked: "본인 계정의 역할과 상태는 바꿀 수 없습니다.",
-  projectCreationUserOnly: "프로젝트 생성 권한은 일반 사용자에게만 줄 수 있습니다.",
   roleChangeConfirmTitle: "시스템 역할 변경",
   roleChangeConfirmBody: "역할을 바꾸면 대상 사용자의 모든 세션이 즉시 종료되어 다시 로그인해야 합니다.",
-  roleChangeProjectRevoke: "일반 사용자가 아닌 역할이 되면 프로젝트 생성 권한이 자동으로 회수됩니다.",
   deactivateConfirmTitle: "계정 비활성화",
   deactivateConfirmBody: "비활성화하면 대상 사용자의 모든 세션이 즉시 종료되고 이후 로그인할 수 없습니다.",
   activateConfirmTitle: "계정 활성화",
@@ -65,57 +66,145 @@ export const ADMIN_TEXT = {
   departmentNameRequired: "부서 이름을 입력해 주세요.",
   departmentNameTooLong: "부서 이름은 50자 이하로 입력해 주세요.",
   showInactive: "비활성 부서 보기",
-} as const;
+});
 
-/** 서버 오류 코드 → 문구. 코드가 없거나 모르는 코드면 서버 메시지나 공통 문구를 쓴다. */
-export const ADMIN_ERROR_TEXT: Record<string, string> = {
-  NOT_FOUND: "시스템 관리자만 사용할 수 있는 기능입니다.",
-  PASSWORD_CHANGE_REQUIRED: "비밀번호를 먼저 변경해야 합니다.",
-  USER_NOT_FOUND: "사용자를 찾을 수 없습니다. 목록을 새로 불러와 주세요.",
-  DEPARTMENT_NOT_FOUND: "부서를 찾을 수 없습니다. 목록을 새로 불러와 주세요.",
-  DEPARTMENT_REQUIRED: "시스템 관리자가 아니면 부서가 있어야 합니다. 부서를 먼저 지정해 주세요.",
-  DEPARTMENT_INACTIVE: "비활성 부서에는 사용자를 배치할 수 없습니다.",
-  PROJECT_CREATION_NOT_ALLOWED: "프로젝트 생성 권한은 일반 사용자에게만 줄 수 있습니다.",
-  DUPLICATE_LOGIN_ID: "이미 사용 중인 아이디입니다.",
-  CANNOT_CHANGE_OWN_ACCOUNT: "본인 계정의 역할과 상태는 바꿀 수 없습니다.",
-  LAST_SYSTEM_ADMIN: "마지막 시스템 관리자는 강등하거나 비활성화할 수 없습니다.",
-  CONCURRENT_MODIFICATION: "다른 관리자가 먼저 변경했습니다. 최신 내용을 불러왔으니 확인 후 다시 시도해 주세요.",
-  EXTERNAL_SERVICE_UNAVAILABLE: "변경은 저장됐지만 대상 사용자의 세션을 끊지 못했습니다. 다시 시도하면 세션 종료를 다시 요청합니다.",
-  INVALID_CURSOR: "목록 위치가 만료되었습니다. 처음부터 다시 불러와 주세요.",
-  INVALID_DEPARTMENT_PARENT: "상위 부서로 지정할 수 없는 부서입니다. 비활성 부서나 자기 자신·하위 부서는 선택할 수 없습니다.",
-  DUPLICATE_DEPARTMENT_NAME: "같은 상위 부서 안에 이미 같은 이름의 부서가 있습니다.",
-  DEPARTMENT_IN_USE: "활성 사용자나 활성 하위 부서가 있어 비활성화할 수 없습니다.",
-};
+/** 변경 성공 안내. {name}·{role}·{status}는 FE가 값을 넣는 자리 */
+export const ADMIN_NOTICE_TEXT = defineLabels("admin.notice", {
+  userSaved: "{name} 사용자 정보를 저장했습니다.",
+  userRoleChanged: "{name} 사용자의 역할을 {role}(으)로 바꿨습니다. 대상 사용자는 다시 로그인해야 합니다.",
+  userStatusChanged: "{name} 계정을 {status} 상태로 바꿨습니다.",
+  departmentStatusChanged: "{name} 부서를 {status} 상태로 바꿨습니다.",
+  departmentCreated: "{name} 부서를 추가했습니다.",
+  departmentSaved: "{name} 부서를 저장했습니다.",
+  codeSortOrderChanged: "{code} 코드의 정렬 순서를 {sortOrder}(으)로 바꿨습니다.",
+});
 
-export const SYSTEM_ROLE_TEXT = {
-  admin: "시스템 관리자",
-  exec: "경영진",
-  user: "일반 사용자",
-} as const;
+/** 공통 코드 화면 문구 (02-3) */
+export const ADMIN_CODE_TEXT = defineLabels("admin.code", {
+  title: "공통 코드",
+  description: "상태값을 코드로 관리합니다. 관리자는 그룹 안 표시 순서만 바꿀 수 있습니다.",
+  groupsLabel: "코드 그룹",
+  loadGroupsFailed: "코드 그룹을 불러오지 못했습니다",
+  emptyGroups: "등록된 코드 그룹이 없습니다",
+  emptyGroupsHint: "코드 그룹은 서버 마이그레이션으로만 추가됩니다.",
+  selectGroup: "왼쪽에서 코드 그룹을 고르세요",
+  loadCodesFailed: "코드를 불러오지 못했습니다",
+  emptyCodes: "이 그룹에는 코드가 없습니다",
+  inUse: "사용",
+  notInUse: "사용 안 함",
+  sortOrderRequired: "정렬 순서를 입력해 주세요.",
+  sortOrderRange: "정렬 순서는 0 이상 9999 이하의 정수로 입력해 주세요.",
+  fixedNote:
+    "코드 값·라벨 키·사용 여부는 바꿀 수 없습니다(서버 마이그레이션으로만 변경). 표시 텍스트는 다국어 라벨에서 라벨 키로 관리합니다. 정렬 순서를 바꾸면 감사 로그에 기록됩니다.",
+  lastWriteWins: "다른 관리자가 같은 코드의 순서를 동시에 바꾸면 나중에 저장한 값이 남습니다.",
+  displayText: "표시 문구",
+});
 
-export const STATUS_TEXT = {
-  active: "활성",
-  inactive: "비활성",
-} as const;
+/** 다국어 라벨 화면 문구 (02-4) */
+export const ADMIN_LABEL_TEXT = defineLabels("admin.label", {
+  title: "다국어 라벨",
+  description: "화면 문구를 언어별로 관리합니다. 라벨 키는 바꾸거나 지울 수 없고, 문구만 고칩니다.",
+  add: "라벨 등록",
+  edit: "문구 수정",
+  searchPlaceholder: "라벨 키 또는 한국어 문구 검색",
+  missingAll: "번역 누락 필터 없음",
+  missingEn: "영어 번역 누락",
+  missingZhTw: "번체 중국어 번역 누락",
+  missingFilter: "번역 누락 필터",
+  key: "라벨 키",
+  textKo: "한국어",
+  textEn: "영어",
+  textZhTw: "번체 중국어",
+  missing: "번역 누락",
+  updatedAt: "수정일",
+  empty: "조건에 맞는 라벨이 없습니다",
+  emptyHint: "검색어나 누락 필터를 바꿔 보세요.",
+  loadFailed: "라벨을 불러오지 못했습니다",
+  keyRequired: "라벨 키를 입력해 주세요.",
+  keyFormat: "라벨 키는 영문자로 시작하고 점(.)으로 구분한 영문·숫자·밑줄·하이픈 100자 이하로 입력해 주세요.",
+  textKoRequired: "한국어 문구를 입력해 주세요.",
+  textTooLong: "문구는 500자 이하로 입력해 주세요.",
+  textControlCharacter: "문구에는 줄바꿈·탭 같은 제어 문자를 넣을 수 없습니다.",
+  keyFixed: "라벨 키는 바꿀 수 없습니다.",
+  emptyMeansMissing: "영어·번체 중국어를 비우면 번역 누락으로 저장되고 화면에는 한국어로 표시됩니다.",
+  concurrentModification: "다른 관리자가 먼저 수정했습니다. 최신 문구를 불러왔으니 확인 후 다시 저장해 주세요.",
+  saved: "{key} 라벨을 저장했습니다. 다른 사용자 화면에는 다음에 문구를 불러올 때 반영됩니다.",
+  created: "{key} 라벨을 등록했습니다.",
+  applyNow: "지금 화면에 적용",
+  textOnlyNote: "문구는 HTML로 해석하지 않고 글자 그대로 표시합니다. 변경 이력은 감사 로그에 남습니다.",
+});
 
-export const HISTORY_ACTION_TEXT: Record<string, string> = {
+/** 에러 로그 화면 문구 (02-5) */
+export const ADMIN_ERROR_LOG_TEXT = defineLabels("admin.errorLog", {
+  title: "에러 로그",
+  description: "서버에서 처리하지 못한 예외를 최신순으로 봅니다. 기록은 고칠 수 없고 1년 보관합니다.",
+  filterTitle: "조회 조건",
+  fromDate: "시작일",
+  toDate: "종료일",
+  errorType: "예외 유형",
+  errorTypeHint: "클래스 전체 이름과 정확히 일치",
+  apiPath: "API 경로",
+  apiPathHint: "앞부분 일치, 대소문자 구분",
+  search: "조회",
+  occurredAt: "발생 시각",
+  request: "요청",
+  message: "메시지",
+  user: "사용자",
+  anonymous: "로그인 전",
+  noMessage: "메시지 없음",
+  noStackTrace: "스택 트레이스가 없습니다",
+  stackTrace: "스택 트레이스",
+  detailTitle: "에러 로그 상세",
+  openDetail: "상세 보기",
+  loadFailed: "에러 로그를 불러오지 못했습니다",
+  empty: "조건에 맞는 에러 로그가 없습니다",
+  emptyHint: "기간이나 조건을 바꿔 다시 조회해 보세요.",
+  notFound: "에러 로그를 찾을 수 없습니다. 목록을 새로 불러와 주세요.",
+  invalidDate: "날짜를 YYYY-MM-DD 형식으로 입력해 주세요.",
+  invalidPeriod: "시작일은 종료일보다 늦을 수 없습니다.",
+  errorTypeTooLong: "예외 유형은 200자 이하로 입력해 주세요.",
+  apiPathTooLong: "API 경로는 300자 이하로 입력해 주세요.",
+  maskedNote:
+    "메시지와 스택 트레이스의 비밀번호·토큰·이메일·전화번호 같은 값은 서버가 저장 전에 **** 로 가렸습니다. 요청 본문·헤더는 저장하지 않습니다.",
+  periodNote: "기간은 이 브라우저의 시간대 기준으로, 종료일 하루를 포함해 조회합니다.",
+  userIdFallback: "사용자 #{id}",
+});
+
+/**
+ * 서버 메시지 대신 FE가 조치 안내를 붙여 보여 줄 상황 문구.
+ * 오류 본문에 code가 없어(API 공통 규약 6절) 상황은 호출한 API와 HTTP status로 정한다(utils/adminUserFailure.ts).
+ */
+export const ADMIN_ERROR_TEXT = defineLabels("admin.error", {
+  /** PATCH /api/admin/users/{userId} 409 CONCURRENT_MODIFICATION */
+  concurrentModification: "다른 관리자가 먼저 변경했습니다. 최신 내용을 불러왔으니 확인 후 다시 시도해 주세요.",
+  /** 역할·상태 변경 503 EXTERNAL_SERVICE_UNAVAILABLE — DB에는 반영됨 */
+  sessionRevokeFailed: "변경은 저장됐지만 대상 사용자의 세션을 끊지 못했습니다. 다시 시도하면 세션 종료를 다시 요청합니다.",
+});
+
+/** 시스템 역할·상태 문구는 공통 상태 카탈로그와 같은 키를 쓴다. */
+export const SYSTEM_ROLE_TEXT = SYSTEM_ROLE_LABEL;
+export const STATUS_TEXT = RECORD_STATUS_LABEL;
+
+export const HISTORY_ACTION_TEXT: Record<string, string> = defineLabels("admin.history.action", {
   USER_CREATED: "계정 생성",
   USER_PROFILE_CHANGED: "정보 수정",
   USER_ROLE_CHANGED: "시스템 역할 변경",
   USER_ACTIVATED: "활성화",
   USER_DEACTIVATED: "비활성화",
-  PROJECT_CREATION_GRANTED: "프로젝트 생성 권한 부여",
-  PROJECT_CREATION_REVOKED: "프로젝트 생성 권한 회수",
   PASSWORD_RESET: "비밀번호 초기화",
-};
+  // 프로젝트 생성 권한은 폐지됐지만(FR-PRJ-01, BE V5 마이그레이션) 그 전에 쌓인 감사 로그를 읽을 수 있게 남긴다.
+  PROJECT_CREATION_GRANTED: "프로젝트 생성 권한 부여 (폐지된 기능)",
+  PROJECT_CREATION_REVOKED: "프로젝트 생성 권한 회수 (폐지된 기능)",
+});
 
-export const HISTORY_FIELD_TEXT: Record<string, string> = {
+export const HISTORY_FIELD_TEXT: Record<string, string> = defineLabels("admin.history.field", {
   name: "이름",
   departmentId: "부서",
   departmentName: "부서",
   jobTitle: "직무",
   systemRole: "시스템 역할",
   status: "상태",
+  /** 폐지 전 감사 로그의 details 표시용 */
   canCreateProject: "프로젝트 생성 권한",
   loginId: "아이디",
-};
+});

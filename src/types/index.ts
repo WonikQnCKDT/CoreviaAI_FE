@@ -10,7 +10,8 @@ export type RoleKey = "pm" | "biz" | "dev" | "qa";
 
 export type Visibility = "company" | "department" | "members";
 
-export type MethodKey = "waterfall" | "agile";
+/** 운영 방식. none = 단계 없음(업무 목록으로 운영), waterfall = 폭포수, agile = 애자일(MVP 선택 비활성) */
+export type MethodKey = "none" | "waterfall" | "agile";
 
 /** 시스템 역할과 프로젝트 역할은 분리해서 관리합니다. */
 export type SystemRole = "user" | "exec" | "admin";
@@ -26,7 +27,6 @@ export interface User {
   email: string;
   systemRole: SystemRole;
   active: boolean;
-  canCreateProject: boolean;
   scopeDepts?: string[];
   isSystemAdmin?: boolean;
   /** 인증 서버의 사용자 ID. 실제 서버로 로그인한 적이 있는 사용자에만 있습니다. */
@@ -77,6 +77,11 @@ export interface Project {
   serverId?: number;
   /** 서버 프로젝트의 현재 단계를 폭포수 단계 API로 확인했는지. false면 stage는 기본값이라 화면에 표시하지 않습니다. */
   serverStageKnown?: boolean;
+  /**
+   * 서버가 계산한 프로젝트 진척률(0~100 정수, 업무 예상 공수 가중 평균). 상세 API에만 있어 상세를 받은 뒤에 채워진다.
+   * 서버 프로젝트인데 값이 없으면 아직 모르는 것이며, 데모 업무로 계산한 값으로 대신하지 않는다.
+   */
+  serverProgress?: number;
 }
 
 export interface Task {

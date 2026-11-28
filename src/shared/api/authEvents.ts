@@ -3,7 +3,7 @@
  * 요청 함수는 화면 상태를 직접 바꾸지 않고 이벤트만 보낸다.
  */
 export type AuthEvent =
-  | { type: "sessionEnded"; reason: "expired" | "unauthorized" }
+  | { type: "sessionEnded"; reason: "expired" }
   | { type: "passwordChangeRequired" };
 
 type AuthEventListener = (event: AuthEvent) => void;

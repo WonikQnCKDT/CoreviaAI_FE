@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { VIEW_MODE_TEXT } from "@/shared/i18n/catalog/menu";
 
 export type GanttViewMode = "day" | "week" | "month";
 
@@ -15,9 +17,9 @@ interface StoredToolbarState {
 }
 
 const VIEW_OPTIONS: { key: GanttViewMode; label: string }[] = [
-  { key: "day", label: "일" },
-  { key: "week", label: "주" },
-  { key: "month", label: "월" },
+  { key: "day", get label() { return VIEW_MODE_TEXT.day; } },
+  { key: "week", get label() { return VIEW_MODE_TEXT.week; } },
+  { key: "month", get label() { return VIEW_MODE_TEXT.month; } },
 ];
 
 const ESTIMATE_WIDTH = 470;
@@ -225,11 +227,11 @@ export default function GanttToolbar({ view, onChangeView, storageKey }: GanttTo
               <button
                 type="button"
                 onClick={unlock}
-                title="툴바 이동을 허용합니다"
+                title={BUTTON_TEXT.hintAllowToolbarMove}
                 className="flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-md border border-background-300 bg-background-50 px-2 py-1 text-[11px] font-medium text-foreground-700 hover:bg-background-100"
               >
                 <i className="ri-drag-move-2-line text-[13px]" aria-hidden="true" />
-                이동 허용
+                {BUTTON_TEXT.allowMove}
               </button>
             </>
           ) : (
@@ -237,20 +239,20 @@ export default function GanttToolbar({ view, onChangeView, storageKey }: GanttTo
               <button
                 type="button"
                 onClick={() => setLocked(true)}
-                title="툴바를 상단에 다시 고정합니다"
+                title={BUTTON_TEXT.hintPinToolbar}
                 className="flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-md border border-primary-200 bg-primary-50 px-2 py-1 text-[11px] font-medium text-primary-700 hover:bg-primary-100"
               >
                 <i className="ri-lock-2-line text-[13px]" aria-hidden="true" />
-                상단 고정
+                {BUTTON_TEXT.pinTop}
               </button>
               <button
                 type="button"
                 onClick={resetPosition}
-                title="툴바 위치를 기본 위치로 되돌립니다"
+                title={BUTTON_TEXT.hintResetToolbar}
                 className="flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-md border border-background-300 bg-background-50 px-2 py-1 text-[11px] font-medium text-foreground-700 hover:bg-background-100"
               >
                 <i className="ri-restart-line text-[13px]" aria-hidden="true" />
-                위치 초기화
+                {BUTTON_TEXT.resetPosition}
               </button>
               <span className="hidden whitespace-nowrap text-[10px] text-foreground-400 xl:inline">
                 핸들을 잡고 이동
@@ -266,7 +268,7 @@ export default function GanttToolbar({ view, onChangeView, storageKey }: GanttTo
             className="ml-auto flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-md border border-background-300 bg-background-50 px-2 py-1 text-[11px] font-medium text-foreground-700 hover:bg-background-100"
           >
             <i className={collapsed ? "ri-arrow-down-s-line text-[13px]" : "ri-arrow-up-s-line text-[13px]"} aria-hidden="true" />
-            {collapsed ? "펼치기" : "접기"}
+            {collapsed ? BUTTON_TEXT.expand : BUTTON_TEXT.collapse}
           </button>
         )}
       </div>

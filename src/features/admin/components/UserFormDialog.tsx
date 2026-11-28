@@ -7,8 +7,13 @@ import {
 } from "@/features/admin/api/adminApi";
 import type { DepartmentNode } from "@/features/admin/hooks/useDepartments";
 import { ADMIN_TEXT, SYSTEM_ROLE_TEXT } from "@/features/admin/i18n/ko";
-import { adminErrorMessage, failureCode } from "@/features/admin/utils/adminFormat";
+import {
+  interpretCreateUserFailure,
+  interpretUpdateProfileFailure,
+  type UserFormField,
+} from "@/features/admin/utils/adminUserFailure";
 import type { SystemRole } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 export type UserFormMode = { kind: "create" } | { kind: "edit"; user: AdminUser };
 
@@ -21,7 +26,7 @@ interface UserFormDialogProps {
   onStale: (userId: number) => void;
 }
 
-type FieldKey = "loginId" | "name" | "departmentId" | "jobTitle";
+type FieldKey = UserFormField;
 type FieldErrors = Partial<Record<FieldKey, string>>;
 type SubmitState = { phase: "idle" } | { phase: "submitting" } | { phase: "failed"; message: string };
 
@@ -31,34 +36,24 @@ interface FormValues {
   systemRole: SystemRole;
   departmentId: string;
   jobTitle: string;
-  canCreateProject: boolean;
 }
 
 const MAX_LENGTH = 50;
 const LOGIN_ID_PATTERN = /^[A-Za-z0-9._-]{1,50}$/;
 const ROLES: SystemRole[] = ["user", "exec", "admin"];
 
-const EMPTY: FormValues = { loginId: "", name: "", systemRole: "user", departmentId: "", jobTitle: "", canCreateProject: false };
+const EMPTY: FormValues = { loginId: "", name: "", systemRole: "user", departmentId: "", jobTitle: "" };
 
 const valuesFrom = function (mode: UserFormMode | null): FormValues {
   if (!mode || mode.kind === "create") return EMPTY;
-  const { loginId, name, systemRole, departmentId, jobTitle, canCreateProject } = mode.user;
+  const { loginId, name, systemRole, departmentId, jobTitle } = mode.user;
   return {
     loginId,
     name,
     systemRole,
     departmentId: departmentId === null ? "" : String(departmentId),
     jobTitle: jobTitle ?? "",
-    canCreateProject,
   };
-};
-
-/** 서버 오류 코드가 어느 입력칸의 문제인지 */
-const FIELD_BY_CODE: Record<string, FieldKey> = {
-  DUPLICATE_LOGIN_ID: "loginId",
-  DEPARTMENT_REQUIRED: "departmentId",
-  DEPARTMENT_INACTIVE: "departmentId",
-  DEPARTMENT_NOT_FOUND: "departmentId",
 };
 
 const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale }: UserFormDialogProps) {
@@ -86,12 +81,7 @@ const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale 
   const needsDepartment = values.systemRole !== "admin";
 
   const update = <K extends keyof FormValues>(key: K, value: FormValues[K]) => {
-    setValues((prev) => {
-      const next = { ...prev, [key]: value };
-      // 프로젝트 생성 권한은 일반 사용자만 가질 수 있다.
-      if (key === "systemRole" && value !== "user") next.canCreateProject = false;
-      return next;
-    });
+    setValues((prev) => ({ ...prev, [key]: value }));
     if (key in errors) setErrors((prev) => ({ ...prev, [key]: undefined }));
     if (submit.phase === "failed") setSubmit({ phase: "idle" });
   };
@@ -122,12 +112,12 @@ const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale 
     controllerRef.current = controller;
     setSubmit({ phase: "submitting" });
 
-    const { loginId, name, systemRole, departmentId, jobTitle, canCreateProject } = values;
+    const { loginId, name, systemRole, departmentId, jobTitle } = values;
     const department = departmentId ? Number(departmentId) : null;
     const result =
       mode.kind === "create"
         ? await createAdminUser({
-            input: { loginId, name, systemRole, departmentId: department, jobTitle, canCreateProject },
+            input: { loginId, name, systemRole, departmentId: department, jobTitle },
             signal: controller.signal,
           })
         : await updateAdminUserProfile({
@@ -143,11 +133,9 @@ const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale 
       return;
     }
 
-    const { failure } = result;
-    const code = failureCode(failure);
-    const message = adminErrorMessage(failure);
-    if (mode.kind === "edit" && (code === "CONCURRENT_MODIFICATION" || code === "USER_NOT_FOUND")) onStale(mode.user.id);
-    const field = code ? FIELD_BY_CODE[code] : undefined;
+    const { message, field, stale } =
+      mode.kind === "create" ? interpretCreateUserFailure(result.failure) : interpretUpdateProfileFailure(result.failure);
+    if (mode.kind === "edit" && stale) onStale(mode.user.id);
     if (field) {
       setErrors({ [field]: message });
       setSubmit({ phase: "idle" });
@@ -172,7 +160,7 @@ const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale 
       description={
         creating
           ? "계정만 만들어집니다. 만든 뒤 임시 비밀번호를 발급해야 로그인할 수 있습니다."
-          : "시스템 역할·상태·프로젝트 생성 권한은 목록에서 따로 바꿉니다."
+          : "시스템 역할과 상태는 목록에서 따로 바꿉니다."
       }
       onClose={() => {
         if (!submitting) onClose();
@@ -189,7 +177,7 @@ const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale 
                 {ADMIN_TEXT.saving}
               </>
             ) : creating ? (
-              "추가"
+              BUTTON_TEXT.add
             ) : (
               ADMIN_TEXT.save
             )}
@@ -290,24 +278,6 @@ const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale 
           />
           {errorText("jobTitle")}
         </div>
-        {creating && (
-          <div className="flex min-w-0 items-end sm:col-span-2">
-            <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-foreground-800">
-              <input
-                type="checkbox"
-                className="h-4 w-4 cursor-pointer accent-primary-600 disabled:cursor-not-allowed"
-                checked={values.canCreateProject}
-                disabled={values.systemRole !== "user" || submitting}
-                onChange={(event) => update("canCreateProject", event.target.checked)}
-                aria-describedby="user-canCreateProject-hint"
-              />
-              프로젝트 생성 권한 부여
-            </label>
-            <span id="user-canCreateProject-hint" className="sr-only">
-              {ADMIN_TEXT.projectCreationUserOnly}
-            </span>
-          </div>
-        )}
         {editingUser && (
           <p className="text-xs text-foreground-500 sm:col-span-2">
             아이디 <span className="font-mono">{editingUser.loginId}</span>는 바꿀 수 없습니다.

@@ -5,6 +5,7 @@ import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import type { GlossaryEntry } from "@/types";
 import { formatDate } from "@/utils/date";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface TermForm {
   term: string;
@@ -89,7 +90,7 @@ export default function GlossaryTab() {
           <input className="field w-[250px] py-1.5 pl-8 text-[12px]" placeholder="용어·정의·동의어 검색" value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
         <span className="text-[10.5px] text-foreground-500">총 {glossary.length}개 용어 · 중복 용어는 등록 시 경고됩니다.</span>
-        <button type="button" className="btn-primary ml-auto py-1.5" onClick={openNew}><i className="ri-add-line" /> 용어 등록</button>
+        <button type="button" className="btn-primary ml-auto py-1.5" onClick={openNew}><i className="ri-add-line" /> {BUTTON_TEXT.addTerm}</button>
       </div>
 
       {filtered.length === 0 ? (
@@ -98,7 +99,7 @@ export default function GlossaryTab() {
             icon="ri-book-2-line"
             title={glossary.length === 0 ? "등록된 용어가 없습니다" : "검색 결과가 없습니다"}
             description={glossary.length === 0 ? "프로젝트에서 사용하는 용어를 정의해 공유해 보세요." : "다른 검색어로 시도해 주세요."}
-            action={glossary.length === 0 ? <button type="button" className="btn-primary" onClick={openNew}><i className="ri-add-line" /> 용어 등록</button> : undefined}
+            action={glossary.length === 0 ? <button type="button" className="btn-primary" onClick={openNew}><i className="ri-add-line" /> {BUTTON_TEXT.addTerm}</button> : undefined}
           />
         </div>
       ) : (
@@ -170,8 +171,8 @@ export default function GlossaryTab() {
         width="max-w-xl"
         footer={
           <>
-            <button type="button" className="btn-outline" onClick={() => setOpen(false)}>취소</button>
-            <button type="button" className="btn-primary" onClick={submit}><i className="ri-save-line" /> 저장</button>
+            <button type="button" className="btn-outline" onClick={() => setOpen(false)}>{BUTTON_TEXT.cancel}</button>
+            <button type="button" className="btn-primary" onClick={submit}><i className="ri-save-line" /> {BUTTON_TEXT.save}</button>
           </>
         }
       >

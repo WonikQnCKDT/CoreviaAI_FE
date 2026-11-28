@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
 import { SYSTEM_ROLE_LABEL } from "@/utils/permission";
 import type { SystemRole } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 const ROLE_BADGE: Record<SystemRole, string> = {
   user: "border-background-300 bg-background-100 text-foreground-700",
@@ -77,9 +78,6 @@ export default function DemoSettingsPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
                   <Badge className={ROLE_BADGE[user.systemRole]}>{SYSTEM_ROLE_LABEL[user.systemRole]}</Badge>
-                  {user.canCreateProject && (
-                    <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700">프로젝트 생성</Badge>
-                  )}
                   <button
                     type="button"
                     disabled={!user.active || active}
@@ -89,7 +87,7 @@ export default function DemoSettingsPage() {
                     }}
                     className="btn-outline px-2.5 py-1 text-[11.5px]"
                   >
-                    {active ? "사용 중" : "전환"}
+                    {active ? BUTTON_TEXT.inUse : BUTTON_TEXT.switch}
                   </button>
                 </div>
               </li>
@@ -152,7 +150,7 @@ export default function DemoSettingsPage() {
             처음 가상 데이터로 돌아갑니다.
           </p>
           <button type="button" className="btn-outline" onClick={resetDemo}>
-            <i className="ri-restart-line" /> 데모 데이터 초기화
+            <i className="ri-restart-line" /> {BUTTON_TEXT.resetDemoData}
           </button>
         </div>
       </section>

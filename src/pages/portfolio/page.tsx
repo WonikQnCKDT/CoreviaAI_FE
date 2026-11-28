@@ -10,18 +10,18 @@ import NoAccess from "@/components/ui/NoAccess";
 import Avatar from "@/components/ui/Avatar";
 import { formatDate, TODAY, diffDays } from "@/utils/date";
 import { HEALTH_LABEL, STAGE_LABEL, riskLevel } from "@/utils/ui";
-import { projectProgress } from "@/features/task/utils/taskTree";
+import { displayProjectProgress } from "@/features/task/utils/taskTree";
 import { canViewPortfolio, canViewProject, isExecutive, projectRole } from "@/utils/permission";
-import type { Health, StageKey } from "@/types";
+import type { Health, Project, StageKey } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { PROJECT_FOCUS_LABEL } from "@/shared/i18n/catalog/status";
 
 type FocusKey = "all" | "ongoing" | "late" | "done";
 
-const FOCUS_LABEL: Record<FocusKey, string> = {
-  all: "전체 프로젝트",
-  ongoing: "진행 중",
-  late: "지연",
-  done: "완료",
-};
+const FOCUS_LABEL: Record<FocusKey, string> = PROJECT_FOCUS_LABEL;
+
+/** 완료되지 않았는데 종료일이 지난 프로젝트. 렌더링 값에 의존하지 않아 컴포넌트 밖에 둔다 */
+const isLateProject = (project: Project) => project.status !== "done" && project.endDate < TODAY;
 
 export default function PortfolioPage() {
   const navigate = useNavigate();
@@ -45,8 +45,6 @@ export default function PortfolioPage() {
       return projectRole(project, currentUser.id) === "pm";
     });
   }, [allowed, projects, currentUser, exec]);
-
-  const isLateProject = (project: (typeof projects)[number]) => project.status !== "done" && project.endDate < TODAY;
 
   const metrics = useMemo(() => {
     const done = scoped.filter((project) => project.status === "done").length;
@@ -76,7 +74,7 @@ export default function PortfolioPage() {
       })
       .map((project) => ({
         project,
-        progress: projectProgress(tasks, project.id),
+        progress: displayProjectProgress(tasks, project),
         pmUser: users.find((u) => u.id === project.pmId),
         level: riskLevel(project.riskScore),
         late: isLateProject(project),
@@ -96,11 +94,15 @@ export default function PortfolioPage() {
   }, [scoped]);
 
   const deptStats = useMemo(() => {
-    const map = new Map<string, { progressTotal: number; count: number; riskTotal: number; openTasks: number; projects: number }>();
+    const map = new Map<string, { progressTotal: number; progressCount: number; count: number; riskTotal: number; openTasks: number; projects: number }>();
     scoped.forEach((project) => {
-      const entry = map.get(project.dept) || { progressTotal: 0, count: 0, riskTotal: 0, openTasks: 0, projects: 0 };
-      const progress = projectProgress(tasks, project.id);
-      entry.progressTotal += progress;
+      const entry = map.get(project.dept) || { progressTotal: 0, progressCount: 0, count: 0, riskTotal: 0, openTasks: 0, projects: 0 };
+      // 진척률을 모르는 서버 프로젝트는 부서 평균에서 뺀다(0%로 넣으면 평균이 내려간다)
+      const progress = displayProjectProgress(tasks, project);
+      if (progress !== null) {
+        entry.progressTotal += progress;
+        entry.progressCount += 1;
+      }
       entry.riskTotal += project.riskScore;
       entry.count += 1;
       entry.projects += 1;
@@ -110,7 +112,7 @@ export default function PortfolioPage() {
     return Array.from(map.entries())
       .map(([name, value]) => ({
         name,
-        progress: Math.round(value.progressTotal / Math.max(value.count, 1)),
+        progress: value.progressCount > 0 ? Math.round(value.progressTotal / value.progressCount) : null,
         risk: Math.round(value.riskTotal / Math.max(value.count, 1)),
         openTasks: value.openTasks,
         projects: value.projects,
@@ -179,7 +181,7 @@ export default function PortfolioPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" className="btn-outline" onClick={resetFilters}>
-            <i className="ri-refresh-line" /> 필터 초기화
+            <i className="ri-refresh-line" /> {BUTTON_TEXT.resetFilters}
           </button>
           <Link to="/projects" className="btn-primary">
             <i className="ri-folder-line" /> 프로젝트 목록
@@ -232,7 +234,7 @@ export default function PortfolioPage() {
             <ul className="divide-y divide-background-200">
               {topRisk.map((project, index) => {
                 const pmUser = users.find((u) => u.id === project.pmId);
-                const progress = projectProgress(tasks, project.id);
+                const progress = displayProjectProgress(tasks, project);
                 const late = isLateProject(project);
                 return (
                   <li key={project.id}>
@@ -385,7 +387,7 @@ export default function PortfolioPage() {
               description="상태·단계·부서·PM·등급 필터를 변경해 다시 확인해 주세요."
               action={
                 <button type="button" className="btn-outline" onClick={resetFilters}>
-                  필터 초기화
+                  {BUTTON_TEXT.resetFilters}
                 </button>
               }
             />

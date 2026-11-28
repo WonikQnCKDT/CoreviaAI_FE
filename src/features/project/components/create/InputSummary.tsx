@@ -2,6 +2,7 @@ import { diffDays, formatDate } from "@/utils/date";
 import { VISIBILITY_LABEL } from "@/utils/ui";
 import type { User } from "@/types";
 import type { ProjectFormState } from "@/features/project/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface InputSummaryProps {
   form: ProjectFormState;
@@ -62,10 +63,10 @@ export default function InputSummary({ form, users, issuedCode, onCancel, onConf
         <p className="text-center text-[12.5px] font-medium text-foreground-900">정말 이대로 생성하시겠습니까?</p>
         <div className="mt-3 flex items-center justify-center gap-2">
           <button type="button" className="btn-outline min-w-[104px] whitespace-nowrap" onClick={onCancel}>
-            아니요
+            {BUTTON_TEXT.no}
           </button>
           <button type="button" className="btn-primary min-w-[104px] whitespace-nowrap" onClick={onConfirm}>
-            네
+            {BUTTON_TEXT.yes}
             <i className="ri-arrow-right-line" aria-hidden="true" />
           </button>
         </div>

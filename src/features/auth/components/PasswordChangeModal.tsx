@@ -3,6 +3,7 @@ import Modal from "@/components/ui/Modal";
 import { useAuth } from "@/features/auth/authContext";
 import { AUTH_TEXT } from "@/features/auth/i18n/ko";
 import { PASSWORD_MAX_LENGTH, PASSWORD_POLICY_TEXT, passwordRequirements } from "@/features/auth/utils/password";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface PasswordChangeModalProps {
   open: boolean;
@@ -147,21 +148,21 @@ const PasswordChangeModal = function ({ open, onClose, forced = false }: Passwor
         <>
           {forced ? (
             <button type="button" className="btn-outline whitespace-nowrap" onClick={() => signOut()} disabled={submitting}>
-              로그아웃
+              {BUTTON_TEXT.logout}
             </button>
           ) : (
             <button type="button" className="btn-outline whitespace-nowrap" onClick={handleClose} disabled={submitting}>
-              취소
+              {BUTTON_TEXT.cancel}
             </button>
           )}
           <button type="submit" form="password-change-form" className="btn-primary whitespace-nowrap" disabled={submitting}>
             {submitting ? (
               <>
                 <i className="ri-loader-4-line animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                변경 중
+                {BUTTON_TEXT.changing}
               </>
             ) : (
-              "변경"
+              BUTTON_TEXT.change
             )}
           </button>
         </>
@@ -196,7 +197,7 @@ const PasswordChangeModal = function ({ open, onClose, forced = false }: Passwor
                   type="button"
                   onClick={() => setVisible((prev) => ({ ...prev, [key]: !prev[key] }))}
                   aria-label={isVisible ? `${label} 숨기기` : `${label} 표시`}
-                  title={isVisible ? "숨기기" : "표시"}
+                  title={isVisible ? BUTTON_TEXT.hide : BUTTON_TEXT.show}
                   className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded text-foreground-500 hover:bg-background-200 hover:text-foreground-800"
                 >
                   <i className={isVisible ? "ri-eye-off-line" : "ri-eye-line"} aria-hidden="true" />

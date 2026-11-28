@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import Modal from "@/components/ui/Modal";
 import { useAuth } from "@/features/auth/authContext";
 import { AUTH_TEXT } from "@/features/auth/i18n/ko";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 /** 초기화 대상. 서버 사용자 ID를 알면 바로 요청하고, 모르면 입력받는다. */
 export interface ResetTarget {
   name: string;
@@ -120,23 +121,23 @@ const PasswordResetDialog = function <T extends ResetTarget>({
       footer={
         issued ? (
           <button type="button" className="btn-primary" onClick={onClose}>
-            확인했습니다
+            {BUTTON_TEXT.acknowledged}
           </button>
         ) : (
           <>
             <button type="button" className="btn-outline" onClick={handleClose} disabled={submitting}>
-              취소
+              {BUTTON_TEXT.cancel}
             </button>
             <button type="submit" form="password-reset-form" className="btn-primary" disabled={submitting}>
               {submitting ? (
                 <>
                   <i className="ri-loader-4-line animate-spin motion-reduce:animate-none" aria-hidden="true" />
-                  초기화 중
+                  {BUTTON_TEXT.resetting}
                 </>
               ) : state.phase === "failed" ? (
                 AUTH_TEXT.retry
               ) : (
-                "초기화"
+                BUTTON_TEXT.reset
               )}
             </button>
           </>
@@ -155,7 +156,7 @@ const PasswordResetDialog = function <T extends ResetTarget>({
             </code>
             <button type="button" className="btn-outline shrink-0" onClick={copyPassword}>
               <i className="ri-file-copy-line" aria-hidden="true" />
-              복사
+              {BUTTON_TEXT.copy}
             </button>
           </div>
           <p role="status" aria-live="polite" className="text-[12px] text-foreground-600">

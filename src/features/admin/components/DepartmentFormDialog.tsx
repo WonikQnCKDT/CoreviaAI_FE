@@ -5,9 +5,13 @@ import {
   updateAdminDepartment,
   type AdminDepartment,
 } from "@/features/admin/api/adminApi";
-import { descendantIds, type DepartmentNode } from "@/features/admin/hooks/useDepartments";
+import { selectableParents, type DepartmentNode } from "@/features/admin/hooks/useDepartments";
 import { ADMIN_TEXT } from "@/features/admin/i18n/ko";
-import { adminErrorMessage, failureCode } from "@/features/admin/utils/adminFormat";
+import {
+  interpretCreateDepartmentFailure,
+  interpretUpdateDepartmentFailure,
+} from "@/features/admin/utils/adminDepartmentFailure";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 export type DepartmentFormMode =
   | { kind: "create"; parentId: number | null }
@@ -19,7 +23,7 @@ interface DepartmentFormDialogProps {
   tree: DepartmentNode[];
   onClose: () => void;
   onSaved: (args: { department: AdminDepartment; created: boolean }) => void;
-  /** 409 동시 수정·404처럼 목록이 낡았을 때 */
+  /** 상위 부서 문제·409·404처럼 목록이 낡았을 때 */
   onStale: () => void;
 }
 
@@ -53,9 +57,12 @@ const DepartmentFormDialog = function ({ mode, departments, tree, onClose, onSav
 
   useEffect(() => () => controllerRef.current?.abort(), []);
 
-  // 상위 부서로는 활성 부서만 고를 수 있고, 수정할 때는 자기 자신과 하위 부서를 뺀다.
-  const blocked = mode?.kind === "edit" ? descendantIds(departments, mode.department.id) : new Set<number>();
-  const parentOptions = tree.filter(({ department }) => department.status === "active" && !blocked.has(department.id));
+  const parentOptions = selectableParents({
+    tree,
+    items: departments,
+    editing: mode?.kind === "edit" ? mode.department : null,
+    selectedId: parentId === TOP_LEVEL ? null : Number(parentId),
+  });
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -86,10 +93,10 @@ const DepartmentFormDialog = function ({ mode, departments, tree, onClose, onSav
       onSaved({ department: result.data, created: mode.kind === "create" });
       return;
     }
-    const code = failureCode(result.failure);
-    const message = adminErrorMessage(result.failure);
-    if (code === "CONCURRENT_MODIFICATION" || code === "DEPARTMENT_NOT_FOUND" || code === "INVALID_DEPARTMENT_PARENT") onStale();
-    if (code === "DUPLICATE_DEPARTMENT_NAME") {
+    const { message, nameError: onName, stale } =
+      mode.kind === "create" ? interpretCreateDepartmentFailure(result.failure) : interpretUpdateDepartmentFailure(result.failure);
+    if (stale) onStale();
+    if (onName) {
       setNameError(message);
       setSubmit({ phase: "idle" });
       return;
@@ -117,7 +124,7 @@ const DepartmentFormDialog = function ({ mode, departments, tree, onClose, onSav
                 {ADMIN_TEXT.saving}
               </>
             ) : creating ? (
-              "추가"
+              BUTTON_TEXT.add
             ) : (
               ADMIN_TEXT.save
             )}
@@ -166,6 +173,7 @@ const DepartmentFormDialog = function ({ mode, departments, tree, onClose, onSav
             {parentOptions.map(({ department, path }) => (
               <option key={department.id} value={department.id}>
                 {path}
+                {department.status === "inactive" ? " (비활성)" : ""}
               </option>
             ))}
           </select>

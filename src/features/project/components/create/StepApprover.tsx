@@ -2,6 +2,7 @@ import Avatar from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { ROLE_LABEL, STAGES } from "@/utils/ui";
 import type { RoleKey, User } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface StepApproverMember {
   userId: string;
@@ -45,8 +46,8 @@ export default function StepApprover({ members, pmName, value, onChange }: StepA
             {value === null && <span className="h-1.5 w-1.5 rounded-full bg-background-50" />}
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[12.5px] font-medium text-foreground-900">승인자 미지정</span>
-            <span className="block text-[10.5px] text-foreground-500">생성 후 멤버·설정에서 단계별로 지정할 수 있습니다.</span>
+            <span className="block text-[12.5px] font-medium text-foreground-900">{BUTTON_TEXT.noApprover}</span>
+            <span className="block text-[10.5px] text-foreground-500">{BUTTON_TEXT.approverLaterHint}</span>
           </span>
         </button>
 

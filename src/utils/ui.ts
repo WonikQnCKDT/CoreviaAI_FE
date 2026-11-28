@@ -1,11 +1,16 @@
-import type { Health, Priority, RoleKey, StageKey, TaskStatus, Visibility } from "@/types";
+import type { Health, Priority, StageKey, TaskStatus } from "@/types";
+import { STAGE_LABEL } from "@/shared/i18n/catalog/status";
 
-export const HEALTH_LABEL: Record<Health, string> = {
-  normal: "정상",
-  caution: "주의",
-  danger: "위험",
-  done: "완료",
-};
+/** 상태 문구는 다국어 라벨 카탈로그에 있다. 기존 import 경로를 유지하려고 다시 내보낸다. */
+export {
+  ACTIVITY_ISSUE_LABEL,
+  HEALTH_LABEL,
+  PRIORITY_LABEL,
+  ROLE_LABEL,
+  STAGE_LABEL,
+  TASK_STATUS_LABEL,
+  VISIBILITY_LABEL,
+} from "@/shared/i18n/catalog/status";
 
 export const HEALTH_CLASS: Record<Health, string> = {
   normal: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -21,24 +26,11 @@ export const HEALTH_DOT: Record<Health, string> = {
   done: "bg-secondary-400",
 };
 
-export const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
-  todo: "대기",
-  progress: "진행",
-  review: "검토",
-  done: "완료",
-};
-
 export const TASK_STATUS_CLASS: Record<TaskStatus, string> = {
   todo: "bg-secondary-100 text-secondary-600 border-secondary-200",
   progress: "bg-primary-50 text-primary-700 border-primary-200",
   review: "bg-amber-50 text-amber-700 border-amber-200",
   done: "bg-emerald-50 text-emerald-700 border-emerald-200",
-};
-
-export const PRIORITY_LABEL: Record<Priority, string> = {
-  high: "높음",
-  normal: "보통",
-  low: "낮음",
 };
 
 export const PRIORITY_CLASS: Record<Priority, string> = {
@@ -47,40 +39,18 @@ export const PRIORITY_CLASS: Record<Priority, string> = {
   low: "bg-background-100 text-foreground-500 border-background-300",
 };
 
-export const ROLE_LABEL: Record<RoleKey, string> = {
-  pm: "PM",
-  biz: "현업 담당자",
-  dev: "개발자",
-  qa: "QA",
-};
+const STAGE_KEYS: StageKey[] = ["analysis", "design", "dev", "test", "deploy"];
 
-export const VISIBILITY_LABEL: Record<Visibility, string> = {
-  company: "전사 공개",
-  department: "부서 공개",
-  members: "멤버 전용",
-};
-
-export const STAGES: { key: StageKey; label: string; short: string }[] = [
-  { key: "analysis", label: "분석", short: "분석" },
-  { key: "design", label: "설계", short: "설계" },
-  { key: "dev", label: "개발", short: "개발" },
-  { key: "test", label: "테스트", short: "테스트" },
-  { key: "deploy", label: "이행", short: "이행" },
-];
-
-export const STAGE_LABEL: Record<StageKey, string> = {
-  analysis: "분석",
-  design: "설계",
-  dev: "개발",
-  test: "테스트",
-  deploy: "이행",
-};
-
-export const ACTIVITY_ISSUE_LABEL: Record<string, string> = {
-  open: "접수",
-  progress: "처리중",
-  resolved: "해결",
-};
+/** 단계 목록. 문구는 읽을 때마다 현재 언어로 바꾼다(모듈을 불러올 때 값을 고정하지 않는다). */
+export const STAGES: { key: StageKey; readonly label: string; readonly short: string }[] = STAGE_KEYS.map((key) => ({
+  key,
+  get label() {
+    return STAGE_LABEL[key];
+  },
+  get short() {
+    return STAGE_LABEL[key];
+  },
+}));
 
 export function riskLevel(score: number): Health {
   if (score >= 70) return "danger";

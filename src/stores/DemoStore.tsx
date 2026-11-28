@@ -67,6 +67,7 @@ import type { AuthAccount } from "@/features/auth/api/authApi";
 import type {
   ServerProjectDetail,
   ServerProjectPhase,
+  ServerProjectMember,
   ServerProjectSummary,
 } from "@/features/project/api/projectApi";
 import { mergeServerDetail, mergeServerSummary } from "@/features/project/utils/serverProject";
@@ -119,6 +120,8 @@ function makeHistory(taskId: string, userId: string, field: string, before: stri
   return { id: uid("h"), taskId, userId, field, before, after, createdAt: isoNow() };
 }
 
+// 데모 저장소의 공개 함수는 이 파일에 함께 둔다(45개 화면이 import). 개발 중 HMR 경고일 뿐 동작 영향 없음
+// eslint-disable-next-line react-refresh/only-export-components
 export function createInitialState(): DemoState {
   return {
     users: mockUsers.map((u) => ({ ...u })),
@@ -333,7 +336,6 @@ export interface NewUserInput {
   job: string;
   email: string;
   systemRole: User["systemRole"];
-  canCreateProject: boolean;
 }
 
 /** PM 위임 결과. 화면에서는 message를 그대로 안내문으로 사용합니다. */
@@ -405,7 +407,13 @@ interface DemoStoreValue extends DemoState {
   /** 서버 프로젝트 목록을 화면 프로젝트로 연결합니다. 목록에서 빠진(볼 수 없게 된) 서버 프로젝트는 지웁니다. */
   syncServerProjects: (summaries: ServerProjectSummary[]) => void;
   /** 서버 프로젝트 상세·폭포수 단계를 화면 프로젝트에 반영합니다. */
-  syncServerProjectDetail: (input: { detail: ServerProjectDetail; phases: ServerProjectPhase[] | null }) => void;
+  syncServerProjectDetail: (input: {
+    detail: ServerProjectDetail;
+    phases: ServerProjectPhase[] | null;
+    members: ServerProjectMember[] | null;
+  }) => void;
+  /** 목록 화면이 상세에서 받은 서버 진척률만 반영합니다(목록 응답에는 진척률이 없다). 다른 값은 건드리지 않습니다. */
+  syncServerProjectProgress: (serverId: number, progress: number) => void;
   /** 볼 수 없게 된(404) 서버 프로젝트를 화면에서 지웁니다. */
   removeServerProject: (serverId: number) => void;
   switchDemoUser: (userId: string) => void;
@@ -1919,7 +1927,6 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
             email: loginId,
             systemRole,
             active: true,
-            canCreateProject: false,
             isSystemAdmin: systemRole === "admin",
             serverUserId,
           };
@@ -1957,16 +1964,32 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const syncServerProjectDetail = useCallback(
-    ({ detail, phases }: { detail: ServerProjectDetail; phases: ServerProjectPhase[] | null }) => {
+    ({
+      detail,
+      phases,
+      members,
+    }: {
+      detail: ServerProjectDetail;
+      phases: ServerProjectPhase[] | null;
+      members: ServerProjectMember[] | null;
+    }) => {
       setState((prev) => {
         const existing = prev.projects.find((p) => p.serverId === detail.id);
-        const { project, users } = mergeServerDetail({ detail, phases, existing, users: prev.users });
+        const { project, users } = mergeServerDetail({ detail, phases, members, existing, users: prev.users });
         const projects = existing ? prev.projects.map((p) => (p.serverId === detail.id ? project : p)) : [project, ...prev.projects];
         return { ...prev, users, projects };
       });
     },
     [],
   );
+
+  const syncServerProjectProgress = useCallback((serverId: number, progress: number) => {
+    setState((prev) => {
+      const target = prev.projects.find((p) => p.serverId === serverId);
+      if (!target || target.serverProgress === progress) return prev;
+      return { ...prev, projects: prev.projects.map((p) => (p.serverId === serverId ? { ...p, serverProgress: progress } : p)) };
+    });
+  }, []);
 
   const removeServerProject = useCallback((serverId: number) => {
     setState((prev) => ({ ...prev, projects: prev.projects.filter((p) => p.serverId !== serverId) }));
@@ -2102,7 +2125,6 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
         roleLabel,
         systemRole: input.systemRole,
         active: true,
-        canCreateProject: input.canCreateProject,
       };
       return {
         ...prev,
@@ -2223,6 +2245,7 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
     signInWithAccount,
     syncServerProjects,
     syncServerProjectDetail,
+    syncServerProjectProgress,
     removeServerProject,
     switchDemoUser,
     requestPasswordChange,
@@ -2242,12 +2265,16 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
   return <DemoStoreContext.Provider value={value}>{children}</DemoStoreContext.Provider>;
 }
 
+// 데모 저장소의 공개 함수는 이 파일에 함께 둔다(45개 화면이 import). 개발 중 HMR 경고일 뿐 동작 영향 없음
+// eslint-disable-next-line react-refresh/only-export-components
 export function useDemoStore(): DemoStoreValue {
   const context = useContext(DemoStoreContext);
   if (!context) throw new Error("DemoStoreProvider가 필요합니다.");
   return context;
 }
 
+// 데모 저장소의 공개 함수는 이 파일에 함께 둔다(45개 화면이 import). 개발 중 HMR 경고일 뿐 동작 영향 없음
+// eslint-disable-next-line react-refresh/only-export-components
 export function stageBounds(project: Project, stage: StageKey): { start: string; end: string } {
   const totalDays = Math.max(diffDays(project.startDate, project.endDate), 1);
   const segment = Math.ceil(totalDays / 5);

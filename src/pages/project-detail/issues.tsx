@@ -20,6 +20,7 @@ import {
   canReopenIssue,
   nextIssueStatus,
 } from "@/features/issue/utils/issue";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 const EMPTY_FORM = {
   title: "",
@@ -200,7 +201,7 @@ export default function IssuesPage() {
             </div>
           </div>
           <button type="button" className="btn-primary ml-auto py-1.5" onClick={() => { resetForm(); setFormOpen(true); }}>
-            <i className="ri-add-line" /> 이슈 등록
+            <i className="ri-add-line" /> {BUTTON_TEXT.createIssue}
           </button>
         </div>
 
@@ -212,7 +213,7 @@ export default function IssuesPage() {
             action={
               projectIssues.length === 0 ? (
                 <button type="button" className="btn-primary" onClick={() => { resetForm(); setFormOpen(true); }}>
-                  <i className="ri-add-line" /> 이슈 등록
+                  <i className="ri-add-line" /> {BUTTON_TEXT.createIssue}
                 </button>
               ) : (
                 <button
@@ -220,7 +221,7 @@ export default function IssuesPage() {
                   className="btn-outline"
                   onClick={() => { setKindFilter("all"); setSeverityFilter("all"); setStatusFilter("all"); setQuery(""); }}
                 >
-                  필터 초기화
+                  {BUTTON_TEXT.resetFilters}
                 </button>
               )
             }
@@ -297,8 +298,8 @@ export default function IssuesPage() {
         width="max-w-2xl"
         footer={
           <>
-            <button type="button" className="btn-outline" onClick={() => setFormOpen(false)}>취소</button>
-            <button type="button" className="btn-primary" onClick={submit}><i className="ri-save-line" /> 등록</button>
+            <button type="button" className="btn-outline" onClick={() => setFormOpen(false)}>{BUTTON_TEXT.cancel}</button>
+            <button type="button" className="btn-primary" onClick={submit}><i className="ri-save-line" /> {BUTTON_TEXT.register}</button>
           </>
         }
       >
@@ -391,14 +392,14 @@ export default function IssuesPage() {
         footer={
           selected ? (
             <>
-              <button type="button" className="btn-outline" onClick={() => setSelectedId(null)}>닫기</button>
+              <button type="button" className="btn-outline" onClick={() => setSelectedId(null)}>{BUTTON_TEXT.close}</button>
               {selected.kbDocId ? (
                 <Link to={`/knowledge?doc=${selected.kbDocId}`} className="btn-outline"><i className="ri-book-read-line" /> KB 문서 보기</Link>
               ) : selected.status === "closed" ? (
-                <button type="button" className="btn-outline" onClick={() => handleKb(selected)}><i className="ri-bookmark-line" /> KB로 저장</button>
+                <button type="button" className="btn-outline" onClick={() => handleKb(selected)}><i className="ri-bookmark-line" /> {BUTTON_TEXT.saveToKb}</button>
               ) : null}
               {selected.status === "closed" ? (
-                <button type="button" className="btn-primary" onClick={() => handleReopen(selected)}><i className="ri-restart-line" /> 재오픈</button>
+                <button type="button" className="btn-primary" onClick={() => handleReopen(selected)}><i className="ri-restart-line" /> {BUTTON_TEXT.reopen}</button>
               ) : (
                 <button type="button" className="btn-primary" onClick={() => handleMove(selected)}>
                   <i className="ri-arrow-right-line" /> {nextIssueStatus(selected.status) ? `${ISSUE_STATUS_LABEL[nextIssueStatus(selected.status)!]}로 변경` : "종결"}

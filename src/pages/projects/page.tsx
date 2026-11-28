@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useDemoStore } from "@/stores/DemoStore";
 import { Badge } from "@/components/ui/Badge";
 import RiskScoreBadge from "@/components/ui/RiskScoreBadge";
@@ -9,36 +9,42 @@ import Avatar from "@/components/ui/Avatar";
 import StatCard from "@/components/ui/StatCard";
 import { formatDate, TODAY } from "@/utils/date";
 import { HEALTH_LABEL, STAGE_LABEL, riskLevel } from "@/utils/ui";
-import { projectProgress } from "@/features/task/utils/taskTree";
+import { displayProjectProgress } from "@/features/task/utils/taskTree";
 import { canCreateProject, isSystemAdmin } from "@/utils/permission";
 import { PROJECT_TEXT, useServerProjectList } from "@/features/project/hooks/useServerProjects";
 import type { Health } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { PROJECT_SORT_LABEL } from "@/shared/i18n/catalog/status";
+import { PROJECT_FOCUS_LABEL } from "@/shared/i18n/catalog/status";
+import { METHODOLOGY_LABEL } from "@/shared/i18n/catalog/status";
+import type { ProjectCreatedState } from "@/features/project/components/create/ServerProjectCreateWizard";
+import { PROJECT_CREATE_TEXT } from "@/features/project/i18n/ko";
+import { formatLabel } from "@/shared/i18n/store";
 
 type SortKey = "risk" | "progressDesc" | "progressAsc" | "endDate" | "name";
 type FocusKey = "all" | "ongoing" | "late" | "done";
 
-const FOCUS_LABEL: Record<FocusKey, string> = {
-  all: "전체 프로젝트",
-  ongoing: "진행 중",
-  late: "지연",
-  done: "완료",
-};
+const FOCUS_LABEL: Record<FocusKey, string> = PROJECT_FOCUS_LABEL;
 
 function readFocus(value: string | null): FocusKey {
   return value === "ongoing" || value === "late" || value === "done" ? value : "all";
 }
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: "risk", label: "리스크 높은 순" },
-  { key: "endDate", label: "종료일 임박 순" },
-  { key: "progressDesc", label: "진척률 높은 순" },
-  { key: "progressAsc", label: "진척률 낮은 순" },
-  { key: "name", label: "프로젝트명 순" },
+  { key: "risk", get label() { return PROJECT_SORT_LABEL.risk; } },
+  { key: "endDate", get label() { return PROJECT_SORT_LABEL.endDate; } },
+  { key: "progressDesc", get label() { return PROJECT_SORT_LABEL.progressDesc; } },
+  { key: "progressAsc", get label() { return PROJECT_SORT_LABEL.progressAsc; } },
+  { key: "name", get label() { return PROJECT_SORT_LABEL.name; } },
 ];
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { projects: allProjects, tasks, users, currentUser } = useDemoStore();
+  // api 모드 생성 화면이 서버 생성 성공 뒤에만 넘겨 주는 안내. 이 화면은 들어올 때 서버 목록을 다시 받는다.
+  const created = (location.state as Partial<ProjectCreatedState> | null)?.projectCreated ?? null;
+  const dismissCreated = () => navigate(location.pathname + location.search, { replace: true, state: null });
   // api 모드: 서버 목록(GET /api/projects)을 받아 화면 프로젝트로 연결하고, 서버 프로젝트만 보여준다.
   const { isApi, state: listState, reload: reloadList } = useServerProjectList();
   const projects = useMemo(
@@ -81,14 +87,18 @@ export default function ProjectsPage() {
 
     const withProgress = filtered.map((project) => ({
       project,
-      progress: projectProgress(tasks, project.id),
+      progress: displayProjectProgress(tasks, project),
       pmUser: users.find((u) => u.id === project.pmId),
     }));
 
     withProgress.sort((a, b) => {
       if (sort === "risk") return b.project.riskScore - a.project.riskScore;
-      if (sort === "progressDesc") return b.progress - a.progress;
-      if (sort === "progressAsc") return a.progress - b.progress;
+      // 진척률을 아직 모르는 서버 프로젝트(null)는 어느 정렬에서든 뒤로 보낸다
+      if ((sort === "progressDesc" || sort === "progressAsc") && (a.progress === null || b.progress === null)) {
+        return a.progress === null ? (b.progress === null ? 0 : 1) : -1;
+      }
+      if (sort === "progressDesc") return (b.progress ?? 0) - (a.progress ?? 0);
+      if (sort === "progressAsc") return (a.progress ?? 0) - (b.progress ?? 0);
       if (sort === "endDate") return a.project.endDate < b.project.endDate ? -1 : 1;
       return a.project.name.localeCompare(b.project.name, "ko");
     });
@@ -118,6 +128,25 @@ export default function ProjectsPage() {
 
   return (
     <div className="space-y-4">
+      {created && (
+        <div
+          role="status"
+          className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-[12px] text-emerald-800"
+        >
+          <span>
+            <i className="ri-checkbox-circle-line mr-1" aria-hidden="true" />
+            {formatLabel(PROJECT_CREATE_TEXT.created, { name: created.name })}
+          </span>
+          <span className="flex items-center gap-3">
+            <Link to={`/projects/${created.id}`} className="font-medium underline underline-offset-2">
+              {PROJECT_CREATE_TEXT.openCreated}
+            </Link>
+            <button type="button" className="underline underline-offset-2" onClick={dismissCreated}>
+              {BUTTON_TEXT.close}
+            </button>
+          </span>
+        </div>
+      )}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-[12px] text-foreground-500">
@@ -128,17 +157,17 @@ export default function ProjectsPage() {
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" className="btn-outline" onClick={resetFilters}>
             <i className="ri-refresh-line" />
-            필터 초기화
+            {BUTTON_TEXT.resetFilters}
           </button>
           {allowCreate ? (
             <button type="button" className="btn-primary" onClick={() => navigate("/projects/new")}>
               <i className="ri-add-line" />
-              프로젝트 생성
+              {BUTTON_TEXT.createProject}
             </button>
           ) : (
-            <button type="button" className="btn-outline" disabled title="프로젝트 생성 권한이 없습니다">
+            <button type="button" className="btn-outline" disabled title={BUTTON_TEXT.hintCreateProjectUserOnly}>
               <i className="ri-lock-line" />
-              생성 권한 없음
+              {BUTTON_TEXT.noCreatePermission}
             </button>
           )}
         </div>
@@ -175,7 +204,7 @@ export default function ProjectsPage() {
             onClick={() => setFocus("all")}
             className="cursor-pointer font-medium text-primary-600 hover:text-primary-700"
           >
-            해제
+            {BUTTON_TEXT.release}
           </button>
         </p>
       )}
@@ -261,7 +290,7 @@ export default function ProjectsPage() {
             description="검색어나 필터 조건을 변경해 다시 시도해 주세요."
             action={
               <button type="button" className="btn-outline" onClick={resetFilters}>
-                필터 초기화
+                {BUTTON_TEXT.resetFilters}
               </button>
             }
           />
@@ -303,7 +332,7 @@ export default function ProjectsPage() {
                         <span className="text-[12px]">{pmUser?.name}</span>
                       </span>
                     </td>
-                    <td className="td text-[12px]">{project.method === "agile" ? "애자일" : "폭포수"}</td>
+                    <td className="td text-[12px]">{METHODOLOGY_LABEL[project.method]}</td>
                     <td className="td">
                       {project.serverId !== undefined && !project.serverStageKnown ? (
                         // 목록 API에는 단계 정보가 없어, 상세에서 단계를 받기 전에는 표시하지 않는다.

@@ -4,6 +4,7 @@ import { PROJECT_CODE_RULE_HINT } from "@/features/project/utils/projectCode";
 import { VISIBILITY_LABEL } from "@/utils/ui";
 import type { User } from "@/types";
 import { DEPARTMENTS, VISIBILITY_CARDS, type ProjectFormState } from "@/features/project/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface StepBasicInfoProps {
   form: ProjectFormState;
@@ -139,7 +140,7 @@ export default function StepBasicInfo({
             className="flex shrink-0 cursor-pointer items-center gap-1 whitespace-nowrap rounded border border-background-300 bg-background-50 px-2 py-1 text-[11px] font-medium text-foreground-700 hover:border-primary-300 hover:text-primary-700"
           >
             <i className={codeCopied ? "ri-check-line text-emerald-600" : "ri-file-copy-line"} aria-hidden="true" />
-            {codeCopied ? "복사됨" : "복사"}
+            {codeCopied ? BUTTON_TEXT.copied : BUTTON_TEXT.copy}
           </button>
         </div>
       </div>

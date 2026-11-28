@@ -7,19 +7,23 @@ import AddTaskModal from "@/features/mywork/components/AddTaskModal";
 import KpiCard from "@/features/mywork/components/KpiCard";
 import TabBar from "@/components/ui/TabBar";
 import { useDemoStore } from "@/stores/DemoStore";
+import { useAuth } from "@/features/auth/authContext";
+import ServerMyWorkPage from "@/features/mywork/components/ServerMyWorkPage";
 import { diffDays, TODAY } from "@/utils/date";
 import { isAssignedTo } from "@/utils/assignee";
 import { approvalRequestsForUser } from "@/features/gate/utils/gate";
 import { loadTaskFilter, saveTaskFilter, type TaskFilter } from "@/features/mywork/utils/filters";
 import { useScrollMemory } from "@/hooks/useScrollMemory";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { MYWORK_TAB_TEXT } from "@/shared/i18n/catalog/menu";
 
 type TabKey = "todo" | "approval" | "calendar" | "journal";
 
 const TABS: { key: TabKey; label: string; icon: string }[] = [
-  { key: "todo", label: "TODO", icon: "ri-checkbox-multiple-line" },
-  { key: "approval", label: "승인 요청", icon: "ri-shield-check-line" },
-  { key: "calendar", label: "캘린더", icon: "ri-calendar-line" },
-  { key: "journal", label: "업무일지", icon: "ri-file-text-line" },
+  { key: "todo", icon: "ri-checkbox-multiple-line", get label() { return MYWORK_TAB_TEXT.todo; } },
+  { key: "approval", icon: "ri-shield-check-line", get label() { return MYWORK_TAB_TEXT.approval; } },
+  { key: "calendar", icon: "ri-calendar-line", get label() { return MYWORK_TAB_TEXT.calendar; } },
+  { key: "journal", icon: "ri-file-text-line", get label() { return MYWORK_TAB_TEXT.journal; } },
 ];
 
 const TAB_STORAGE_KEY = "corevia-mywork-tab";
@@ -42,7 +46,7 @@ function saveTab(tab: TabKey) {
   }
 }
 
-export default function MyWorkPage() {
+function DemoMyWorkPage() {
   const { tasks, projects, deliverables, currentUser } = useDemoStore();
   const [tab, setTab] = useState<TabKey>(loadTab);
   const [addOpen, setAddOpen] = useState(false);
@@ -138,7 +142,7 @@ export default function MyWorkPage() {
         items={tabItems}
         activeKey={tab}
         onChange={(key) => setTab(key as TabKey)}
-        ariaLabel="내 업무 보기"
+        ariaLabel={MYWORK_TAB_TEXT.views}
         meta={
           <>
             <button
@@ -150,11 +154,11 @@ export default function MyWorkPage() {
               }}
             >
               <i className="ri-edit-2-line" />
-              업무일지 작성
+              {BUTTON_TEXT.writeJournal}
             </button>
             <button type="button" className="btn-primary whitespace-nowrap" onClick={() => setAddOpen(true)}>
               <i className="ri-add-line" />
-              할 일 추가
+              {BUTTON_TEXT.addTodo}
             </button>
           </>
         }
@@ -170,4 +174,13 @@ export default function MyWorkPage() {
       <AddTaskModal open={addOpen} onClose={() => setAddOpen(false)} />
     </div>
   );
+}
+
+/**
+ * api 모드는 서버 내 TODO API(06. 개인 업무)로 그린다. 데모 업무를 서버 계정의 할 일로 보이지 않게 한다.
+ * 데모 모드는 기존 화면을 그대로 쓴다.
+ */
+export default function MyWorkPage() {
+  const { mode } = useAuth();
+  return mode === "api" ? <ServerMyWorkPage /> : <DemoMyWorkPage />;
 }

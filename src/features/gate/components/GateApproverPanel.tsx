@@ -8,6 +8,7 @@ import {
   gateStageInfos,
   type GateAssignResult,
 } from "@/features/gate/utils/gate";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface GateApproverPanelProps {
   project: Project;
@@ -76,7 +77,7 @@ export default function GateApproverPanel({
             className="btn-outline whitespace-nowrap py-1.5"
             onClick={() => applyAll(bulkId)}
           >
-            <i className="ri-shield-check-line" /> 전체 적용
+            <i className="ri-shield-check-line" /> {BUTTON_TEXT.applyAll}
           </button>
           <button
             type="button"
@@ -86,7 +87,7 @@ export default function GateApproverPanel({
               applyAll("");
             }}
           >
-            전체 해제
+            {BUTTON_TEXT.clearAll}
           </button>
         </div>
       )}
@@ -101,7 +102,7 @@ export default function GateApproverPanel({
         >
           <i className={`${feedback.ok ? "ri-information-line" : "ri-error-warning-line"} mt-0.5`} />
           <span className="flex-1 leading-5">{feedback.message}</span>
-          <button type="button" className="cursor-pointer opacity-60" onClick={() => setFeedback(null)} aria-label="안내 닫기">
+          <button type="button" className="cursor-pointer opacity-60" onClick={() => setFeedback(null)} aria-label={BUTTON_TEXT.closeNotice}>
             <i className="ri-close-line" />
           </button>
         </div>

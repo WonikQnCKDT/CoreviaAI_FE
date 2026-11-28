@@ -16,6 +16,7 @@ import {
   type ChatMessage,
 } from "@/features/knowledge/utils/knowledgeChat";
 import { canViewKnowledge } from "@/utils/business";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface ChatMemory {
   conversations: ChatConversation[];
@@ -261,7 +262,7 @@ export default function AiQuestionTab() {
           <>
             <button
               type="button"
-              aria-label="대화 기록 닫기"
+              aria-label={BUTTON_TEXT.closeChatHistory}
               onClick={() => setMobileHistoryOpen(false)}
               className="absolute inset-0 z-20 cursor-default bg-foreground-950/25 lg:hidden"
             />
@@ -284,8 +285,8 @@ export default function AiQuestionTab() {
             <button
               type="button"
               onClick={() => setMobileHistoryOpen(true)}
-              aria-label="대화 기록 열기"
-              title="대화 기록"
+              aria-label={BUTTON_TEXT.openChatHistory}
+              title={BUTTON_TEXT.chatHistory}
               className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-foreground-600 hover:bg-background-100 hover:text-foreground-900 lg:hidden"
             >
               <i className="ri-history-line text-[15px]" />
@@ -302,7 +303,7 @@ export default function AiQuestionTab() {
               <button
                 type="button"
                 onClick={() => setHelpOpen(true)}
-                aria-label="도움말"
+                aria-label={BUTTON_TEXT.help}
                 className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-foreground-500 hover:bg-background-100 hover:text-foreground-900"
               >
                 <i className="ri-question-line" />

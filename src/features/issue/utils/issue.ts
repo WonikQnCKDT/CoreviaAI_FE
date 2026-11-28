@@ -1,10 +1,8 @@
 import type { Issue, IssueKind, IssueSeverity, IssueStatus, User } from "@/types";
+import { ISSUE_STATUS_LABEL } from "@/shared/i18n/catalog/status";
 
-export const ISSUE_KIND_LABEL: Record<IssueKind, string> = {
-  defect: "결함",
-  issue: "일반 이슈",
-  request: "요청",
-};
+/** 이슈 문구는 다국어 라벨 카탈로그에 있다. 기존 import 경로를 유지하려고 다시 내보낸다. */
+export { ISSUE_KIND_LABEL, ISSUE_SEVERITY_LABEL, ISSUE_STATUS_LABEL } from "@/shared/i18n/catalog/status";
 
 export const ISSUE_KIND_CLASS: Record<IssueKind, string> = {
   defect: "bg-rose-50 text-rose-700 border-rose-200",
@@ -12,26 +10,11 @@ export const ISSUE_KIND_CLASS: Record<IssueKind, string> = {
   request: "bg-accent-50 text-accent-700 border-accent-200",
 };
 
-export const ISSUE_SEVERITY_LABEL: Record<IssueSeverity, string> = {
-  critical: "치명",
-  high: "높음",
-  medium: "보통",
-  low: "낮음",
-};
-
 export const ISSUE_SEVERITY_CLASS: Record<IssueSeverity, string> = {
   critical: "bg-rose-50 text-rose-700 border-rose-200",
   high: "bg-orange-50 text-orange-700 border-orange-200",
   medium: "bg-amber-50 text-amber-700 border-amber-200",
   low: "bg-background-100 text-foreground-500 border-background-300",
-};
-
-export const ISSUE_STATUS_LABEL: Record<IssueStatus, string> = {
-  registered: "등록",
-  confirmed: "확인",
-  fixing: "조치",
-  verifying: "검증",
-  closed: "종결",
 };
 
 export const ISSUE_STATUS_CLASS: Record<IssueStatus, string> = {

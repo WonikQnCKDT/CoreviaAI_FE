@@ -7,13 +7,15 @@ import EmptyState from "@/components/ui/EmptyState";
 import { collectMissing, MISSING_LABEL, type MissingType } from "@/utils/business";
 import { formatDate, TODAY } from "@/utils/date";
 import { STAGE_LABEL } from "@/utils/ui";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { MISSING_TAB_TEXT } from "@/shared/i18n/catalog/menu";
 
 const TABS: { key: "all" | MissingType; label: string; icon: string }[] = [
-  { key: "all", label: "전체", icon: "ri-list-check" },
-  { key: "meeting", label: "회의 액션 미등록", icon: "ri-file-text-line" },
-  { key: "unassigned", label: "담당자·기한 미지정", icon: "ri-user-unfollow-line" },
-  { key: "overdue", label: "마감 경과", icon: "ri-alarm-warning-line" },
-  { key: "stale", label: "진척 기록 없음", icon: "ri-time-line" },
+  { key: "all", icon: "ri-list-check", get label() { return MISSING_TAB_TEXT.all; } },
+  { key: "meeting", icon: "ri-file-text-line", get label() { return MISSING_TAB_TEXT.meeting; } },
+  { key: "unassigned", icon: "ri-user-unfollow-line", get label() { return MISSING_TAB_TEXT.unassigned; } },
+  { key: "overdue", icon: "ri-alarm-warning-line", get label() { return MISSING_TAB_TEXT.overdue; } },
+  { key: "stale", icon: "ri-time-line", get label() { return MISSING_TAB_TEXT.stale; } },
 ];
 
 export default function MissingPage() {
@@ -116,7 +118,7 @@ export default function MissingPage() {
                           className="btn-outline py-1.5 text-[11px]"
                           onClick={() => openTask(item.taskId!)}
                         >
-                          <i className="ri-side-bar-line" /> 업무 상세
+                          <i className="ri-side-bar-line" /> {BUTTON_TEXT.taskDetail}
                         </button>
                         <Link to={`/projects/${project.id}/wbs`} className="btn-ghost py-1.5 text-[11px]">
                           <i className="ri-node-tree" /> WBS

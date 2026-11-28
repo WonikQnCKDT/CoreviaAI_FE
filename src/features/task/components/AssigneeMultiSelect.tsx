@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 export interface AssigneeOption {
   id: string;
@@ -108,14 +109,14 @@ export default function AssigneeMultiSelect({
                 onClick={() => onChange(members.map((m) => m.id))}
                 className="cursor-pointer whitespace-nowrap rounded px-1.5 py-0.5 text-[10.5px] font-medium text-primary-600 hover:bg-primary-50"
               >
-                전체 선택
+                {BUTTON_TEXT.selectAll}
               </button>
               <button
                 type="button"
                 onClick={() => onChange([])}
                 className="cursor-pointer whitespace-nowrap rounded px-1.5 py-0.5 text-[10.5px] text-foreground-500 hover:bg-background-100"
               >
-                초기화
+                {BUTTON_TEXT.reset}
               </button>
             </div>
           </div>

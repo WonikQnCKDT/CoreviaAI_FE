@@ -65,7 +65,7 @@ export const auditLogs: AuditLog[] = [
     userName: "백준호",
     ip: "10.20.5.12",
     at: "2026-11-07T16:05:19",
-    detail: "사용자 권나영 프로젝트 생성 권한 부여",
+    detail: "사용자 권나영 시스템 역할 변경 · 경영진 → 일반 사용자",
   },
   {
     id: "log-1008",

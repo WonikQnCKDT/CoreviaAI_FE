@@ -1,8 +1,10 @@
+import { defineLabels } from "@/shared/i18n/defineLabels";
+
 /**
- * 인증 화면 문구 (ko). 이 프로젝트에는 아직 공통 localization 구조가 없어,
- * 인증 기능의 새 문구는 여기 한곳에 모아 둔다. 다른 언어가 생기면 같은 key로 파일을 추가한다.
+ * 인증 화면 문구. 값은 한국어 기본 문구이고, 화면은 라벨 키(auth.*)로 다국어 문구를 읽는다(02-4).
+ * 로그인 전 화면도 공개 라벨 API(GET /api/i18n/labels)로 문구를 받는다.
  */
-export const AUTH_TEXT = {
+export const AUTH_TEXT = defineLabels("auth", {
   // 로그인
   loginIdRequired: "아이디를 입력해 주세요.",
   loginIdTooLong: "아이디는 50자 이하로 입력해 주세요.",
@@ -40,4 +42,4 @@ export const AUTH_TEXT = {
   resetUserNotFound: "대상 사용자를 찾을 수 없습니다. 서버 사용자 ID를 확인해 주세요.",
   resetUserIdInvalid: "서버 사용자 ID는 1 이상의 숫자로 입력해 주세요.",
   resetDemoOnly: "데모 모드에서는 실제 비밀번호를 변경하지 않습니다.",
-} as const;
+});

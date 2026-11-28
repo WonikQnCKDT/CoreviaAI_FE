@@ -7,7 +7,8 @@ import { Badge, HealthBadge, PriorityBadge, StatusBadge } from "@/components/ui/
 import InfoTip from "@/components/ui/InfoTip";
 import { addDays, ddayLabel, diffDays, formatDate, formatShort, TODAY } from "@/utils/date";
 import { STAGES, STAGE_LABEL, riskLevel } from "@/utils/ui";
-import { isLateTask, isMissingTask, leafTasks, projectProgress, stageProgress } from "@/features/task/utils/taskTree";
+import { displayProjectProgress, isLateTask, isMissingTask, leafTasks, stageProgress } from "@/features/task/utils/taskTree";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 export default function ProjectOverviewPage() {
   const { projectId } = useParams();
@@ -65,7 +66,7 @@ export default function ProjectOverviewPage() {
 
     return {
       projectTasks,
-      progress: projectProgress(tasks, project.id),
+      progress: displayProjectProgress(tasks, project),
       late,
       missing,
       openIssues,
@@ -159,8 +160,8 @@ export default function ProjectOverviewPage() {
             <button
               type="button"
               onClick={() => copyProjectCode(project.code)}
-              aria-label="식별 코드 복사"
-              title={codeCopied ? "복사되었습니다" : "식별 코드 복사"}
+              aria-label={BUTTON_TEXT.copyProjectCode}
+              title={codeCopied ? BUTTON_TEXT.copiedDone : BUTTON_TEXT.copyProjectCode}
               className="flex h-4 w-4 cursor-pointer items-center justify-center rounded text-foreground-400 hover:text-primary-600"
             >
               <i className={codeCopied ? "ri-check-line text-[11px] text-emerald-600" : "ri-file-copy-line text-[11px]"} aria-hidden="true" />
@@ -198,7 +199,7 @@ export default function ProjectOverviewPage() {
                 text="최하위 업무의 진척률을 예상 작업량으로 가중 평균한 값입니다. 자동 계산되며 직접 수정할 수 없습니다."
               />
             </span>
-            <span className="text-[16px] font-semibold tabular-nums leading-none text-primary-700">{derived.progress}%</span>
+            <span className="text-[16px] font-semibold tabular-nums leading-none text-primary-700">{derived.progress === null ? "-" : `${derived.progress}%`}</span>
           </div>
           <ProgressBar value={derived.progress} size="md" color="bg-primary-500" className="mt-2" />
         </div>
@@ -449,7 +450,7 @@ export default function ProjectOverviewPage() {
               className="ml-auto cursor-pointer font-medium text-primary-600 hover:text-primary-700"
               onClick={() => navigate(`/projects/${project.id}/issues`)}
             >
-              이슈·결함 화면 <i className="ri-arrow-right-s-line" />
+              {BUTTON_TEXT.openIssues} <i className="ri-arrow-right-s-line" />
             </button>
           </div>
         </section>

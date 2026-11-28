@@ -1,11 +1,8 @@
 import type { Issue, Project, RoleKey, Task, User } from "@/types";
 import { isAssignedTo } from "@/utils/assignee";
 
-export const SYSTEM_ROLE_LABEL = {
-  user: "일반 사용자",
-  exec: "경영진",
-  admin: "시스템 관리자",
-} as const;
+/** 시스템 역할 문구는 다국어 라벨 카탈로그에 있다. 기존 import 경로를 유지하려고 다시 내보낸다. */
+export { SYSTEM_ROLE_LABEL } from "@/shared/i18n/catalog/status";
 
 export function isSystemAdmin(user: User | undefined | null): boolean {
   return Boolean(user && user.systemRole === "admin");
@@ -193,8 +190,12 @@ export function canViewJournal(
   return isLinkedTaskOfViewersProject;
 }
 
+/**
+ * 프로젝트 생성(FR-PRJ-01, 권한 매트릭스 3.3 PRJ-01): 별도 생성 권한 없이 활성 일반 사용자 전원이 만들 수 있다.
+ * 경영진은 조회만, 시스템 관리자는 프로젝트 데이터에 접근하지 않는다. 최종 판단은 서버가 한다(403 PROJECT_CREATION_FORBIDDEN).
+ */
 export function canCreateProject(user: User | undefined | null): boolean {
-  return Boolean(user && user.active && user.canCreateProject);
+  return Boolean(user && user.active && user.systemRole === "user");
 }
 
 export function canUseSystemAdmin(user: User | undefined | null): boolean {

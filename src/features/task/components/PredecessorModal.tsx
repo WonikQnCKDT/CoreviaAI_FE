@@ -5,6 +5,7 @@ import { descendantsOf } from "@/features/task/utils/taskTree";
 import { formatDate } from "@/utils/date";
 import { STAGE_LABEL } from "@/utils/ui";
 import { StatusBadge } from "@/components/ui/Badge";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface PredecessorModalProps {
   open: boolean;
@@ -41,7 +42,7 @@ export default function PredecessorModal({ open, taskId, onClose }: PredecessorM
       footer={
         <>
           <button type="button" className="btn-outline" onClick={onClose}>
-            취소
+            {BUTTON_TEXT.cancel}
           </button>
           <button
             type="button"
@@ -51,7 +52,7 @@ export default function PredecessorModal({ open, taskId, onClose }: PredecessorM
               onClose();
             }}
           >
-            저장
+            {BUTTON_TEXT.save}
           </button>
         </>
       }

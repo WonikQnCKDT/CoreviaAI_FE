@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useDemoStore } from "@/stores/DemoStore";
+import { useAuth } from "@/features/auth/authContext";
+import ServerMeetingsView from "@/features/meeting/components/ServerMeetingsView";
 import { Badge } from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
 import EmptyState from "@/components/ui/EmptyState";
@@ -9,12 +11,14 @@ import { STAGES, STAGE_LABEL } from "@/utils/ui";
 import { addDays, formatDate, TODAY } from "@/utils/date";
 import { analyzeMeetingContent, type MeetingAiDraft } from "@/features/knowledge/utils/aiDraft";
 import { capacityLoad } from "@/utils/business";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { NOTIFICATION_TEXT } from "@/shared/i18n/catalog/notification";
 
 interface DraftItem extends MeetingActionItem {
   selected: boolean;
 }
 
-export default function MeetingsPage() {
+function DemoMeetingsPage() {
   const { projectId } = useParams();
   const { projects, meetings, users, tasks, currentUser } = useDemoStore();
   const project = projects.find((p) => p.id === projectId);
@@ -74,7 +78,7 @@ export default function MeetingsPage() {
                 className="flex w-full cursor-pointer items-center gap-2 border-b border-background-200 px-3 py-2.5 text-left lg:cursor-default"
               >
                 <span className="whitespace-nowrap text-[12px] font-semibold text-foreground-900">
-                  회의 목록 <span className="font-normal text-foreground-500">{projectMeetings.length}건</span>
+                  {BUTTON_TEXT.meetingList} <span className="font-normal text-foreground-500">{projectMeetings.length}건</span>
                 </span>
                 {!mobileListOpen && selected && (
                   <span className="min-w-0 flex-1 truncate text-[11px] text-foreground-600 lg:hidden">
@@ -109,9 +113,9 @@ export default function MeetingsPage() {
                       <div className="flex items-center gap-1.5">
                         <span className="text-[10.5px] tabular-nums text-foreground-500">{formatDate(meeting.date)}</span>
                         {meeting.status === "approved" ? (
-                          <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700">승인</Badge>
+                          <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700">{BUTTON_TEXT.approve}</Badge>
                         ) : (
-                          <Badge className="border-background-300 bg-background-100 text-foreground-500">작성중</Badge>
+                          <Badge className="border-background-300 bg-background-100 text-foreground-500">{BUTTON_TEXT.draft}</Badge>
                         )}
                         {meeting.aiDrafted && <Badge className="border-primary-200 bg-primary-50 text-primary-700">AI</Badge>}
                       </div>
@@ -176,6 +180,8 @@ function MeetingEditor({ meetingId, isPm }: { meetingId: string; isPm: boolean }
     setContent(meeting.content);
     setDecisions(meeting.decisions);
     setItems(meeting.actionItems.map((a) => ({ ...a, selected: false })));
+    // 같은 회의록이 다시 만들어질 때마다(저장소 갱신) 입력 중인 폼을 덮어쓰지 않도록 id·수정 시각이 바뀔 때만 다시 채운다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [meeting?.id, meeting?.updatedAt]);
 
   if (!meeting || !project) return null;
@@ -302,12 +308,12 @@ function MeetingEditor({ meetingId, isPm }: { meetingId: string; isPm: boolean }
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
-            <button type="button" className="btn-outline py-1.5" onClick={save}><i className="ri-save-line" /> 저장</button>
+            <button type="button" className="btn-outline py-1.5" onClick={save}><i className="ri-save-line" /> {BUTTON_TEXT.save}</button>
             {meeting.kbDocId ? (
               <Link to={`/knowledge?doc=${meeting.kbDocId}`} className="btn-outline py-1.5"><i className="ri-book-read-line" /> KB 문서</Link>
             ) : (
-              <button type="button" className="btn-outline py-1.5" onClick={() => { saveMeetingToKnowledge(meeting.id); setNotice("회의록을 지식 허브에 저장했습니다. 원본 링크가 유지됩니다."); }}>
-                <i className="ri-bookmark-line" /> KB로 저장
+              <button type="button" className="btn-outline py-1.5" onClick={() => { saveMeetingToKnowledge(meeting.id); setNotice(NOTIFICATION_TEXT.meetingSavedToKb); }}>
+                <i className="ri-bookmark-line" /> {BUTTON_TEXT.saveToKb}
               </button>
             )}
           </div>
@@ -348,7 +354,7 @@ function MeetingEditor({ meetingId, isPm }: { meetingId: string; isPm: boolean }
         <div className="flex items-center justify-between">
           <p className="text-[12px] font-semibold text-foreground-900">회의 내용</p>
           <button type="button" className="btn-outline py-1.5" onClick={runAi}>
-            <i className="ri-sparkling-2-line" /> AI 정리
+            <i className="ri-sparkling-2-line" /> {BUTTON_TEXT.aiOrganize}
           </button>
         </div>
         <textarea
@@ -395,8 +401,8 @@ function MeetingEditor({ meetingId, isPm }: { meetingId: string; isPm: boolean }
             </div>
           </div>
           <div className="mt-2 flex justify-end gap-1.5">
-            <button type="button" className="btn-ghost py-1.5" onClick={() => setAiDraft(null)}>닫기</button>
-            <button type="button" className="btn-primary py-1.5" onClick={applyDraft}><i className="ri-download-line" /> 초안 반영</button>
+            <button type="button" className="btn-ghost py-1.5" onClick={() => setAiDraft(null)}>{BUTTON_TEXT.close}</button>
+            <button type="button" className="btn-primary py-1.5" onClick={applyDraft}><i className="ri-download-line" /> {BUTTON_TEXT.applyDraft}</button>
           </div>
         </div>
       )}
@@ -417,7 +423,7 @@ function MeetingEditor({ meetingId, isPm }: { meetingId: string; isPm: boolean }
         </ul>
         <div className="mt-2 flex gap-1.5">
           <input className="field py-1.5 text-[12px]" value={decisionInput} onChange={(e) => setDecisionInput(e.target.value)} placeholder="결정사항 추가" />
-          <button type="button" className="btn-outline py-1.5" onClick={addDecision}><i className="ri-add-line" /> 추가</button>
+          <button type="button" className="btn-outline py-1.5" onClick={addDecision}><i className="ri-add-line" /> {BUTTON_TEXT.add}</button>
         </div>
       </div>
 
@@ -425,7 +431,7 @@ function MeetingEditor({ meetingId, isPm }: { meetingId: string; isPm: boolean }
         <div className="flex flex-wrap items-center gap-2 border-b border-background-200 px-4 py-2.5">
           <p className="text-[12px] font-semibold text-foreground-900">액션아이템</p>
           <span className="text-[10.5px] text-foreground-500">선택한 항목만 PM 승인 시 업무로 생성됩니다.</span>
-          <button type="button" className="btn-ghost ml-auto py-1" onClick={addEmptyItem}><i className="ri-add-line" /> 항목 추가</button>
+          <button type="button" className="btn-ghost ml-auto py-1" onClick={addEmptyItem}><i className="ri-add-line" /> {BUTTON_TEXT.addItem}</button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[860px] border-collapse">
@@ -510,7 +516,7 @@ function MeetingEditor({ meetingId, isPm }: { meetingId: string; isPm: boolean }
                       {item.taskId ? (
                         <span className="flex flex-col gap-1">
                           <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700">업무 생성됨</Badge>
-                          <button type="button" className="cursor-pointer text-left text-[10px] text-primary-600 hover:underline" onClick={() => undoApproval(item, index)}>승인 표시 해제</button>
+                          <button type="button" className="cursor-pointer text-left text-[10px] text-primary-600 hover:underline" onClick={() => undoApproval(item, index)}>{BUTTON_TEXT.unmarkApproval}</button>
                         </span>
                       ) : item.approved ? (
                         <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700">승인됨</Badge>
@@ -529,10 +535,23 @@ function MeetingEditor({ meetingId, isPm }: { meetingId: string; isPm: boolean }
             {isPm ? `선택 ${approvedSelections.length}건 · 승인 전에는 업무가 생성되지 않습니다.` : "액션아이템 승인은 프로젝트 PM만 가능합니다."}
           </p>
           <button type="button" className="btn-primary ml-auto py-1.5" onClick={approve} disabled={!isPm || approvedSelections.length === 0}>
-            <i className="ri-check-double-line" /> 선택 항목 승인 · 업무 생성
+            <i className="ri-check-double-line" /> {BUTTON_TEXT.approveSelectedCreateTasks}
           </button>
         </div>
       </div>
     </div>
   );
+}
+
+/**
+ * api 모드의 서버 프로젝트는 서버 회의록 API(08. 회의록)로 그린다. 데모 회의록을 서버 프로젝트에 섞지 않는다.
+ * 데모 모드·프론트 데모 프로젝트는 기존 데모 화면(AI 초안 데모 포함)을 그대로 쓴다.
+ */
+export default function MeetingsPage() {
+  const { mode } = useAuth();
+  const { projectId } = useParams();
+  const { projects } = useDemoStore();
+  const project = projects.find((p) => p.id === projectId);
+  if (mode === "api" && project?.serverId !== undefined) return <ServerMeetingsView project={{ ...project, serverId: project.serverId }} />;
+  return <DemoMeetingsPage />;
 }

@@ -6,6 +6,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import { buildWeeklyReport, defaultReportRange, type WeeklyReportDraft } from "@/features/knowledge/utils/aiDraft";
 import { formatDate } from "@/utils/date";
 import { STAGE_LABEL } from "@/utils/ui";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 export default function ReportPage() {
   const { projectId } = useParams();
@@ -55,7 +56,7 @@ export default function ReportPage() {
             <input type="date" className="field w-auto py-1.5 text-[12px]" value={end} onChange={(e) => setEnd(e.target.value)} />
           </label>
           <button type="button" className="btn-primary ml-auto py-1.5" onClick={generate} disabled={!isPm}>
-            <i className="ri-file-chart-line" /> AI 주간 리포트 초안 생성
+            <i className="ri-file-chart-line" /> {BUTTON_TEXT.generateWeeklyReportDraft}
           </button>
         </div>
         {error && <p className="mt-1 text-[11px] text-rose-600">{error}</p>}

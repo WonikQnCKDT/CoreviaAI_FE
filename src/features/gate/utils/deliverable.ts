@@ -1,12 +1,8 @@
 import type { Deliverable, DeliverableStatus, StageKey } from "@/types";
 import { STAGES } from "@/utils/ui";
 
-export const DELIVERABLE_STATUS_LABEL: Record<DeliverableStatus, string> = {
-  pending: "미제출",
-  submitted: "검수 대기",
-  approved: "승인",
-  rejected: "반려",
-};
+/** 산출물 상태 문구는 다국어 라벨 카탈로그에 있다. 기존 import 경로를 유지하려고 다시 내보낸다. */
+export { DELIVERABLE_STATUS_LABEL } from "@/shared/i18n/catalog/status";
 
 export const DELIVERABLE_STATUS_CLASS: Record<DeliverableStatus, string> = {
   pending: "bg-background-100 text-foreground-500 border-background-300",

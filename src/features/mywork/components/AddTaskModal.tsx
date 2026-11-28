@@ -5,6 +5,7 @@ import { EFFORT_TOOLTIP, effortDetailText } from "@/features/task/utils/effort";
 import { useDemoStore } from "@/stores/DemoStore";
 import { TODAY } from "@/utils/date";
 import type { Priority } from "@/types";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 interface AddTaskModalProps {
   open: boolean;
@@ -67,11 +68,11 @@ export default function AddTaskModal({ open, onClose }: AddTaskModalProps) {
       footer={
         <>
           <button type="button" className="btn-outline" onClick={onClose}>
-            취소
+            {BUTTON_TEXT.cancel}
           </button>
           <button type="button" className="btn-primary" onClick={handleSubmit}>
             <i className="ri-add-line" />
-            할 일 추가
+            {BUTTON_TEXT.addTodo}
           </button>
         </>
       }

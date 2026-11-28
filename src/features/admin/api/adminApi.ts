@@ -23,7 +23,6 @@ interface AdminUserDto {
   departmentId: number | null;
   departmentName: string | null;
   jobTitle: string | null;
-  canCreateProject: boolean;
   lastLoginAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -70,7 +69,6 @@ export interface AdminUser {
   departmentId: number | null;
   departmentName: string | null;
   jobTitle: string | null;
-  canCreateProject: boolean;
   lastLoginAt: string | null;
   updatedAt: string;
 }
@@ -81,8 +79,6 @@ export type UserHistoryAction =
   | "USER_ROLE_CHANGED"
   | "USER_ACTIVATED"
   | "USER_DEACTIVATED"
-  | "PROJECT_CREATION_GRANTED"
-  | "PROJECT_CREATION_REVOKED"
   | "PASSWORD_RESET";
 
 export interface HistoryChange {
@@ -125,7 +121,6 @@ const toUser = function ({
   departmentId,
   departmentName,
   jobTitle,
-  canCreateProject,
   lastLoginAt,
   updatedAt,
 }: AdminUserDto): AdminUser {
@@ -138,7 +133,6 @@ const toUser = function ({
     departmentId,
     departmentName,
     jobTitle,
-    canCreateProject: Boolean(canCreateProject),
     lastLoginAt,
     updatedAt,
   };
@@ -229,12 +223,11 @@ export interface NewUserInput {
   systemRole: SystemRole;
   departmentId: number | null;
   jobTitle: string;
-  canCreateProject: boolean;
 }
 
 /** POST /api/admin/users — 계정만 만든다. 이어서 임시 비밀번호를 발급해야 로그인할 수 있다. */
 export const createAdminUser = async function ({
-  input: { loginId, name, systemRole, departmentId, jobTitle, canCreateProject },
+  input: { loginId, name, systemRole, departmentId, jobTitle },
   signal,
 }: {
   input: NewUserInput;
@@ -249,7 +242,6 @@ export const createAdminUser = async function ({
       systemRole: ROLE_TO_DTO[systemRole],
       departmentId,
       jobTitle: jobTitle.trim() || null,
-      canCreateProject: systemRole === "user" ? canCreateProject : false,
     },
     signal,
   });
@@ -314,25 +306,6 @@ export const changeAdminUserStatus = async function ({
     method: "PATCH",
     path: `${userPath(userId)}/status`,
     body: { status: STATUS_TO_DTO[status] },
-    signal,
-  });
-  return mapResult(result, toUser);
-};
-
-/** PATCH /api/admin/users/{userId}/project-creation */
-export const changeProjectCreation = async function ({
-  userId,
-  enabled,
-  signal,
-}: {
-  userId: number;
-  enabled: boolean;
-  signal?: AbortSignal;
-}) {
-  const result = await apiRequest<AdminUserDto>({
-    method: "PATCH",
-    path: `${userPath(userId)}/project-creation`,
-    body: { enabled },
     signal,
   });
   return mapResult(result, toUser);

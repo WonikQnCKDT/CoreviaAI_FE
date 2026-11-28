@@ -12,6 +12,7 @@ import { DELIVERABLE_STATUS_CLASS, DELIVERABLE_STATUS_LABEL, blockingDeliverable
 import { gateApproverId, gateStageInfo } from "@/features/gate/utils/gate";
 import { canReviewDeliverable } from "@/utils/permission";
 import GateApproverPanel from "@/features/gate/components/GateApproverPanel";
+import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 
 export default function DeliverablesPage() {
   const { projectId } = useParams();
@@ -103,7 +104,7 @@ export default function DeliverablesPage() {
           <Badge className="border-primary-200 bg-primary-50 text-primary-700">현재 단계 {STAGE_LABEL[project.stage]}</Badge>
           <Badge className={stageGate.state.className}>{stageGate.state.label}</Badge>
           <button type="button" className="btn-primary py-1.5" onClick={handleAdvance} disabled={!isPm}>
-            <i className="ri-arrow-right-double-line" /> 다음 단계로 전환
+            <i className="ri-arrow-right-double-line" /> {BUTTON_TEXT.advanceStage}
           </button>
         </div>
       </div>
@@ -185,15 +186,15 @@ export default function DeliverablesPage() {
                       </div>
                       <div className="flex flex-wrap items-center gap-1.5">
                         <button type="button" className="btn-outline py-1.5" onClick={() => { setVersionTarget(item); setVersionNote(""); setVersionFile(""); setVersionError(""); }}>
-                          <i className="ri-upload-2-line" /> 새 버전 제출
+                          <i className="ri-upload-2-line" /> {BUTTON_TEXT.submitNewVersion}
                         </button>
                         {canReview && (
                           <>
-                            <button type="button" className="btn-primary py-1.5" onClick={() => { setReviewTarget(item); setReviewDecision("approved"); setReviewComment(""); setReviewError(""); }}>검수</button>
+                            <button type="button" className="btn-primary py-1.5" onClick={() => { setReviewTarget(item); setReviewDecision("approved"); setReviewComment(""); setReviewError(""); }}>{BUTTON_TEXT.review}</button>
                           </>
                         )}
                         <button type="button" className="btn-ghost py-1.5" onClick={() => setExpanded(expanded === item.id ? null : item.id)}>
-                          <i className={expanded === item.id ? "ri-arrow-up-s-line" : "ri-history-line"} /> 이력 {item.versions.length}
+                          <i className={expanded === item.id ? "ri-arrow-up-s-line" : "ri-history-line"} /> {BUTTON_TEXT.history} {item.versions.length}
                         </button>
                       </div>
                     </div>
@@ -276,8 +277,8 @@ export default function DeliverablesPage() {
         onClose={() => setVersionTarget(null)}
         footer={
           <>
-            <button type="button" className="btn-outline" onClick={() => setVersionTarget(null)}>취소</button>
-            <button type="button" className="btn-primary" onClick={submitVersion}><i className="ri-upload-2-line" /> 제출</button>
+            <button type="button" className="btn-outline" onClick={() => setVersionTarget(null)}>{BUTTON_TEXT.cancel}</button>
+            <button type="button" className="btn-primary" onClick={submitVersion}><i className="ri-upload-2-line" /> {BUTTON_TEXT.submit}</button>
           </>
         }
       >
@@ -311,8 +312,8 @@ export default function DeliverablesPage() {
         onClose={() => setReviewTarget(null)}
         footer={
           <>
-            <button type="button" className="btn-outline" onClick={() => setReviewTarget(null)}>취소</button>
-            <button type="button" className="btn-primary" onClick={submitReview}>검수 저장</button>
+            <button type="button" className="btn-outline" onClick={() => setReviewTarget(null)}>{BUTTON_TEXT.cancel}</button>
+            <button type="button" className="btn-primary" onClick={submitReview}>{BUTTON_TEXT.saveReview}</button>
           </>
         }
       >
@@ -331,7 +332,7 @@ export default function DeliverablesPage() {
                     : "border-background-300 bg-background-50 text-foreground-600"
                 }`}
               >
-                {decision === "approved" ? "승인" : "반려"}
+                {decision === "approved" ? BUTTON_TEXT.approve : BUTTON_TEXT.returnForRevision}
               </button>
             ))}
           </div>

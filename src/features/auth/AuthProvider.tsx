@@ -13,67 +13,17 @@ import {
   AuthContext,
   type AuthContextValue,
   type AuthStatus,
-  type ChangePasswordOutcome,
-  type ResetPasswordOutcome,
-  type SignInOutcome,
 } from "@/features/auth/authContext";
 import { AUTH_TEXT } from "@/features/auth/i18n/ko";
+import { toChangePasswordOutcome, toResetOutcome, toSignInOutcome } from "@/features/auth/utils/authFailure";
 import { markPasswordChangedNotice, markSessionExpiredNotice } from "@/features/auth/utils/session";
 import { subscribeAuthEvents } from "@/shared/api/authEvents";
-import type { ApiFailure } from "@/shared/api/client";
 
 type ApiAuthState =
   | { status: "checking" }
   | { status: "signedOut" }
   | { status: "unreachable" }
   | { status: "signedIn"; account: AuthAccount };
-
-/** 서버 오류 코드와 상관없이 공통으로 쓰는 실패 문구 */
-const commonFailureMessage = function (failure: ApiFailure): string {
-  if (failure.kind === "timeout") return AUTH_TEXT.timeout;
-  if (failure.kind === "network") return AUTH_TEXT.network;
-  if (failure.kind === "http" && failure.status === 503) return AUTH_TEXT.serviceUnavailable;
-  return AUTH_TEXT.unknown;
-};
-
-const toSignInOutcome = function (failure: ApiFailure): SignInOutcome {
-  if (failure.kind === "aborted") return { kind: "aborted" };
-  if (failure.kind !== "http") return { kind: "failed", message: commonFailureMessage(failure) };
-  const { status, code, message } = failure;
-  if (status === 400 && code === "INVALID_CREDENTIALS") {
-    return { kind: "rejected", field: "password", message: AUTH_TEXT.invalidCredentials };
-  }
-  if (status === 400) return { kind: "rejected", field: "form", message: message || AUTH_TEXT.unknown };
-  if (status === 403 && code === "ACCOUNT_DISABLED") {
-    return { kind: "rejected", field: "account", message: AUTH_TEXT.accountDisabled };
-  }
-  if (status === 423) return { kind: "locked", message: AUTH_TEXT.accountLocked };
-  return { kind: "failed", message: commonFailureMessage(failure) };
-};
-
-const toChangePasswordOutcome = function (failure: ApiFailure): ChangePasswordOutcome {
-  if (failure.kind === "aborted") return { kind: "aborted" };
-  if (failure.kind !== "http") return { kind: "failed", message: commonFailureMessage(failure) };
-  const { status, code, message } = failure;
-  if (code === "INVALID_PASSWORD") return { kind: "rejected", field: "current", message: AUTH_TEXT.currentPasswordMismatch };
-  if (code === "INVALID_NEW_PASSWORD") return { kind: "rejected", field: "next", message: AUTH_TEXT.newPasswordInvalid };
-  if (code === "SAME_AS_CURRENT_PASSWORD") return { kind: "rejected", field: "next", message: AUTH_TEXT.sameAsCurrent };
-  if (status === 404) return { kind: "failed", message: AUTH_TEXT.accountNotFound };
-  if (status === 400) return { kind: "rejected", field: "form", message: message || AUTH_TEXT.unknown };
-  return { kind: "failed", message: commonFailureMessage(failure) };
-};
-
-const toResetOutcome = function (failure: ApiFailure): ResetPasswordOutcome {
-  if (failure.kind === "aborted") return { kind: "aborted" };
-  if (failure.kind !== "http") return { kind: "failed", message: commonFailureMessage(failure) };
-  const { status, code, message } = failure;
-  if (code === "USER_NOT_FOUND") return { kind: "failed", message: AUTH_TEXT.resetUserNotFound };
-  // 관리자 API는 권한이 없으면 존재를 숨기려고 404 NOT_FOUND를 준다.
-  if (status === 404) return { kind: "failed", message: AUTH_TEXT.resetForbidden };
-  if (status === 403 && code === "PASSWORD_CHANGE_REQUIRED") return { kind: "failed", message: AUTH_TEXT.forcedChangeDescription };
-  if (status === 400) return { kind: "failed", message: message || AUTH_TEXT.resetUserIdInvalid };
-  return { kind: "failed", message: commonFailureMessage(failure) };
-};
 
 /**
  * 인증 상태의 단일 소유자.
