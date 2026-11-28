@@ -642,6 +642,60 @@ describe("서버 WBS 계층 변경 & 파생 상태 (FR-WBS-01)", () => {
     const parentRow = (await screen.findByText("통합 상위 작업")).closest("tr") as HTMLElement;
     expect(within(parentRow).getByText("완료")).toBeTruthy();
   });
+
+  it("PM이 작업 아래에 하위작업을 등록(3레벨: 단계>작업>하위작업)하면 parentTaskId와 함께 전송하고 트리에 표시한다", async () => {
+    const parent = task({ id: 301, name: "상위 분석 작업", version: 1 });
+    const withSubtask = task({
+      id: 301,
+      name: "상위 분석 작업",
+      startDate: "2026-11-01",
+      endDate: "2026-11-20",
+      version: 2,
+      subtasks: [task({ id: 302, parentTaskId: 301, name: "요구사항 인터뷰", startDate: "2026-11-01", endDate: "2026-11-20" })],
+    });
+    const { calls } = renderServerWith({
+      ...baseHandlers("PM", [parent]),
+      "POST /api/projects/77/wbs/tasks": () => jsonOk({ taskId: 302, tasks: [withSubtask] }),
+    });
+
+    fireEvent.click(await screen.findByRole("button", { name: `${WBS_TEXT.addSubtask}: 상위 분석 작업` }));
+    const dialog = screen.getByRole("dialog");
+    const inputs = within(dialog).getAllByRole("textbox");
+    fireEvent.change(inputs[0], { target: { value: "요구사항 인터뷰" } });
+    const dates = dialog.querySelectorAll('input[type="date"]');
+    fireEvent.change(dates[0], { target: { value: "2026-11-01" } });
+    fireEvent.change(dates[1], { target: { value: "2026-11-20" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: WBS_FORM_TEXT.submit }));
+
+    expect(await screen.findByText("요구사항 인터뷰")).toBeTruthy();
+    const createCall = calls.find((c) => c.method === "POST" && c.path === "/api/projects/77/wbs/tasks");
+    expect(createCall?.body).toMatchObject({ parentTaskId: 301, phaseId: null, name: "요구사항 인터뷰" });
+  });
+
+  it("PM이 같은 단계 내 작업 순서를 아래로 이동하면 PUT .../position을 호출하고 응답 트리 순서를 유지한다", async () => {
+    const t1 = task({ id: 401, name: "첫 번째 작업", sortOrder: 1, version: 1 });
+    const t2 = task({ id: 402, name: "두 번째 작업", sortOrder: 2, version: 1 });
+    const reordered = [
+      task({ id: 402, name: "두 번째 작업", sortOrder: 1, version: 1 }),
+      task({ id: 401, name: "첫 번째 작업", sortOrder: 2, version: 2 }),
+    ];
+    const { calls } = renderServerWith({
+      ...baseHandlers("PM", [t1, t2]),
+      "PUT /api/projects/77/wbs/tasks/401/position": () => jsonOk({ taskId: 401, tasks: reordered }),
+    });
+
+    fireEvent.click(await screen.findByRole("button", { name: `${WBS_TEXT.moveDown}: 첫 번째 작업` }));
+
+    await waitFor(() => {
+      const moveCall = calls.find((c) => c.method === "PUT" && c.path === "/api/projects/77/wbs/tasks/401/position");
+      expect(moveCall?.body).toEqual({ parentTaskId: null, index: 1, version: 1 });
+    });
+    const rows = screen.getAllByRole("row");
+    const firstIdx = rows.findIndex((r) => r.textContent?.includes("첫 번째 작업"));
+    const secondIdx = rows.findIndex((r) => r.textContent?.includes("두 번째 작업"));
+    expect(secondIdx).toBeGreaterThan(-1);
+    expect(firstIdx).toBeGreaterThan(secondIdx);
+  });
 });
 
 describe("데모 모드 WBS (기존 시연 유지)", () => {
