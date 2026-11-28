@@ -18,6 +18,7 @@ import { AUTH_TEXT } from "@/features/auth/i18n/ko";
 import { toChangePasswordOutcome, toResetOutcome, toSignInOutcome } from "@/features/auth/utils/authFailure";
 import { markPasswordChangedNotice, markSessionExpiredNotice } from "@/features/auth/utils/session";
 import { subscribeAuthEvents } from "@/shared/api/authEvents";
+import { resetCodeCache } from "@/shared/codes/codeStore";
 
 type ApiAuthState =
   | { status: "checking" }
@@ -40,6 +41,7 @@ const AuthProvider = function ({ children }: { children: ReactNode }) {
   statusRef.current = apiState.status;
 
   const endLocalSession = useCallback(() => {
+    resetCodeCache();
     setApiState({ status: "signedOut" });
     clearLocalSession();
   }, [clearLocalSession]);

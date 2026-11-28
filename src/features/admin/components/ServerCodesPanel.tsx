@@ -7,6 +7,7 @@ import { formatDateTime } from "@/features/admin/utils/adminFormat";
 import { interpretCodeFailure, parseSortOrder } from "@/features/admin/utils/adminCodeRules";
 import { formatLabel } from "@/shared/i18n/store";
 import { translate } from "@/shared/i18n/store";
+import { invalidateCodeCache } from "@/shared/codes/codeStore";
 
 type RowMap = Record<string, string>;
 
@@ -64,6 +65,7 @@ const ServerCodesPanel = function () {
     setSavingCode(null);
     if (result.ok === true) {
       codes.replace(result.data);
+      invalidateCodeCache(groupCode);
       setDrafts(({ [code.code]: _saved, ...rest }) => rest);
       setNotice(formatLabel(ADMIN_NOTICE_TEXT.codeSortOrderChanged, { code: code.code, sortOrder: result.data.sortOrder }));
       return;

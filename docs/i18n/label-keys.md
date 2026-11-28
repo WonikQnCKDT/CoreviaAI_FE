@@ -1255,12 +1255,19 @@
 | `wbs.server.updated` | '{name}'을(를) 수정했습니다. | wbs.server |
 | `wbs.server.viewerNote` | 현재 역할로는 WBS를 조회만 할 수 있습니다. | wbs.server |
 
-## BE에 이미 시드됨 (7개, V9 공통 코드 라벨)
+## BE에 이미 시드됨 (18개, V9 공통 코드 라벨)
 
 FE가 공통 코드와 같은 값을 표시할 때 이 키를 그대로 씁니다. 등록할 필요가 없습니다.
 
 | 라벨 키 | 한국어 기본 문구 | 구분 |
 | --- | --- | --- |
+| `code.PROJECT_STATUS.CANCELLED` | 취소 | 상태 · 프로젝트 |
+| `code.PROJECT_STATUS.COMPLETED` | 완료 | 상태 · 프로젝트 |
+| `code.PROJECT_STATUS.IN_PROGRESS` | 진행 중 | 상태 · 프로젝트 |
+| `code.PROJECT_STATUS.ON_HOLD` | 보류 | 상태 · 프로젝트 |
+| `code.PROJECT_STATUS.PLANNED` | 계획 | 상태 · 프로젝트 |
+| `code.REQUEST_RESULT.FAILURE` | 실패 | 상태 · 요청 결과 |
+| `code.REQUEST_RESULT.SUCCESS` | 성공 | 상태 · 요청 결과 |
 | `code.RISK_LEVEL.CAUTION` | 주의 | 상태 · 리스크 수준 |
 | `code.RISK_LEVEL.DANGER` | 위험 | 상태 · 리스크 수준 |
 | `code.RISK_LEVEL.NORMAL` | 정상 | 상태 · 리스크 수준 |
@@ -1268,3 +1275,7 @@ FE가 공통 코드와 같은 값을 표시할 때 이 키를 그대로 씁니�
 | `code.TASK_STATUS.IN_PROGRESS` | 진행 | 상태 · 업무 |
 | `code.TASK_STATUS.REVIEW` | 검토 | 상태 · 업무 |
 | `code.TASK_STATUS.TODO` | 대기 | 상태 · 업무 |
+| `codeGroup.PROJECT_STATUS` | 프로젝트 상태 | 공통 코드 그룹 |
+| `codeGroup.REQUEST_RESULT` | 요청 처리 결과 | 공통 코드 그룹 |
+| `codeGroup.RISK_LEVEL` | 위험 수준 | 공통 코드 그룹 |
+| `codeGroup.TASK_STATUS` | 업무 진행 상태 | 공통 코드 그룹 |

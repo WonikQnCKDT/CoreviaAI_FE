@@ -15,6 +15,8 @@ import { canViewPortfolio, canViewProject, isExecutive, projectRole } from "@/ut
 import type { Health, Project, StageKey } from "@/types";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 import { PROJECT_FOCUS_LABEL } from "@/shared/i18n/catalog/status";
+import { useCommonCodes } from "@/shared/codes/useCommonCodes";
+import { RISK_LEVEL_TO_HEALTH } from "@/shared/codes/codeStore";
 
 type FocusKey = "all" | "ongoing" | "late" | "done";
 
@@ -26,6 +28,21 @@ const isLateProject = (project: Project) => project.status !== "done" && project
 export default function PortfolioPage() {
   const navigate = useNavigate();
   const { currentUser, projects, tasks, users } = useDemoStore();
+  const { codes: riskCodes } = useCommonCodes("RISK_LEVEL");
+  const riskOptions = useMemo(
+    () =>
+      riskCodes
+        .map((item) => {
+          const health = RISK_LEVEL_TO_HEALTH[item.code];
+          return health ? { key: health as Health, label: item.label } : null;
+        })
+        .filter((item): item is { key: Health; label: string } => item !== null),
+    [riskCodes],
+  );
+  const statusOptions = useMemo(
+    () => [...riskOptions, { key: "done" as Health, label: HEALTH_LABEL.done }],
+    [riskOptions],
+  );
   const [status, setStatus] = useState<"all" | Health>("all");
   const [stage, setStage] = useState<"all" | StageKey>("all");
   const [dept, setDept] = useState("all");
@@ -321,9 +338,9 @@ export default function PortfolioPage() {
           <div className="flex flex-wrap items-center gap-2 border-b border-background-200 px-4 py-3">
             <select className="field w-auto min-w-[104px] text-[12.5px]" value={status} onChange={(e) => setStatus(e.target.value as "all" | Health)}>
               <option value="all">상태 전체</option>
-              {(["normal", "caution", "danger", "done"] as Health[]).map((key) => (
+              {statusOptions.map(({ key, label }) => (
                 <option key={key} value={key}>
-                  {HEALTH_LABEL[key]}
+                  {label}
                 </option>
               ))}
             </select>
@@ -353,14 +370,14 @@ export default function PortfolioPage() {
             </select>
             <select className="field w-auto min-w-[112px] text-[12.5px]" value={risk} onChange={(e) => setRisk(e.target.value as "all" | Health)}>
               <option value="all">등급 전체</option>
-              {(["danger", "caution", "normal"] as Health[]).map((key) => (
+              {riskOptions.map(({ key, label }) => (
                 <option key={key} value={key}>
-                  {HEALTH_LABEL[key]}
+                  {label}
                 </option>
               ))}
             </select>
             <div className="flex flex-wrap items-center gap-1">
-              {(["danger", "caution", "normal"] as Health[]).map((key) => (
+              {riskOptions.map(({ key, label }) => (
                 <button
                   key={key}
                   type="button"
@@ -371,7 +388,7 @@ export default function PortfolioPage() {
                       : "border-background-300 bg-background-50 text-foreground-600 hover:bg-background-100"
                   }`}
                 >
-                  {HEALTH_LABEL[key]} <span className="tabular-nums">{gradeCounts[key]}</span>
+                  {label} <span className="tabular-nums">{gradeCounts[key]}</span>
                 </button>
               ))}
             </div>

@@ -37,6 +37,29 @@ export const TASK_STATUS_LABEL = defineLabelMap<TaskStatus>("상태 · 업무", 
   done: ["code.TASK_STATUS.DONE", "완료"],
 });
 
+/** 공통 코드 그룹 이름. BE V8·V9 시드 키(codeGroup.*)를 그대로 쓴다. */
+export const CODE_GROUP_LABEL = defineLabelMap("공통 코드 그룹", {
+  RISK_LEVEL: ["codeGroup.RISK_LEVEL", "위험 수준"],
+  TASK_STATUS: ["codeGroup.TASK_STATUS", "업무 진행 상태"],
+  REQUEST_RESULT: ["codeGroup.REQUEST_RESULT", "요청 처리 결과"],
+  PROJECT_STATUS: ["codeGroup.PROJECT_STATUS", "프로젝트 상태"],
+});
+
+/** 프로젝트 상태. 공통 코드 PROJECT_STATUS와 같다. */
+export const PROJECT_STATUS_LABEL = defineLabelMap("상태 · 프로젝트", {
+  planned: ["code.PROJECT_STATUS.PLANNED", "계획"],
+  inProgress: ["code.PROJECT_STATUS.IN_PROGRESS", "진행 중"],
+  onHold: ["code.PROJECT_STATUS.ON_HOLD", "보류"],
+  completed: ["code.PROJECT_STATUS.COMPLETED", "완료"],
+  cancelled: ["code.PROJECT_STATUS.CANCELLED", "취소"],
+});
+
+/** 요청 처리 결과. 공통 코드 REQUEST_RESULT와 같다. */
+export const REQUEST_RESULT_LABEL = defineLabelMap("상태 · 요청 결과", {
+  success: ["code.REQUEST_RESULT.SUCCESS", "성공"],
+  failure: ["code.REQUEST_RESULT.FAILURE", "실패"],
+});
+
 export const PRIORITY_LABEL: Record<Priority, string> = defineLabels("status.priority", {
   high: "높음",
   normal: "보통",

@@ -20,6 +20,8 @@ import { METHODOLOGY_LABEL } from "@/shared/i18n/catalog/status";
 import type { ProjectCreatedState } from "@/features/project/components/create/ServerProjectCreateWizard";
 import { PROJECT_CREATE_TEXT } from "@/features/project/i18n/ko";
 import { formatLabel } from "@/shared/i18n/store";
+import { useCommonCodes } from "@/shared/codes/useCommonCodes";
+import { RISK_LEVEL_TO_HEALTH } from "@/shared/codes/codeStore";
 
 type SortKey = "risk" | "progressDesc" | "progressAsc" | "endDate" | "name";
 type FocusKey = "all" | "ongoing" | "late" | "done";
@@ -47,6 +49,21 @@ export default function ProjectsPage() {
   const dismissCreated = () => navigate(location.pathname + location.search, { replace: true, state: null });
   // api 모드: 서버 목록(GET /api/projects)을 받아 화면 프로젝트로 연결하고, 서버 프로젝트만 보여준다.
   const { isApi, state: listState, reload: reloadList } = useServerProjectList();
+  const { codes: riskCodes } = useCommonCodes("RISK_LEVEL");
+  const riskOptions = useMemo(
+    () =>
+      riskCodes
+        .map((item) => {
+          const health = RISK_LEVEL_TO_HEALTH[item.code];
+          return health ? { key: health as Health, label: item.label } : null;
+        })
+        .filter((item): item is { key: Health; label: string } => item !== null),
+    [riskCodes],
+  );
+  const statusOptions = useMemo(
+    () => [...riskOptions, { key: "done" as Health, label: HEALTH_LABEL.done }],
+    [riskOptions],
+  );
   const baseToday = isApi ? today() : TODAY;
   const projects = useMemo(
     () => (isApi ? allProjects.filter((project) => project.serverId !== undefined) : allProjects),
@@ -223,9 +240,9 @@ export default function ProjectsPage() {
           </div>
           <select className="field w-auto min-w-[104px] text-[12.5px]" value={status} onChange={(e) => setStatus(e.target.value as "all" | Health)}>
             <option value="all">상태 전체</option>
-            {(["normal", "caution", "danger", "done"] as Health[]).map((key) => (
+            {statusOptions.map(({ key, label }) => (
               <option key={key} value={key}>
-                {HEALTH_LABEL[key]}
+                {label}
               </option>
             ))}
           </select>
@@ -247,9 +264,9 @@ export default function ProjectsPage() {
           </select>
           <select className="field w-auto min-w-[112px] text-[12.5px]" value={risk} onChange={(e) => setRisk(e.target.value as "all" | Health)}>
             <option value="all">리스크 전체</option>
-            {(["danger", "caution", "normal"] as Health[]).map((key) => (
+            {riskOptions.map(({ key, label }) => (
               <option key={key} value={key}>
-                {HEALTH_LABEL[key]}
+                {label}
               </option>
             ))}
           </select>
