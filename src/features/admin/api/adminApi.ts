@@ -225,7 +225,17 @@ export interface NewUserInput {
   jobTitle: string;
 }
 
-/** POST /api/admin/users — 계정만 만든다. 이어서 임시 비밀번호를 발급해야 로그인할 수 있다. */
+interface AdminUserCreatedDto extends AdminUserDto {
+  temporaryPassword?: string | null;
+}
+
+export interface AdminUserCreated {
+  user: AdminUser;
+  /** 생성 응답에 1회만 포함되는 초기 임시 비밀번호. 없으면 null */
+  temporaryPassword: string | null;
+}
+
+/** POST /api/admin/users — 계정을 만들고 응답에 초기 임시 비밀번호가 있으면 함께 돌려준다. */
 export const createAdminUser = async function ({
   input: { loginId, name, systemRole, departmentId, jobTitle },
   signal,
@@ -233,7 +243,7 @@ export const createAdminUser = async function ({
   input: NewUserInput;
   signal?: AbortSignal;
 }) {
-  const result = await apiRequest<AdminUserDto>({
+  const result = await apiRequest<AdminUserCreatedDto>({
     method: "POST",
     path: "/admin/users",
     body: {
@@ -245,7 +255,12 @@ export const createAdminUser = async function ({
     },
     signal,
   });
-  return mapResult(result, toUser);
+  return mapResult(result, (dto): AdminUserCreated => ({
+    user: toUser(dto),
+    temporaryPassword: typeof dto.temporaryPassword === "string" && dto.temporaryPassword.length > 0
+      ? dto.temporaryPassword
+      : null,
+  }));
 };
 
 export interface UserProfileInput {

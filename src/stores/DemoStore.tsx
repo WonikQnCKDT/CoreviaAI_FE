@@ -412,6 +412,8 @@ interface DemoStoreValue extends DemoState {
     phases: ServerProjectPhase[] | null;
     members: ServerProjectMember[] | null;
   }) => void;
+  /** 목록 화면이 상세에서 받은 서버 진척률만 반영합니다(목록 응답에는 진척률이 없다). 다른 값은 건드리지 않습니다. */
+  syncServerProjectProgress: (serverId: number, progress: number) => void;
   /** 볼 수 없게 된(404) 서버 프로젝트를 화면에서 지웁니다. */
   removeServerProject: (serverId: number) => void;
   switchDemoUser: (userId: string) => void;
@@ -1981,6 +1983,14 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const syncServerProjectProgress = useCallback((serverId: number, progress: number) => {
+    setState((prev) => {
+      const target = prev.projects.find((p) => p.serverId === serverId);
+      if (!target || target.serverProgress === progress) return prev;
+      return { ...prev, projects: prev.projects.map((p) => (p.serverId === serverId ? { ...p, serverProgress: progress } : p)) };
+    });
+  }, []);
+
   const removeServerProject = useCallback((serverId: number) => {
     setState((prev) => ({ ...prev, projects: prev.projects.filter((p) => p.serverId !== serverId) }));
   }, []);
@@ -2235,6 +2245,7 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
     signInWithAccount,
     syncServerProjects,
     syncServerProjectDetail,
+    syncServerProjectProgress,
     removeServerProject,
     switchDemoUser,
     requestPasswordChange,
