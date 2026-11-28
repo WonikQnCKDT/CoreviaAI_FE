@@ -19,6 +19,19 @@ export default defineConfig((env) =>
         },
       },
       test: {
+        coverage: {
+          provider: "v8",
+          reporter: ["text", "json-summary", "json", "lcov", "html"],
+          reportsDirectory: "./coverage",
+          include: ["src/**/*.{ts,tsx}"],
+          exclude: ["src/mocks/**", "src/**/*.d.ts", "src/main.tsx"],
+          thresholds: {
+            statements: 55,
+            branches: 50,
+            functions: 48,
+            lines: 55,
+          },
+        },
         projects: [
           {
             extends: true,
