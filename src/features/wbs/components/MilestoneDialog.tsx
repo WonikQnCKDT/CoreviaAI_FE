@@ -26,6 +26,9 @@ interface Props {
 
 const FORM_ID = "milestone-form";
 
+/** 트리에 있는 작업·하위작업 ID. 마일스톤을 받은 뒤 작업이 지워졌으면 그 ID는 고를 수도 보낼 수도 없다 */
+const treeTaskIds = (tree: WbsItem[]) => new Set(tree.flatMap((task) => [task.id, ...task.subtasks.map((sub) => sub.id)]));
+
 /** WBS 트리에서 연결 작업을 여러 개 고른다. 상한에 닿으면 고르지 않은 항목은 막는다 */
 function TaskPicker({ tree, selected, onChange }: { tree: WbsItem[]; selected: number[]; onChange: (ids: number[]) => void }) {
   const hintId = useId();
@@ -70,7 +73,11 @@ export default function MilestoneDialog({ target, tree, submitting, error, onClo
   const source = target.kind === "create" ? null : target.milestone;
   const [name, setName] = useState(source?.name ?? "");
   const [targetDate, setTargetDate] = useState(source?.targetDate ?? "");
-  const [taskIds, setTaskIds] = useState<number[]>(source?.tasks.map((t) => t.id) ?? []);
+  // 화면에 없는 작업(목록을 받은 뒤 지워짐)은 처음 선택에서 뺀다. 그대로 보내면 서버가 400(INVALID_MILESTONE_TASK)으로 거부한다
+  const [taskIds, setTaskIds] = useState<number[]>(() => {
+    const known = treeTaskIds(tree);
+    return (source?.tasks ?? []).map((t) => t.id).filter((id) => known.has(id));
+  });
   const [localError, setLocalError] = useState("");
   const showFields = target.kind !== "tasks";
   const showTasks = target.kind !== "edit";

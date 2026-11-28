@@ -519,6 +519,35 @@ describe("api 모드 마일스톤 (FR-WBS-04)", () => {
     expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ taskIds: [], version: 4 });
   });
 
+  it("트리에 없는 연결 작업(이미 지워진 작업)은 연결 교체 요청에서 뺀다", async () => {
+    const { calls } = renderServerWith({
+      ...baseHandlers("PM"),
+      "GET /api/projects/77/wbs/milestones": () =>
+        jsonOk({
+          milestones: [
+            milestone({
+              linkedTaskCount: 2,
+              incompleteTaskCount: 2,
+              tasks: [
+                { id: 101, parentTaskId: null, name: "요구사항 분석", status: "TODO", endDate: "2026-12-10" },
+                { id: 999, parentTaskId: null, name: "지워진 작업", status: "TODO", endDate: "2026-12-10" },
+              ],
+            }),
+          ],
+        }),
+      "PUT /api/projects/77/wbs/milestones/31/tasks": () => jsonOk(milestone({ version: 5 })),
+    });
+    const region = await milestoneRegion();
+    fireEvent.click(await within(region).findByRole("button", { name: `${MILESTONE_TEXT.editTasks}: 분석 단계 종료` }));
+    const dialog = screen.getByRole("dialog");
+    expect((within(dialog).getByRole("checkbox", { name: "요구사항 분석" }) as HTMLInputElement).checked).toBe(true);
+    expect(within(dialog).queryByRole("checkbox", { name: "지워진 작업" })).toBeNull();
+    fireEvent.click(within(dialog).getByRole("button", { name: MILESTONE_TEXT.submit }));
+
+    await screen.findByText("'분석 단계 종료' 마일스톤의 연결 작업을 저장했습니다.");
+    expect(calls.find((c) => c.method === "PUT")?.body).toEqual({ taskIds: [101], version: 4 });
+  });
+
   it("연결 작업이 상한(200개)이면 고르지 않은 작업은 더 고를 수 없다", async () => {
     const tree = Array.from({ length: 201 }, (_, i) => task({ id: 1000 + i, name: `작업 ${i + 1}`, sortOrder: i + 1 }));
     const linked = tree.slice(0, 200).map((t) => ({ id: t.id, parentTaskId: null, name: t.name, status: "TODO", endDate: "2026-12-10" }));
