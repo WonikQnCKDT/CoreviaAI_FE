@@ -1,3 +1,6 @@
+import { AUTH_TEXT } from "@/features/auth/i18n/ko";
+import { formatLabel } from "@/shared/i18n/store";
+
 /**
  * 서비스 비밀번호 규칙 (인증 API 명세 기준)
  * - 영문·숫자·특수문자 각 1자 이상
@@ -26,13 +29,13 @@ export const passwordRequirements = function (value: string): PasswordRequiremen
   return [
     {
       key: "length",
-      label: `${PASSWORD_MIN_LENGTH}~${PASSWORD_MAX_LENGTH}자`,
+      label: formatLabel(AUTH_TEXT.passwordRuleLength, { min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH }),
       met: length >= PASSWORD_MIN_LENGTH && length <= PASSWORD_MAX_LENGTH,
     },
-    { key: "letter", label: "영문 포함", met: /[A-Za-z]/.test(value) },
-    { key: "digit", label: "숫자 포함", met: /[0-9]/.test(value) },
-    { key: "special", label: "특수문자 포함", met: SPECIAL_CHARACTER.test(value) },
-    { key: "charset", label: "공백·한글 없음", met: length > 0 && ALLOWED_CHARSET.test(value) },
+    { key: "letter", label: AUTH_TEXT.passwordRuleLetter, met: /[A-Za-z]/.test(value) },
+    { key: "digit", label: AUTH_TEXT.passwordRuleDigit, met: /[0-9]/.test(value) },
+    { key: "special", label: AUTH_TEXT.passwordRuleSpecial, met: SPECIAL_CHARACTER.test(value) },
+    { key: "charset", label: AUTH_TEXT.passwordRuleCharset, met: length > 0 && ALLOWED_CHARSET.test(value) },
   ];
 };
 
@@ -42,10 +45,10 @@ export const isPasswordValid = function (value: string): boolean {
 
 /** 비밀번호 규칙 검증 메시지. 통과하면 빈 문자열을 반환한다. */
 export const passwordPolicyError = function (value: string): string {
-  if (!value) return "비밀번호를 입력해 주세요.";
+  if (!value) return AUTH_TEXT.passwordRequired;
   const missing = passwordRequirements(value)
     .filter(({ met }) => !met)
     .map(({ label }) => label);
   if (missing.length === 0) return "";
-  return `${missing.join(", ")} 조건을 충족해야 합니다.`;
+  return formatLabel(AUTH_TEXT.passwordPolicyUnmet, { missing: missing.join(", ") });
 };

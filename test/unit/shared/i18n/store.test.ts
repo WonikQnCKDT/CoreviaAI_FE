@@ -137,4 +137,22 @@ describe("defineLabels", () => {
     applyLabels({ language: "en", labels: { "status.stage.analysis": "Analysis" } });
     expect(STAGES[0].label).toBe("Analysis");
   });
+
+  it("부분 번역 묶음(en·zh-TW)에서는 번역된 키만 바뀌고 누락·빈 문자열 키는 한국어 기본값으로 폴백된다", () => {
+    const SAMPLE = defineLabels("test.fallback", {
+      title: "제목",
+      empty: "비어 있음",
+      missing: "누락된 문구",
+    });
+    applyLabels({
+      language: "zh-TW",
+      labels: {
+        "test.fallback.title": "標題",
+        "test.fallback.empty": "",
+      },
+    });
+    expect(SAMPLE.title).toBe("標題");
+    expect(SAMPLE.empty).toBe("비어 있음");
+    expect(SAMPLE.missing).toBe("누락된 문구");
+  });
 });

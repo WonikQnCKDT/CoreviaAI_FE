@@ -108,7 +108,7 @@ const DepartmentFormDialog = function ({ mode, departments, tree, onClose, onSav
     <Modal
       open={Boolean(mode)}
       title={creating ? ADMIN_TEXT.addDepartment : ADMIN_TEXT.editDepartment}
-      description={creating ? "같은 상위 부서 안에서는 이름이 겹칠 수 없습니다." : "이름을 바꾸거나 다른 상위 부서 밑으로 옮깁니다."}
+      description={creating ? ADMIN_TEXT.departmentCreateDescription : ADMIN_TEXT.departmentEditDescription}
       onClose={() => {
         if (!submitting) onClose();
       }}
@@ -135,7 +135,7 @@ const DepartmentFormDialog = function ({ mode, departments, tree, onClose, onSav
       <form id="admin-department-form" className="space-y-3" onSubmit={handleSubmit} noValidate aria-busy={submitting}>
         <div>
           <label htmlFor="department-name" className="mb-1 block text-xs font-medium text-foreground-800">
-            부서 이름
+            {ADMIN_TEXT.fieldDepartmentName}
           </label>
           <input
             id="department-name"
@@ -159,7 +159,7 @@ const DepartmentFormDialog = function ({ mode, departments, tree, onClose, onSav
         </div>
         <div>
           <label htmlFor="department-parent" className="mb-1 block text-xs font-medium text-foreground-800">
-            상위 부서
+            {ADMIN_TEXT.fieldParentDepartment}
           </label>
           <select
             id="department-parent"
@@ -173,12 +173,12 @@ const DepartmentFormDialog = function ({ mode, departments, tree, onClose, onSav
             {parentOptions.map(({ department, path }) => (
               <option key={department.id} value={department.id}>
                 {path}
-                {department.status === "inactive" ? " (비활성)" : ""}
+                {department.status === "inactive" ? ADMIN_TEXT.inactiveSuffix : ""}
               </option>
             ))}
           </select>
           <p id="department-parent-hint" className="mt-1 text-xs text-foreground-500">
-            활성 부서만 상위 부서로 고를 수 있습니다{creating ? "" : ". 자기 자신과 하위 부서 밑으로는 옮길 수 없습니다"}.
+            {creating ? ADMIN_TEXT.parentDepartmentCreateHint : ADMIN_TEXT.parentDepartmentEditHint}
           </p>
         </div>
         {submit.phase === "failed" && (

@@ -13,6 +13,8 @@ import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 import { useAuth } from "@/features/auth/authContext";
 import { PROJECT_SETTINGS_TEXT } from "@/features/project/i18n/ko";
 import { PROJECT_MEMBER_TEXT } from "@/features/project/i18n/member";
+import { SYSTEM_ROLE_LABEL } from "@/shared/i18n/catalog/status";
+import { formatLabel } from "@/shared/i18n/store";
 import { useProjectServerReload } from "@/features/project/hooks/useProjectOutlet";
 import ServerMemberPanel from "@/features/project/components/members/ServerMemberPanel";
 import MemberHistoryList from "@/features/project/components/members/MemberHistoryList";
@@ -35,8 +37,8 @@ export default function ProjectSettingsPage() {
       <div className="card">
         <EmptyState
           icon="ri-lock-2-line"
-          title="프로젝트를 찾을 수 없습니다"
-          description="삭제되었거나 접근 권한이 없는 프로젝트입니다. 프로젝트 목록에서 다시 확인해 주세요."
+          title={PROJECT_SETTINGS_TEXT.notFoundTitle}
+          description={PROJECT_SETTINGS_TEXT.notFoundDescription}
           tone="danger"
         />
       </div>
@@ -78,7 +80,7 @@ export default function ProjectSettingsPage() {
 
   const requestPmChange = () => {
     if (!nextPmId) {
-      setPmMessage({ tone: "error", text: "새 PM으로 위임할 멤버를 선택해 주세요." });
+      setPmMessage({ tone: "error", text: PROJECT_SETTINGS_TEXT.selectNewPmRequired });
       return;
     }
     setConfirmOpen(true);
@@ -100,14 +102,14 @@ export default function ProjectSettingsPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h3 className="text-[14px] font-semibold text-foreground-950">멤버·설정</h3>
+          <h3 className="text-[14px] font-semibold text-foreground-950">{PROJECT_SETTINGS_TEXT.title}</h3>
           <p className="mt-0.5 text-[11.5px] text-foreground-500">
-            게이트 승인자는 프로젝트 멤버 중에서 PM이 직접 지정합니다. 단계마다 서로 다른 승인자를 둘 수 있습니다.
+            {PROJECT_SETTINGS_TEXT.description}
           </p>
         </div>
         {!isPm && (
           <Badge className="border-background-300 bg-background-100 text-foreground-600">
-            <i className="ri-eye-line mr-1" /> 읽기 전용 · 승인자 변경은 PM만 가능
+            <i className="ri-eye-line mr-1" /> {PROJECT_SETTINGS_TEXT.readOnlyPmOnly}
           </Badge>
         )}
       </div>
@@ -117,9 +119,11 @@ export default function ProjectSettingsPage() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h4 className="flex items-center gap-1.5 text-[13px] font-semibold text-foreground-950">
               <i className="ri-shield-check-line text-primary-500" aria-hidden="true" />
-              게이트별 승인자 · 승인 상태
+              {PROJECT_SETTINGS_TEXT.gateSectionTitle}
             </h4>
-            <span className="text-[10.5px] text-foreground-500">5단계 · 승인자 {assignable.length}명 후보</span>
+            <span className="text-[10.5px] text-foreground-500">
+              {formatLabel(PROJECT_SETTINGS_TEXT.gateCandidatesCount, { count: assignable.length })}
+            </span>
           </div>
           <div className="mt-3">
             <GateApproverPanel project={project} editable={isPm && !serverManaged} showBulk />
@@ -131,7 +135,7 @@ export default function ProjectSettingsPage() {
 
         <aside className="space-y-3">
           <div className="card px-4 py-3">
-            <p className="text-[12px] font-semibold text-foreground-900">프로젝트 PM</p>
+            <p className="text-[12px] font-semibold text-foreground-900">{PROJECT_SETTINGS_TEXT.pmCardTitle}</p>
             <div className="mt-2 flex items-center gap-2.5 rounded-lg border border-primary-200 bg-primary-50 px-3 py-2.5">
               <Avatar name={pm?.name || "?"} size="sm" />
               <span className="min-w-0">
@@ -140,21 +144,21 @@ export default function ProjectSettingsPage() {
               </span>
             </div>
             <p className="mt-2 text-[10.5px] leading-4 text-foreground-600">
-              현재 PM은 게이트 승인자로 지정할 수 없습니다. 아래 PM 위임 절차를 사용해 주세요.
+              {PROJECT_SETTINGS_TEXT.pmCannotBeApprover}
             </p>
           </div>
 
           <div className="card px-4 py-3">
             <div className="flex flex-wrap items-center justify-between gap-1.5">
-              <p className="text-[12px] font-semibold text-foreground-900">PM 변경·위임</p>
+              <p className="text-[12px] font-semibold text-foreground-900">{PROJECT_SETTINGS_TEXT.pmChangeTitle}</p>
               <Badge className="border-background-300 bg-background-100 text-foreground-600">
-                {isPm ? "현재 PM" : isAdmin ? "시스템 관리자" : "권한 없음"}
+                {isPm ? PROJECT_SETTINGS_TEXT.badgeCurrentPm : isAdmin ? SYSTEM_ROLE_LABEL.admin : PROJECT_SETTINGS_TEXT.badgeNoPermission}
               </Badge>
             </div>
             {canDelegatePm ? (
               <>
                 <p className="mt-1 text-[10.5px] leading-4 text-foreground-600">
-                  위임 전에 기존 PM과 새 PM을 확인합니다. 일반 멤버는 PM을 변경할 수 없습니다.
+                  {PROJECT_SETTINGS_TEXT.pmDelegateGuide}
                 </p>
                 <select
                   className="field mt-2 text-[12px]"
@@ -163,9 +167,9 @@ export default function ProjectSettingsPage() {
                     setNextPmId(event.target.value);
                     setPmMessage(null);
                   }}
-                  aria-label="새 PM 선택"
+                  aria-label={PROJECT_SETTINGS_TEXT.selectNewPm}
                 >
-                  <option value="">새 PM 선택</option>
+                  <option value="">{PROJECT_SETTINGS_TEXT.selectNewPm}</option>
                   {pmCandidates.map((user) => (
                     <option key={user.id} value={user.id}>
                       {user.name} · {user.dept} · {ROLE_LABEL[project.members.find((m) => m.userId === user.id)?.role || "dev"]}
@@ -182,7 +186,7 @@ export default function ProjectSettingsPage() {
                 </button>
                 {pmCandidates.length === 0 && (
                   <p className="mt-1.5 text-[10.5px] leading-4 text-foreground-500">
-                    위임할 수 있는 다른 활성 멤버가 없습니다. PM이 아닌 프로젝트 멤버만 위임 대상이 될 수 있습니다.
+                    {PROJECT_SETTINGS_TEXT.noPmCandidates}
                   </p>
                 )}
               </>
@@ -193,7 +197,7 @@ export default function ProjectSettingsPage() {
                   ? isPm
                     ? PROJECT_MEMBER_TEXT.pmGuide
                     : PROJECT_MEMBER_TEXT.pmGuideReadOnly
-                  : "PM 변경은 현재 PM 또는 시스템 관리자만 수행할 수 있습니다."}
+                  : PROJECT_SETTINGS_TEXT.pmChangePermissionNote}
               </p>
             )}
             {pmMessage && (
@@ -212,12 +216,12 @@ export default function ProjectSettingsPage() {
 
           <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5">
             <p className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-900">
-              <i className="ri-information-line" /> 업무 담당자와 승인자는 다릅니다
+              <i className="ri-information-line" /> {PROJECT_SETTINGS_TEXT.assigneeVsApproverTitle}
             </p>
             <ul className="mt-1.5 space-y-1 text-[10.5px] leading-4 text-amber-800">
-              <li>· 업무 담당자: 업무를 수행하는 사람 (내 업무·업무 목록에 표시)</li>
-              <li>· 게이트 승인자: 산출물 검수와 단계 전환을 판정하는 사람 (승인 요청에 표시)</li>
-              <li>· 승인자로 지정해도 업무 담당자로 자동 배정되지 않습니다.</li>
+              <li>{PROJECT_SETTINGS_TEXT.assigneeRoleDesc}</li>
+              <li>{PROJECT_SETTINGS_TEXT.approverRoleDesc}</li>
+              <li>{PROJECT_SETTINGS_TEXT.approverNoAutoAssign}</li>
             </ul>
           </div>
         </aside>
@@ -253,8 +257,10 @@ export default function ProjectSettingsPage() {
       {!serverManaged && (
         <section className="card overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-background-200 px-4 py-3">
-            <h4 className="text-[13px] font-semibold text-foreground-950">현재 멤버 ({project.members.length}명)</h4>
-            <span className="text-[10.5px] text-foreground-500">승인자 후보는 이 중 PM을 제외한 멤버입니다.</span>
+            <h4 className="text-[13px] font-semibold text-foreground-950">
+              {formatLabel(PROJECT_SETTINGS_TEXT.currentMembersTitle, { count: project.members.length })}
+            </h4>
+            <span className="text-[10.5px] text-foreground-500">{PROJECT_SETTINGS_TEXT.approverCandidatesHint}</span>
           </div>
           <ul className="grid grid-cols-1 gap-2 px-4 py-3 sm:grid-cols-2 xl:grid-cols-3">
             {project.members.map((member) => {
@@ -270,10 +276,10 @@ export default function ProjectSettingsPage() {
                     <span className="flex items-center gap-1.5">
                       <span className="truncate text-[12.5px] font-medium text-foreground-900">{user?.name}</span>
                       {member.userId === project.pmId && (
-                        <Badge className="border-primary-200 bg-primary-50 text-primary-700">PM</Badge>
+                        <Badge className="border-primary-200 bg-primary-50 text-primary-700">{ROLE_LABEL.pm}</Badge>
                       )}
                       {isApprover && member.userId !== project.pmId && (
-                        <Badge className="border-accent-200 bg-accent-50 text-accent-800">승인자</Badge>
+                        <Badge className="border-accent-200 bg-accent-50 text-accent-800">{PROJECT_SETTINGS_TEXT.approverBadge}</Badge>
                       )}
                     </span>
                     <span className="block truncate text-[10.5px] text-foreground-500">
@@ -289,8 +295,8 @@ export default function ProjectSettingsPage() {
 
       <Modal
         open={confirmOpen}
-        title="PM을 위임하시겠습니까?"
-        description="위임이 완료되면 프로젝트의 PM 표시와 PM 권한이 함께 바뀝니다."
+        title={PROJECT_SETTINGS_TEXT.delegateModalTitle}
+        description={PROJECT_SETTINGS_TEXT.delegateModalDescription}
         onClose={() => setConfirmOpen(false)}
         width="max-w-md"
         footer={
@@ -307,7 +313,7 @@ export default function ProjectSettingsPage() {
         <div className="space-y-3">
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto_1fr]">
             <div className="rounded-lg border border-background-300 bg-background-50 px-3 py-2.5">
-              <p className="text-[10.5px] text-foreground-500">기존 PM</p>
+              <p className="text-[10.5px] text-foreground-500">{PROJECT_SETTINGS_TEXT.previousPm}</p>
               <div className="mt-1.5 flex items-center gap-2">
                 <Avatar name={pm?.name || "?"} size="sm" />
                 <span className="min-w-0">
@@ -320,7 +326,7 @@ export default function ProjectSettingsPage() {
               <i className="ri-arrow-right-line" aria-hidden="true" />
             </div>
             <div className="rounded-lg border border-primary-300 bg-primary-50 px-3 py-2.5">
-              <p className="text-[10.5px] text-primary-700">새 PM</p>
+              <p className="text-[10.5px] text-primary-700">{PROJECT_SETTINGS_TEXT.newPm}</p>
               <div className="mt-1.5 flex items-center gap-2">
                 <Avatar name={nextPm?.name || "?"} size="sm" />
                 <span className="min-w-0">
@@ -331,8 +337,7 @@ export default function ProjectSettingsPage() {
             </div>
           </div>
           <p className="text-[11px] leading-5 text-foreground-600">
-            위임 대상이 게이트 승인자로 지정되어 있으면 위임이 차단됩니다. 이 경우 승인자 지정을 먼저 해제한 후 다시
-            시도해 주세요. 승인자 지정은 자동으로 해제되지 않습니다.
+            {PROJECT_SETTINGS_TEXT.delegateBlockedNote}
           </p>
         </div>
       </Modal>

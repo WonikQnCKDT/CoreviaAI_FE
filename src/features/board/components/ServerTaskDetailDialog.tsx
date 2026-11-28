@@ -12,6 +12,8 @@ import {
   type TaskType,
 } from "@/features/board/api/boardApi";
 import { TASK_DETAIL_TEXT } from "@/features/board/i18n/ko";
+import { TASK_STATUS_TO_CODE } from "@/shared/codes/codeStore";
+import { useCommonCodes } from "@/shared/codes/useCommonCodes";
 import {
   activityLabel,
   canEditAttributes,
@@ -49,6 +51,7 @@ const dateTime = (iso: string) => {
  * 이력의 before·after는 사용자 입력이 섞여 있어 텍스트로만 그린다.
  */
 export default function ServerTaskDetailDialog({ projectId, taskId, viewer, members, onClose, onChanged }: Props) {
+  const { labelOf: taskStatusLabelOf } = useCommonCodes("TASK_STATUS");
   const [detail, setDetail] = useState<DetailState>({ phase: "loading" });
   const [history, setHistory] = useState<HistoryState>({ phase: "loading" });
   const [form, setForm] = useState({ taskType: "task" as TaskType, priority: "medium" as TaskPriority, completionCriteria: "" });
@@ -154,7 +157,7 @@ export default function ServerTaskDetailDialog({ projectId, taskId, viewer, memb
             </div>
           ))}
           <dt className="text-foreground-500">{TASK_DETAIL_TEXT.status}</dt>
-          <dd><StatusBadge status={task.status} /> <span className="ml-1 text-[11px] text-foreground-500">{TASK_DETAIL_TEXT.statusNote}</span></dd>
+          <dd><StatusBadge status={task.status} label={taskStatusLabelOf(TASK_STATUS_TO_CODE[task.status])} /> <span className="ml-1 text-[11px] text-foreground-500">{TASK_DETAIL_TEXT.statusNote}</span></dd>
           <dt className="text-foreground-500">{TASK_DETAIL_TEXT.progress}</dt>
           <dd><ProgressBar value={task.progress} showLabel /></dd>
         </dl>
@@ -209,7 +212,7 @@ export default function ServerTaskDetailDialog({ projectId, taskId, viewer, memb
                   <ul className="mt-0.5 text-foreground-700">
                     {historyLines({ before: h.before, after: h.after, userName }).map((line) => (
                       <li key={line.field} className="break-all">
-                        {line.field}: {line.from && line.to ? `${line.from} → ${line.to}` : line.from || line.to}
+                        {line.label}: {line.from && line.to ? `${line.from} → ${line.to}` : line.from || line.to}
                       </li>
                     ))}
                   </ul>

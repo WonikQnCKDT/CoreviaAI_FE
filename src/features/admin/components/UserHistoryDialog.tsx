@@ -56,7 +56,7 @@ const describeValue = function ({
     const found = departments.find(({ department }) => department.id === Number(value));
     return found ? found.path : `#${String(value)}`;
   }
-  if (typeof value === "boolean") return value ? "있음" : "없음";
+  if (typeof value === "boolean") return value ? ADMIN_TEXT.booleanTrue : ADMIN_TEXT.booleanFalse;
   if (typeof value === "object") return JSON.stringify(value);
   return String(value);
 };
@@ -96,7 +96,7 @@ const HistoryList = function ({ user, departments }: { user: AdminUser; departme
     <li key={field} className="text-xs leading-5 text-foreground-700">
       <span className="text-foreground-500">{HISTORY_FIELD_TEXT[field] ?? field}</span>{" "}
       {describeValue({ field, value: before, departments })}
-      <span className="mx-1 text-foreground-400" aria-label="에서">
+      <span className="mx-1 text-foreground-400" aria-label={ADMIN_TEXT.historyArrowAria}>
         →
       </span>
       {describeValue({ field, value: after, departments })}
@@ -142,7 +142,7 @@ const UserHistoryDialog = function ({ user, departments, onClose }: UserHistoryD
     <Modal
       open={Boolean(user)}
       title={`${ADMIN_TEXT.history}${user ? ` · ${user.name}` : ""}`}
-      description="최신 변경이 위에 옵니다. 비밀번호 초기화는 기록만 남고 내용은 저장하지 않습니다."
+      description={ADMIN_TEXT.historyDescription}
       onClose={onClose}
       width="max-w-xl"
     >

@@ -1,4 +1,5 @@
 import { apiRequest, type ApiResult } from "@/shared/api/client";
+import type { CursorPage } from "@/features/admin/api/adminApi";
 
 /**
  * 공통 코드 관리 API (Confluence 02-3. 공통 코드, FR-ADM-07).
@@ -27,6 +28,26 @@ interface AdminCodeDto {
   updatedAt: string;
 }
 
+interface CursorPageDto<T> {
+  items: T[];
+  nextCursor: string | null;
+  hasNext: boolean;
+}
+
+interface AdminCodeHistoryDto {
+  id: number;
+  action: string;
+  actorUserId: number | null;
+  actorName: string | null;
+  details: {
+    groupCode?: string;
+    code?: string;
+    sortOrder?: { before?: number | null; after?: number | null } | null;
+  } | null;
+  ipAddress: string | null;
+  occurredAt: string;
+}
+
 /* ===== 화면에서 쓰는 domain model ===== */
 
 export interface CodeGroup {
@@ -44,6 +65,16 @@ export interface AdminCode {
   updatedAt: string;
 }
 
+export interface CodeHistory {
+  id: number;
+  action: "CODE_CHANGED" | string;
+  actorUserId: number | null;
+  actorName: string | null;
+  sortOrder: { before: number | null; after: number | null } | null;
+  ipAddress: string | null;
+  occurredAt: string;
+}
+
 export const MIN_SORT_ORDER = 0;
 export const MAX_SORT_ORDER = 9999;
 
@@ -57,6 +88,34 @@ const toCode = ({ id, code, labelKey, sortOrder, active, updatedAt }: AdminCodeD
   active: Boolean(active),
   updatedAt,
 });
+
+const toCodeHistory = ({
+  id,
+  action,
+  actorUserId,
+  actorName,
+  details,
+  ipAddress,
+  occurredAt,
+}: AdminCodeHistoryDto): CodeHistory => {
+  const pair = details?.sortOrder;
+  const sortOrder =
+    pair && typeof pair === "object"
+      ? {
+          before: typeof pair.before === "number" ? pair.before : null,
+          after: typeof pair.after === "number" ? pair.after : null,
+        }
+      : null;
+  return {
+    id,
+    action,
+    actorUserId: actorUserId ?? null,
+    actorName: actorName ?? null,
+    sortOrder,
+    ipAddress: ipAddress ?? null,
+    occurredAt,
+  };
+};
 
 const mapResult = function <A, B>(result: ApiResult<A>, transform: (data: A) => B): ApiResult<B> {
   return result.ok === true ? { ok: true, data: transform(result.data) } : result;
@@ -95,4 +154,32 @@ export const changeCodeSortOrder = async function ({
     signal,
   });
   return mapResult(result, toCode);
+};
+
+/** GET /api/admin/code-groups/{groupCode}/codes/{code}/histories — 최신순 커서 목록 */
+export const fetchCodeHistories = async function ({
+  groupCode,
+  code,
+  cursor,
+  size = 20,
+  signal,
+}: {
+  groupCode: string;
+  code: string;
+  cursor?: string | null;
+  size?: number;
+  signal?: AbortSignal;
+}): Promise<ApiResult<CursorPage<CodeHistory>>> {
+  const search = new URLSearchParams();
+  if (cursor) search.set("cursor", cursor);
+  search.set("size", String(size));
+  const result = await apiRequest<CursorPageDto<AdminCodeHistoryDto>>({
+    path: `${groupPath(groupCode)}/codes/${encodeURIComponent(code)}/histories?${search.toString()}`,
+    signal,
+  });
+  return mapResult(result, ({ items, nextCursor, hasNext }) => ({
+    items: (items ?? []).map(toCodeHistory),
+    nextCursor: nextCursor ?? null,
+    hasNext: Boolean(hasNext),
+  }));
 };

@@ -1,3 +1,5 @@
+import { COMMON_UI_TEXT } from "@/shared/i18n/catalog/common";
+
 interface KpiCardProps {
   icon: string;
   label: string;
@@ -16,8 +18,9 @@ const TONE_STYLE: Record<KpiCardProps["tone"], { box: string; text: string }> = 
   success: { box: "bg-emerald-50 text-emerald-600", text: "text-emerald-600" },
 };
 
-export default function KpiCard({ icon, label, value, unit = "건", hint, tone, active = false, onClick }: KpiCardProps) {
+export default function KpiCard({ icon, label, value, unit, hint, tone, active = false, onClick }: KpiCardProps) {
   const style = TONE_STYLE[tone];
+  const displayUnit = unit ?? COMMON_UI_TEXT.countUnit;
   return (
     <button
       type="button"
@@ -35,7 +38,7 @@ export default function KpiCard({ icon, label, value, unit = "건", hint, tone, 
         <span className="block truncate text-[11.5px] font-medium text-foreground-600">{label}</span>
         <span className={`mt-1 flex items-baseline gap-1 ${style.text}`}>
           <span className="text-[20px] font-semibold leading-none tabular-nums">{value}</span>
-          <span className="text-[11px] font-medium text-foreground-500">{unit}</span>
+          <span className="text-[11px] font-medium text-foreground-500">{displayUnit}</span>
         </span>
       </span>
     </button>

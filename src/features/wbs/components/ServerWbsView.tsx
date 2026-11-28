@@ -11,6 +11,7 @@ import {
   updateTaskProgress,
   updateWbsTask,
   type WbsItem,
+  type WbsTaskCreateAttributes,
   type WbsTaskFields,
 } from "@/features/wbs/api/wbsApi";
 import ServerTaskDetailDialog from "@/features/board/components/ServerTaskDetailDialog";
@@ -41,6 +42,8 @@ import {
 } from "@/features/wbs/utils/wbsRules";
 import type { ApiResult } from "@/shared/api/client";
 import { formatLabel } from "@/shared/i18n/store";
+import { TASK_STATUS_TO_CODE } from "@/shared/codes/codeStore";
+import { useCommonCodes } from "@/shared/codes/useCommonCodes";
 import type { Project } from "@/types";
 
 type Notice = { tone: "success" | "error"; text: string } | null;
@@ -65,6 +68,7 @@ const parseDraggedId = (dataTransfer: DataTransfer | null | undefined): number |
 export default function ServerWbsView({ project }: { project: Project & { serverId: number } }) {
   const projectId = project.serverId;
   const { state, reload, replaceTree, viewer } = useServerWbs(projectId);
+  const { labelOf: taskStatusLabelOf } = useCommonCodes("TASK_STATUS");
   const [formTarget, setFormTarget] = useState<WbsFormTarget | null>(null);
   const [progressTarget, setProgressTarget] = useState<WbsItem | null>(null);
   const [reparentTarget, setReparentTarget] = useState<WbsItem | null>(null);
@@ -148,7 +152,15 @@ export default function ServerWbsView({ project }: { project: Project & { server
     return false;
   };
 
-  const submitForm = async ({ phaseId, fields }: { phaseId: number | null; fields: WbsTaskFields }) => {
+  const submitForm = async ({
+    phaseId,
+    fields,
+    attributes,
+  }: {
+    phaseId: number | null;
+    fields: WbsTaskFields;
+    attributes: WbsTaskCreateAttributes;
+  }) => {
     if (!formTarget) return;
     const target = formTarget;
     const ok =
@@ -170,6 +182,7 @@ export default function ServerWbsView({ project }: { project: Project & { server
                 parentTaskId: target.kind === "createSubtask" ? target.parent.id : null,
                 phaseId: target.kind === "createTask" ? phaseId : null,
                 fields,
+                attributes,
               }),
             (change) => {
               replaceTree(change.tasks);
@@ -402,7 +415,10 @@ export default function ServerWbsView({ project }: { project: Project & { server
         <ProgressBar value={item.progress} showLabel />
       </td>
       <td className="td" title={item.subtasks.length > 0 ? WBS_TEXT.derivedStatus : undefined}>
-        <StatusBadge status={deriveDisplayStatus(item)} />
+        {(() => {
+          const displayStatus = deriveDisplayStatus(item);
+          return <StatusBadge status={displayStatus} label={taskStatusLabelOf(TASK_STATUS_TO_CODE[displayStatus])} />;
+        })()}
       </td>
       <td className="td">{actions(item)}</td>
     </tr>

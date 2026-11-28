@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
+import { TASK_STATUS_TO_CODE } from "@/shared/codes/codeStore";
+import { useCommonCodes } from "@/shared/codes/useCommonCodes";
 import EmptyState from "@/components/ui/EmptyState";
 import {
   createEvent,
@@ -42,6 +44,7 @@ const MONDAY_FIRST = [...WEEKDAY_LABELS.slice(1), WEEKDAY_LABELS[0]];
  * 저장은 서버 성공 뒤 그 달을 다시 받아 반영한다.
  */
 export default function ServerCalendarTab({ today = kstToday() }: { today?: string }) {
+  const { labelOf: taskStatusLabelOf } = useCommonCodes("TASK_STATUS");
   const [cursor, setCursor] = useState(() => ({ year: Number(today.slice(0, 4)), month: Number(today.slice(5, 7)) - 1 }));
   const [selected, setSelected] = useState(today);
   const [state, setState] = useState<LoadState>({ phase: "loading" });
@@ -202,7 +205,7 @@ export default function ServerCalendarTab({ today = kstToday() }: { today?: stri
                     </Badge>
                     <span className="min-w-0 flex-1 break-words text-foreground-900">{itemLabel(item)}</span>
                     {item.kind === "event" && item.event.memo && <span className="w-full whitespace-pre-wrap pl-1 text-[11.5px] text-foreground-500">{item.event.memo}</span>}
-                    {item.kind === "task" && <StatusBadge status={item.task.status} />}
+                    {item.kind === "task" && <StatusBadge status={item.task.status} label={taskStatusLabelOf(TASK_STATUS_TO_CODE[item.task.status])} />}
                     {item.kind === "event" ? (
                       <button type="button" className="btn-ghost px-2 py-0.5 text-[12px]" disabled={busy} aria-label={`${SCHEDULE_TEXT.edit}: ${item.event.title}`}
                         onClick={() => { setDialogError(""); setDialog({ mode: "edit", event: item.event }); }}>

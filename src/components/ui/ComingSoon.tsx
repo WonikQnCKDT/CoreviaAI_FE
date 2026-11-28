@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/Badge";
+import { COMMON_UI_TEXT } from "@/shared/i18n/catalog/common";
 
 interface ComingSoonProps {
   title: string;
@@ -15,7 +16,7 @@ export default function ComingSoon({ title, description, features, note }: Comin
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-[16px] font-semibold text-foreground-950">{title}</h2>
           <Badge className="border-amber-200 bg-amber-50 text-amber-700">
-            <i className="ri-time-line" /> 준비 중
+            <i className="ri-time-line" /> {COMMON_UI_TEXT.comingSoonBadge}
           </Badge>
         </div>
         <p className="mt-1.5 max-w-3xl text-[12.5px] leading-6 text-foreground-600">{description}</p>
@@ -31,7 +32,7 @@ export default function ComingSoon({ title, description, features, note }: Comin
           ))}
         </div>
         <p className="mt-4 rounded-lg border border-background-200 bg-background-50 px-3.5 py-2.5 text-[11px] leading-5 text-foreground-500">
-          이 화면은 아직 구현되지 않았습니다. 실제 동작 없이 완료 메시지를 표시하지 않으며, 다음 단계에서 데이터와 함께 제공될 예정입니다.
+          {COMMON_UI_TEXT.comingSoonNotice}
         </p>
         {note}
       </div>

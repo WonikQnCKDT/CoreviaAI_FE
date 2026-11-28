@@ -24,8 +24,8 @@ export function HealthBadge({ health, label }: { health: Health; label?: string 
   return <Badge className={HEALTH_CLASS[health]}>{label || HEALTH_LABEL[health]}</Badge>;
 }
 
-export function StatusBadge({ status }: { status: TaskStatus }) {
-  return <Badge className={TASK_STATUS_CLASS[status]}>{TASK_STATUS_LABEL[status]}</Badge>;
+export function StatusBadge({ status, label }: { status: TaskStatus; label?: string }) {
+  return <Badge className={TASK_STATUS_CLASS[status]}>{label || TASK_STATUS_LABEL[status]}</Badge>;
 }
 
 export function PriorityBadge({ priority }: { priority: Priority }) {

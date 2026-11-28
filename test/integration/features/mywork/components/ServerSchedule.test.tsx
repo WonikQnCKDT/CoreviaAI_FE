@@ -5,6 +5,7 @@ import ServerCalendarTab from "@/features/mywork/components/ServerCalendarTab";
 import ServerJournalTab from "@/features/mywork/components/ServerJournalTab";
 import { SCHEDULE_TEXT, WORKLOG_TEXT } from "@/features/mywork/i18n/ko";
 import { kstDayStart } from "@/features/mywork/utils/scheduleRules";
+import { resetCodeCache } from "@/shared/codes/codeStore";
 import { jsonFail, jsonOk, renderApp, stubFetch } from "@test/support/appHarness";
 
 const TODAY = "2026-12-01";
@@ -27,6 +28,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  resetCodeCache();
   vi.unstubAllGlobals();
 });
 
@@ -42,7 +44,8 @@ describe("api 모드 내 일정", () => {
     expect(within(day).getByText("회의실 A")).toBeTruthy();
     expect(within(day).getByRole("link", { name: `${SCHEDULE_TEXT.openProject}: API 설계` }).getAttribute("href")).toBe("/projects/77/kanban");
     // 그 달 범위로 조회(한국 12-01 00:00 ~ 01-01 00:00)
-    expect(new URL(calls[0].path, "http://x").searchParams.get("from")).toBe("2026-11-30T15:00:00.000Z");
+    const eventsCall = calls.find((c) => c.path.startsWith("/api/me/events"));
+    expect(new URL(eventsCall!.path, "http://x").searchParams.get("from")).toBe("2026-11-30T15:00:00.000Z");
     // 업무는 종료일(12-03)까지, 12-04에는 없다
     fireEvent.click(screen.getByRole("button", { name: "2026-12-03 선택" }));
     expect(within(screen.getByRole("region", { name: "2026-12-03 일정" })).getByText("API 설계")).toBeTruthy();

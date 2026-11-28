@@ -1,10 +1,14 @@
 import { useState, type FormEvent } from "react";
 import Modal from "@/components/ui/Modal";
+import { taskPriorityLabel, taskTypeLabel } from "@/features/board/utils/boardRules";
 import type { ServerProjectMember, ServerProjectPhase } from "@/features/project/api/projectApi";
-import type { WbsItem, WbsTaskFields } from "@/features/wbs/api/wbsApi";
+import type { TaskPriority, TaskType, WbsItem, WbsTaskCreateAttributes, WbsTaskFields } from "@/features/wbs/api/wbsApi";
 import { WBS_FORM_TEXT } from "@/features/wbs/i18n/ko";
 import { isWbsPm, validateWbsForm, type WbsFormValues, type WbsViewer } from "@/features/wbs/utils/wbsRules";
 import { formatLabel } from "@/shared/i18n/store";
+
+const TASK_TYPES: TaskType[] = ["task", "defect"];
+const TASK_PRIORITIES: TaskPriority[] = ["high", "medium", "low"];
 
 export type WbsFormTarget =
   | { kind: "createTask"; phaseId: number | null }
@@ -19,7 +23,7 @@ interface Props {
   submitting: boolean;
   error: string;
   onClose: () => void;
-  onSubmit: (input: { phaseId: number | null; fields: WbsTaskFields }) => void;
+  onSubmit: (input: { phaseId: number | null; fields: WbsTaskFields; attributes: WbsTaskCreateAttributes }) => void;
 }
 
 const initialValues = function (target: WbsFormTarget): WbsFormValues {
@@ -33,6 +37,9 @@ const initialValues = function (target: WbsFormTarget): WbsFormValues {
       startDate: item.startDate,
       endDate: item.endDate,
       effort: item.estimatedEffort === null ? "" : String(item.estimatedEffort),
+      taskType: "task",
+      priority: "medium",
+      completionCriteria: "",
     };
   }
   const base = target.kind === "createSubtask" ? target.parent : null;
@@ -45,6 +52,9 @@ const initialValues = function (target: WbsFormTarget): WbsFormValues {
     startDate: base?.startDate ?? "",
     endDate: base?.endDate ?? "",
     effort: "",
+    taskType: "task",
+    priority: "medium",
+    completionCriteria: "",
   };
 };
 
@@ -80,7 +90,7 @@ export default function WbsTaskFormDialog({ target, phases, members, viewer, sub
       return;
     }
     setLocalError("");
-    onSubmit({ phaseId: values.phaseId, fields: result.fields });
+    onSubmit({ phaseId: values.phaseId, fields: result.fields, attributes: result.attributes });
   };
 
   const shownError = localError || error;
@@ -177,6 +187,50 @@ export default function WbsTaskFormDialog({ target, phases, members, viewer, sub
           {WBS_FORM_TEXT.effort}
           <input className={fieldClass} inputMode="decimal" value={values.effort} onChange={(e) => set("effort", e.target.value)} />
         </label>
+        {target.kind !== "edit" && (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block text-[12px] font-medium text-foreground-700">
+                {WBS_FORM_TEXT.taskType}
+                <select
+                  className={fieldClass}
+                  value={values.taskType ?? "task"}
+                  onChange={(e) => set("taskType", e.target.value as TaskType)}
+                >
+                  {TASK_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {taskTypeLabel(t)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block text-[12px] font-medium text-foreground-700">
+                {WBS_FORM_TEXT.priority}
+                <select
+                  className={fieldClass}
+                  value={values.priority ?? "medium"}
+                  onChange={(e) => set("priority", e.target.value as TaskPriority)}
+                >
+                  {TASK_PRIORITIES.map((p) => (
+                    <option key={p} value={p}>
+                      {taskPriorityLabel(p)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <label className="block text-[12px] font-medium text-foreground-700">
+              {WBS_FORM_TEXT.completionCriteria}
+              <textarea
+                className={fieldClass}
+                rows={2}
+                maxLength={2000}
+                value={values.completionCriteria ?? ""}
+                onChange={(e) => set("completionCriteria", e.target.value)}
+              />
+            </label>
+          </>
+        )}
         {shownError && (
           <p role="alert" className="rounded-md bg-rose-50 px-3 py-2 text-[12px] text-rose-700">
             {shownError}

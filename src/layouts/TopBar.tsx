@@ -12,7 +12,9 @@ import { getUnsavedGuard } from "@/utils/navGuard";
 import { displayProjectProgress } from "@/features/task/utils/taskTree";
 import { HEALTH_DOT, HEALTH_LABEL, STAGE_LABEL, riskLevel } from "@/utils/ui";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { COMMON_UI_TEXT, TOPBAR_TEXT } from "@/shared/i18n/catalog/common";
 import { MENU_TEXT } from "@/shared/i18n/catalog/menu";
+import { formatLabel } from "@/shared/i18n/store";
 import LanguageMenu from "@/layouts/LanguageMenu";
 
 interface PageMeta {
@@ -127,18 +129,18 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
           {summary && (
             <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11.5px] leading-4 text-foreground-500">
               <span className="whitespace-nowrap">
-                진척률 <span className="font-semibold tabular-nums text-primary-600">{summary.progress === null ? "-" : `${summary.progress}%`}</span>
+                {TOPBAR_TEXT.progress} <span className="font-semibold tabular-nums text-primary-600">{summary.progress === null ? "-" : `${summary.progress}%`}</span>
               </span>
               <span aria-hidden="true" className="text-foreground-300">
                 ·
               </span>
-              <span className="whitespace-nowrap">현재 단계 {summary.stage}</span>
+              <span className="whitespace-nowrap">{formatLabel(TOPBAR_TEXT.currentStage, { stage: summary.stage })}</span>
               <span aria-hidden="true" className="text-foreground-300">
                 ·
               </span>
               <span className="flex items-center gap-1 whitespace-nowrap">
                 <span className={`h-1.5 w-1.5 rounded-full ${HEALTH_DOT[summary.level]}`} aria-hidden="true" />
-                {summary.levelLabel} <span className="tabular-nums">{summary.score}점</span>
+                {summary.levelLabel} <span className="tabular-nums">{formatLabel(COMMON_UI_TEXT.scoreUnit, { score: summary.score })}</span>
               </span>
             </p>
           )}
@@ -220,7 +222,7 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
                     </button>
                     {mode === "demo" && (
                       <span className="mt-1 block rounded-md bg-background-100 px-2.5 py-2 text-[11px] leading-4 text-foreground-500">
-                        데모 세션입니다. 실제 인증·세션 관리는 연결되어 있지 않습니다.
+                        {TOPBAR_TEXT.demoSessionNote}
                       </span>
                     )}
                   </div>
@@ -235,8 +237,8 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
 
       <Modal
         open={leaveOpen}
-        title="저장하지 않은 내용이 있습니다"
-        description="이 화면에서 나가면 작성 중인 내용은 저장되지 않습니다."
+        title={TOPBAR_TEXT.unsavedTitle}
+        description={TOPBAR_TEXT.unsavedDescription}
         onClose={() => setLeaveOpen(false)}
         width="max-w-md"
         footer={
@@ -258,7 +260,7 @@ export default function TopBar({ onOpenMenu }: { onOpenMenu: () => void }) {
         }
       >
         <p className="text-[12.5px] leading-6 text-foreground-700">
-          저장하지 않은 입력이 있을 때만 이 확인을 표시합니다. 입력을 마무리하려면 계속 작성하기를 선택해 주세요.
+          {TOPBAR_TEXT.unsavedBody}
         </p>
       </Modal>
     </header>

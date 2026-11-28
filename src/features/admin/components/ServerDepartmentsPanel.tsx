@@ -87,10 +87,10 @@ const ServerDepartmentsPanel = function () {
         <table className="w-full min-w-[760px] border-collapse">
           <thead>
             <tr>
-              <th className="th">부서</th>
-              <th className="th w-28 text-right">활성 인원</th>
-              <th className="th w-20">상태</th>
-              <th className="th w-64">관리</th>
+              <th className="th">{ADMIN_TEXT.colDepartment}</th>
+              <th className="th w-28 text-right">{ADMIN_TEXT.colActiveMembers}</th>
+              <th className="th w-20">{ADMIN_TEXT.colStatus}</th>
+              <th className="th w-64">{ADMIN_TEXT.colManage}</th>
             </tr>
           </thead>
           <tbody>
@@ -106,11 +106,13 @@ const ServerDepartmentsPanel = function () {
                         <i className="ri-corner-down-right-line text-foreground-300" aria-hidden="true" />
                       )}
                       <span className={`text-sm ${active ? "font-medium text-foreground-950" : "text-foreground-500"}`}>{name}</span>
-                      <span className="sr-only">{depth > 0 ? `${depth}단계 하위 부서` : "최상위 부서"}</span>
+                      <span className="sr-only">
+                        {depth > 0 ? formatLabel(ADMIN_TEXT.depthSubDepartment, { depth }) : ADMIN_TEXT.topLevelDepartment}
+                      </span>
                     </span>
                   </td>
                   <td className="td text-right text-xs tabular-nums text-foreground-700">
-                    {formatCount({ value: activeMemberCount })}명
+                    {formatLabel(ADMIN_TEXT.memberCountUnit, { count: formatCount({ value: activeMemberCount }) })}
                   </td>
                   <td className="td">
                     <span className="inline-flex items-center gap-1.5 text-xs text-foreground-700">
@@ -195,10 +197,10 @@ const ServerDepartmentsPanel = function () {
         </div>
       )}
 
-      <section className="card overflow-hidden" aria-label="부서 목록">
+      <section className="card overflow-hidden" aria-label={ADMIN_TEXT.departmentsListAria}>
         {renderBody()}
         <div className="border-t border-background-200 bg-background-100 px-4 py-2.5 text-xs leading-5 text-foreground-500">
-          {ADMIN_TEXT.serverAppliedNote} 활성 인원은 그 부서에 직접 소속된 사람만 셉니다.
+          {ADMIN_TEXT.serverAppliedNote} {ADMIN_TEXT.activeMembersNote}
         </div>
       </section>
 
@@ -217,7 +219,7 @@ const ServerDepartmentsPanel = function () {
 
       <ConfirmDialog
         open={Boolean(statusTarget)}
-        title={deactivating ? "부서 비활성화" : "부서 활성화"}
+        title={deactivating ? ADMIN_TEXT.deactivateDepartmentTitle : ADMIN_TEXT.activateDepartmentTitle}
         confirmLabel={deactivating ? BUTTON_TEXT.deactivate : BUTTON_TEXT.activate}
         tone={deactivating ? "danger" : "default"}
         state={confirmState}
@@ -228,12 +230,11 @@ const ServerDepartmentsPanel = function () {
         }}
       >
         <p>
-          <strong className="font-medium text-foreground-950">{statusTarget?.name}</strong> 부서를{" "}
-          {deactivating ? "비활성화" : "활성화"}합니다.
+          {formatLabel(deactivating ? ADMIN_TEXT.deactivateDepartmentLead : ADMIN_TEXT.activateDepartmentLead, {
+            name: statusTarget?.name ?? "",
+          })}
         </p>
-        {deactivating && (
-          <p>비활성 부서에는 사용자를 새로 배치하거나 하위 부서를 만들 수 없습니다. 활성 사용자나 활성 하위 부서가 있으면 비활성화할 수 없습니다.</p>
-        )}
+        {deactivating && <p>{ADMIN_TEXT.deactivateDepartmentBody}</p>}
       </ConfirmDialog>
     </div>
   );

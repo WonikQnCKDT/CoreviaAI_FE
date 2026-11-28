@@ -13,6 +13,7 @@ import ServerPmReassignPanel from "@/features/admin/components/ServerPmReassignP
 import { useAuth } from "@/features/auth/authContext";
 import { canUseSystemAdmin } from "@/utils/permission";
 import { ADMIN_TAB_TEXT } from "@/shared/i18n/catalog/menu";
+import { ADMIN_TEXT } from "@/features/admin/i18n/ko";
 
 type TabKey = "users" | "departments" | "codes" | "labels" | "errorLogs" | "pmReassign" | "risk" | "audit";
 
@@ -65,9 +66,9 @@ export default function AdminPage() {
   if (!canUseSystemAdmin(currentUser)) {
     return (
       <NoAccess
-        title="시스템 관리 권한이 없습니다"
-        description="시스템 관리는 시스템 관리자 역할에게만 표시되는 메뉴입니다. 권한이 필요하면 관리자에게 요청해 주세요. 시스템 관리자 역할은 프로젝트 데이터 접근 권한을 자동으로 부여하지 않습니다."
-        requiredRole="시스템 관리자"
+        title={ADMIN_TEXT.noAccessTitle}
+        description={ADMIN_TEXT.noAccessDescription}
+        requiredRole={ADMIN_TAB_TEXT.adminOnly}
       />
     );
   }
@@ -77,9 +78,7 @@ export default function AdminPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-[12px] text-foreground-500">
-            {isApi
-              ? "시스템 관리자 전용 · 사용자·부서·공통 코드·다국어 라벨 변경은 서버에 바로 반영되고 감사 로그에 기록됩니다"
-              : "시스템 관리자 전용 · 변경 사항은 데모 저장소에만 반영됩니다"}
+            {isApi ? ADMIN_TEXT.apiHeaderNote : ADMIN_TEXT.demoHeaderNote}
           </p>
         </div>
         <span className="rounded border border-primary-200 bg-primary-50 px-2.5 py-1 text-[11px] font-medium text-primary-700">

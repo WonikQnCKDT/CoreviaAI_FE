@@ -8,12 +8,22 @@ import { useDemoStore } from "@/stores/DemoStore";
 import { PROJECT_CREATE_TEXT, PROJECT_FEATURE_LABEL } from "@/features/project/i18n/ko";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
 import { formatLabel } from "@/shared/i18n/store";
+import { resetCodeCache } from "@/shared/codes/codeStore";
 import { jsonFail, jsonOk, renderApp, stubFetch } from "@test/support/appHarness";
 import { creationOptionsDto, departmentDto, userSearchDto } from "@test/support/projectFixtures";
 
 /** 실제 BE 응답 형식(기본 시드) */
 const CREATION_OPTIONS = creationOptionsDto();
 const DEPARTMENTS = [departmentDto(1, "본부"), departmentDto(2, "개발팀", 1), departmentDto(3, "구매팀", 1)];
+const RISK_LEVEL_CODES = {
+  groupCode: "RISK_LEVEL",
+  labelKey: "codeGroup.RISK_LEVEL",
+  codes: [
+    { code: "NORMAL", labelKey: "code.RISK_LEVEL.NORMAL", sortOrder: 1 },
+    { code: "CAUTION", labelKey: "code.RISK_LEVEL.CAUTION", sortOrder: 2 },
+    { code: "DANGER", labelKey: "code.RISK_LEVEL.DANGER", sortOrder: 3 },
+  ],
+};
 
 const createdDetail = (name: string) => ({
   id: 77,
@@ -62,6 +72,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  resetCodeCache();
 });
 
 describe("api 모드 프로젝트 생성 (6단계 위자드)", () => {
@@ -98,6 +109,7 @@ describe("api 모드 프로젝트 생성 (6단계 위자드)", () => {
       "GET /api/projects": () => jsonOk({ items: [createdDetail("구매 발주 시스템")], nextCursor: null, hasNext: false }),
       // 목록 응답에는 진척률이 없어 목록 화면이 상세를 불러 채운다
       "GET /api/projects/77": () => jsonOk(createdDetail("구매 발주 시스템")),
+      "GET /api/codes/RISK_LEVEL": () => jsonOk(RISK_LEVEL_CODES),
     });
     renderApp({ mode: "api", route: "/projects/new", routes: API_ROUTES });
 
@@ -180,6 +192,7 @@ describe("api 모드 프로젝트 생성 (6단계 위자드)", () => {
       "GET /api/users/search": () => jsonOk([userSearchDto(11, "김철수", "개발팀", "백엔드"), userSearchDto(12, "김철민", null)]),
       "POST /api/projects": ({ body }) => jsonOk(createdDetail((body as { name: string }).name)),
       "GET /api/projects": () => jsonOk({ items: [], nextCursor: null, hasNext: false }),
+      "GET /api/codes/RISK_LEVEL": () => jsonOk(RISK_LEVEL_CODES),
     });
     renderApp({ mode: "api", route: "/projects/new", routes: API_ROUTES });
 

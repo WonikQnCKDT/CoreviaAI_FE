@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { StatusBadge } from "@/components/ui/Badge";
+import { TASK_STATUS_TO_CODE } from "@/shared/codes/codeStore";
+import { useCommonCodes } from "@/shared/codes/useCommonCodes";
 import EmptyState from "@/components/ui/EmptyState";
 import ProgressBar from "@/components/ui/ProgressBar";
 import { fetchTaskDetail } from "@/features/board/api/boardApi";
@@ -41,6 +43,7 @@ const formOf = (task: CalendarTask, entry: WorklogTaskEntry | undefined): TaskLo
  * 업무 기록은 저장 직전에 업무 상세로 최신 업무 version을 받아 보낸다(서버가 진척·완료를 업무에 반영).
  */
 export default function ServerJournalTab({ today = kstToday() }: { today?: string }) {
+  const { labelOf: taskStatusLabelOf } = useCommonCodes("TASK_STATUS");
   const [date, setDate] = useState(today);
   const [day, setDay] = useState<DayState>({ phase: "loading" });
   const [content, setContent] = useState("");
@@ -252,7 +255,7 @@ export default function ServerJournalTab({ today = kstToday() }: { today?: strin
                     <li key={task.id} className="rounded-lg border border-background-300 p-2.5">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="min-w-0 flex-1 break-words text-[13px] font-medium text-foreground-950">{task.title}</span>
-                        <StatusBadge status={task.status} />
+                        <StatusBadge status={task.status} label={taskStatusLabelOf(TASK_STATUS_TO_CODE[task.status])} />
                         <span className="text-[11px] text-foreground-500">{formatLabel(WORKLOG_TEXT.totalMinutes, { minutes: task.spentMinutes })}</span>
                         <Link className="btn-ghost px-2 py-0.5 text-[12px]" to={`/projects/${task.projectId}/kanban`} aria-label={`${WORKLOG_TEXT.openProject}: ${task.title}`}>
                           {WORKLOG_TEXT.openProject}

@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import EmptyState from "@/components/ui/EmptyState";
 import { changeCodeSortOrder, MAX_SORT_ORDER, MIN_SORT_ORDER, type AdminCode } from "@/features/admin/api/adminCodeApi";
+import CodeHistoryDialog from "@/features/admin/components/CodeHistoryDialog";
 import { useCodeGroups, useGroupCodes } from "@/features/admin/hooks/useCommonCodes";
 import { ADMIN_CODE_TEXT, ADMIN_NOTICE_TEXT, ADMIN_TEXT } from "@/features/admin/i18n/ko";
 import { formatDateTime } from "@/features/admin/utils/adminFormat";
 import { interpretCodeFailure, parseSortOrder } from "@/features/admin/utils/adminCodeRules";
 import { formatLabel } from "@/shared/i18n/store";
 import { translate } from "@/shared/i18n/store";
+import { invalidateCodeCache } from "@/shared/codes/codeStore";
 
 type RowMap = Record<string, string>;
 
@@ -18,6 +20,7 @@ const ServerCodesPanel = function () {
   const [drafts, setDrafts] = useState<RowMap>({});
   const [rowErrors, setRowErrors] = useState<RowMap>({});
   const [savingCode, setSavingCode] = useState<string | null>(null);
+  const [historyCode, setHistoryCode] = useState<AdminCode | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const controllerRef = useRef<AbortController | null>(null);
 
@@ -35,6 +38,7 @@ const ServerCodesPanel = function () {
     setDrafts({});
     setRowErrors({});
     setSavingCode(null);
+    setHistoryCode(null);
   }, [groupCode]);
 
   useEffect(() => () => controllerRef.current?.abort(), []);
@@ -64,6 +68,7 @@ const ServerCodesPanel = function () {
     setSavingCode(null);
     if (result.ok === true) {
       codes.replace(result.data);
+      invalidateCodeCache(groupCode);
       setDrafts(({ [code.code]: _saved, ...rest }) => rest);
       setNotice(formatLabel(ADMIN_NOTICE_TEXT.codeSortOrderChanged, { code: code.code, sortOrder: result.data.sortOrder }));
       return;
@@ -152,12 +157,15 @@ const ServerCodesPanel = function () {
         <table className="w-full min-w-[840px] border-collapse">
           <thead>
             <tr>
-              <th className="th">코드 값</th>
-              <th className="th">라벨 키</th>
+              <th className="th">{ADMIN_CODE_TEXT.colCodeValue}</th>
+              <th className="th">{ADMIN_CODE_TEXT.colLabelKey}</th>
               <th className="th">{ADMIN_CODE_TEXT.displayText}</th>
-              <th className="th w-24">사용 여부</th>
-              <th className="th w-56">정렬 순서</th>
-              <th className="th w-36">수정일</th>
+              <th className="th w-24">{ADMIN_CODE_TEXT.colActive}</th>
+              <th className="th w-56">{ADMIN_CODE_TEXT.colSortOrder}</th>
+              <th className="th w-36">{ADMIN_CODE_TEXT.colUpdatedAt}</th>
+              <th className="th w-24">
+                <span className="sr-only">{ADMIN_TEXT.history}</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -190,7 +198,7 @@ const ServerCodesPanel = function () {
                       }}
                     >
                       <label htmlFor={inputId} className="sr-only">
-                        {value} 정렬 순서
+                        {formatLabel(ADMIN_CODE_TEXT.sortOrderInputAria, { code: value })}
                       </label>
                       <input
                         id={inputId}
@@ -222,6 +230,16 @@ const ServerCodesPanel = function () {
                   </td>
                   <td className="td text-xs tabular-nums text-foreground-600">
                     <time dateTime={updatedAt}>{formatDateTime({ iso: updatedAt })}</time>
+                  </td>
+                  <td className="td">
+                    <button
+                      type="button"
+                      className="btn-ghost min-h-8 px-2 py-1 text-xs"
+                      aria-label={formatLabel(ADMIN_CODE_TEXT.historyButtonAria, { code: value })}
+                      onClick={() => setHistoryCode(code)}
+                    >
+                      {ADMIN_TEXT.history}
+                    </button>
                   </td>
                 </tr>
               );
@@ -258,13 +276,21 @@ const ServerCodesPanel = function () {
           </p>
           {renderGroups()}
         </nav>
-        <section className="card overflow-hidden" aria-label={groupCode ? `${groupCode} 코드 목록` : "코드 목록"}>
+        <section
+          className="card overflow-hidden"
+          aria-label={groupCode ? formatLabel(ADMIN_CODE_TEXT.groupCodeListAria, { groupCode }) : ADMIN_CODE_TEXT.codeListAria}
+        >
           {renderCodes()}
           <div className="border-t border-background-200 bg-background-100 px-4 py-2.5 text-xs leading-5 text-foreground-500">
             {ADMIN_CODE_TEXT.fixedNote} {ADMIN_CODE_TEXT.lastWriteWins}
           </div>
         </section>
       </div>
+
+      <CodeHistoryDialog
+        target={groupCode && historyCode ? { groupCode, code: historyCode } : null}
+        onClose={() => setHistoryCode(null)}
+      />
     </div>
   );
 };

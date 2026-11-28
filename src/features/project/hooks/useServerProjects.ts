@@ -3,6 +3,7 @@ import { useDemoStore } from "@/stores/DemoStore";
 import { useAuth } from "@/features/auth/authContext";
 import { fetchAllProjectMembers, fetchAllProjects, fetchProjectDetail, fetchProjectPhases } from "@/features/project/api/projectApi";
 import { AUTH_TEXT } from "@/features/auth/i18n/ko";
+import { PROJECT_LOAD_TEXT } from "@/features/project/i18n/ko";
 import type { ApiFailure } from "@/shared/api/client";
 
 export type ServerLoadState =
@@ -12,12 +13,8 @@ export type ServerLoadState =
   | { phase: "notFound" }
   | { phase: "ready" };
 
-export const PROJECT_TEXT = {
-  loadListFailed: "프로젝트 목록을 불러오지 못했습니다",
-  loadDetailFailed: "프로젝트를 불러오지 못했습니다",
-  loading: "프로젝트를 불러오는 중입니다",
-  retry: "다시 시도",
-} as const;
+/** 기존 import 경로를 유지한다. 문구는 다국어 라벨 카탈로그(project.load.*)에서 읽는다. */
+export const PROJECT_TEXT = PROJECT_LOAD_TEXT;
 
 const failureMessage = function (failure: ApiFailure): string {
   if (failure.kind === "timeout") return AUTH_TEXT.timeout;

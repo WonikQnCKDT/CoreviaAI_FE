@@ -23,6 +23,23 @@ interface CursorPageDto<T> {
   hasNext: boolean;
 }
 
+interface AdminLabelHistoryDto {
+  id: number;
+  action: string;
+  actorUserId: number | null;
+  actorName: string | null;
+  details: {
+    labelKey?: string;
+    lang?: string;
+    text?: { before?: string | null; after?: string | null } | null;
+    textKo?: string | null;
+    textEn?: string | null;
+    textZhTw?: string | null;
+  } | null;
+  ipAddress: string | null;
+  occurredAt: string;
+}
+
 export interface AdminLabel {
   id: number;
   labelKey: string;
@@ -33,6 +50,30 @@ export interface AdminLabel {
   /** 낙관적 잠금 값. 수정 요청에 그대로 보낸다. */
   version: number;
   updatedAt: string;
+}
+
+export type LabelHistoryDetail =
+  | {
+      kind: "created";
+      textKo: string | null;
+      textEn: string | null;
+      textZhTw: string | null;
+    }
+  | {
+      kind: "changed";
+      lang: string;
+      before: string | null;
+      after: string | null;
+    };
+
+export interface LabelHistory {
+  id: number;
+  action: "I18N_LABEL_CREATED" | "I18N_LABEL_CHANGED" | string;
+  actorUserId: number | null;
+  actorName: string | null;
+  detail: LabelHistoryDetail | null;
+  ipAddress: string | null;
+  occurredAt: string;
 }
 
 /** 번역 누락 필터. ko는 서버가 400으로 거부하므로 두지 않는다. */
@@ -129,4 +170,70 @@ export const updateAdminLabel = async function ({
     signal,
   });
   return mapResult(result, toLabel);
+};
+
+const toLabelHistoryDetail = function (action: string, details: AdminLabelHistoryDto["details"]): LabelHistoryDetail | null {
+  if (!details || typeof details !== "object") return null;
+  if (action === "I18N_LABEL_CREATED") {
+    return {
+      kind: "created",
+      textKo: typeof details.textKo === "string" ? details.textKo : null,
+      textEn: typeof details.textEn === "string" ? details.textEn : null,
+      textZhTw: typeof details.textZhTw === "string" ? details.textZhTw : null,
+    };
+  }
+  if (action === "I18N_LABEL_CHANGED" && typeof details.lang === "string") {
+    const pair = details.text;
+    return {
+      kind: "changed",
+      lang: details.lang,
+      before: typeof pair?.before === "string" ? pair.before : null,
+      after: typeof pair?.after === "string" ? pair.after : null,
+    };
+  }
+  return null;
+};
+
+const toLabelHistory = ({
+  id,
+  action,
+  actorUserId,
+  actorName,
+  details,
+  ipAddress,
+  occurredAt,
+}: AdminLabelHistoryDto): LabelHistory => ({
+  id,
+  action,
+  actorUserId: actorUserId ?? null,
+  actorName: actorName ?? null,
+  detail: toLabelHistoryDetail(action, details),
+  ipAddress: ipAddress ?? null,
+  occurredAt,
+});
+
+/** GET /api/admin/i18n/labels/{labelId}/histories — 최신순 커서 목록 */
+export const fetchLabelHistories = async function ({
+  labelId,
+  cursor,
+  size = 20,
+  signal,
+}: {
+  labelId: number;
+  cursor?: string | null;
+  size?: number;
+  signal?: AbortSignal;
+}): Promise<ApiResult<CursorPage<LabelHistory>>> {
+  const search = new URLSearchParams();
+  if (cursor) search.set("cursor", cursor);
+  search.set("size", String(size));
+  const result = await apiRequest<CursorPageDto<AdminLabelHistoryDto>>({
+    path: `/admin/i18n/labels/${encodeURIComponent(String(labelId))}/histories?${search.toString()}`,
+    signal,
+  });
+  return mapResult(result, ({ items, nextCursor, hasNext }) => ({
+    items: (items ?? []).map(toLabelHistory),
+    nextCursor: nextCursor ?? null,
+    hasNext: Boolean(hasNext),
+  }));
 };

@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from "react";
 import Modal from "@/components/ui/Modal";
 import type { WbsItem } from "@/features/wbs/api/wbsApi";
+import { WBS_FORM_TEXT, WBS_TEXT } from "@/features/wbs/i18n/ko";
 import type { ReparentOption } from "@/features/wbs/utils/wbsRules";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { formatLabel } from "@/shared/i18n/store";
 
 interface WbsReparentDialogProps {
   item: WbsItem;
@@ -50,15 +52,15 @@ export default function WbsReparentDialog({
   };
 
   return (
-    <Modal open onClose={submitting ? () => {} : onClose} title="상위 작업 변경">
+    <Modal open onClose={submitting ? () => {} : onClose} title={WBS_TEXT.reparent}>
       <form onSubmit={handleSubmit} className="space-y-3.5">
         <p className="text-[12.5px] text-foreground-700">
-          <span className="font-medium text-foreground-950">{item.name}</span>의 위치를 변경합니다. 다른 단계의 상위 작업 아래로 옮기면 해당 단계로 함께 이동합니다.
+          {formatLabel(WBS_TEXT.reparentDescription, { name: item.name })}
         </p>
 
         <div className="space-y-1.5">
           <label htmlFor="wbs-reparent-select" className="block text-[12px] font-medium text-foreground-700">
-            이동할 상위 작업
+            {WBS_TEXT.reparentTarget}
           </label>
           <select
             id="wbs-reparent-select"
@@ -69,7 +71,7 @@ export default function WbsReparentDialog({
           >
             {options.map((opt) => {
               const value = opt.parentTaskId === null ? ROOT_VALUE : String(opt.parentTaskId);
-              const label = opt.parentTaskId === null ? "최상위 작업으로 올리기" : `${phaseName(opt.phaseId)}${opt.name}`;
+              const label = opt.parentTaskId === null ? WBS_TEXT.reparentRoot : `${phaseName(opt.phaseId)}${opt.name}`;
               return (
                 <option key={value} value={value}>
                   {label}
@@ -90,7 +92,7 @@ export default function WbsReparentDialog({
             {BUTTON_TEXT.cancel}
           </button>
           <button type="submit" className="btn-primary" disabled={submitting || !selected}>
-            {submitting ? "저장 중..." : BUTTON_TEXT.save}
+            {submitting ? WBS_FORM_TEXT.submitting : BUTTON_TEXT.save}
           </button>
         </div>
       </form>

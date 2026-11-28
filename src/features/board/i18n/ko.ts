@@ -120,4 +120,11 @@ export const TASK_DETAIL_TEXT = defineLabels("task.server", {
   activityBoardColumnChanged: "컬럼 이동",
   activityProgressChanged: "진척률 변경",
   activityOther: "변경",
+  fieldName: "작업명",
+  fieldStartDate: "시작일",
+  fieldEndDate: "종료일",
+  fieldDueDate: "마감일",
+  fieldCompletionCriteria: "완료 조건",
+  fieldSortOrder: "정렬 순서",
+  fieldBoardColumnId: "보드 컬럼",
 });

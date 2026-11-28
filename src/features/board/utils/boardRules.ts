@@ -61,6 +61,29 @@ const ACTIVITY_LABEL: Record<HistoryActivity, () => string> = {
 
 export const activityLabel = (activity: HistoryActivity) => ACTIVITY_LABEL[activity]();
 
+const HISTORY_FIELD_LABEL: Record<string, () => string> = {
+  parentTaskId: () => TASK_DETAIL_TEXT.parent,
+  name: () => TASK_DETAIL_TEXT.fieldName,
+  description: () => TASK_DETAIL_TEXT.description,
+  assigneeUserId: () => TASK_DETAIL_TEXT.assignee,
+  startDate: () => TASK_DETAIL_TEXT.fieldStartDate,
+  endDate: () => TASK_DETAIL_TEXT.fieldEndDate,
+  dueDate: () => TASK_DETAIL_TEXT.fieldDueDate,
+  estimatedEffort: () => TASK_DETAIL_TEXT.effort,
+  taskType: () => TASK_DETAIL_TEXT.taskType,
+  priority: () => TASK_DETAIL_TEXT.priority,
+  completionCriteria: () => TASK_DETAIL_TEXT.fieldCompletionCriteria,
+  source: () => TASK_DETAIL_TEXT.source,
+  sortOrder: () => TASK_DETAIL_TEXT.fieldSortOrder,
+  status: () => TASK_DETAIL_TEXT.status,
+  boardColumnId: () => TASK_DETAIL_TEXT.fieldBoardColumnId,
+  progress: () => TASK_DETAIL_TEXT.progress,
+};
+
+/** 변경 이력의 서버 필드 키를 사람이 읽는 라벨로 바꾼다. 모르는 키는 원문 폴백 */
+export const historyFieldLabel = (key: string): string =>
+  Object.hasOwn(HISTORY_FIELD_LABEL, key) ? HISTORY_FIELD_LABEL[key]() : key;
+
 /** 이력 한 줄에 보여 줄 값 길이 상한(전체 값은 title로) */
 const SHOWN_VALUE = 80;
 
@@ -76,7 +99,7 @@ export const historyLines = function ({
   before: Record<string, string | null> | null;
   after: Record<string, string | null> | null;
   userName: (id: number) => string | null;
-}): { field: string; from: string; to: string }[] {
+}): { field: string; label: string; from: string; to: string }[] {
   const keys = [...new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})])];
   const show = (key: string, value: string | null | undefined) => {
     if (value === null || value === undefined || value === "") return TASK_DETAIL_TEXT.none;
@@ -85,7 +108,12 @@ export const historyLines = function ({
   };
   return keys
     .filter((key) => (before?.[key] ?? null) !== (after?.[key] ?? null))
-    .map((key) => ({ field: key, from: before ? show(key, before[key]) : "", to: after ? show(key, after[key]) : "" }));
+    .map((key) => ({
+      field: key,
+      label: historyFieldLabel(key),
+      from: before ? show(key, before[key]) : "",
+      to: after ? show(key, after[key]) : "",
+    }));
 };
 
 /* =====================================================================

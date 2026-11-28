@@ -14,6 +14,7 @@ import {
 } from "@/features/admin/utils/adminUserFailure";
 import type { SystemRole } from "@/types";
 import { BUTTON_TEXT } from "@/shared/i18n/catalog/button";
+import { formatLabel } from "@/shared/i18n/store";
 
 export type UserFormMode = { kind: "create" } | { kind: "edit"; user: AdminUser };
 
@@ -175,11 +176,7 @@ const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale 
     <Modal
       open={Boolean(mode)}
       title={creating ? ADMIN_TEXT.addUser : ADMIN_TEXT.editUser}
-      description={
-        creating
-          ? "계정만 만들어집니다. 만든 뒤 임시 비밀번호를 발급해야 로그인할 수 있습니다."
-          : "시스템 역할과 상태는 목록에서 따로 바꿉니다."
-      }
+      description={creating ? ADMIN_TEXT.userCreateDescription : ADMIN_TEXT.userEditDescription}
       onClose={() => {
         if (!submitting) onClose();
       }}
@@ -206,7 +203,7 @@ const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale 
       <form id="admin-user-form" className="grid grid-cols-1 gap-3 sm:grid-cols-2" onSubmit={handleSubmit} noValidate aria-busy={submitting}>
         <div className="min-w-0">
           <label htmlFor="user-loginId" className="mb-1 block text-xs font-medium text-foreground-800">
-            아이디
+            {ADMIN_TEXT.fieldLoginId}
           </label>
           <input
             id="user-loginId"
@@ -223,7 +220,7 @@ const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale 
         </div>
         <div className="min-w-0">
           <label htmlFor="user-name" className="mb-1 block text-xs font-medium text-foreground-800">
-            이름
+            {ADMIN_TEXT.fieldName}
           </label>
           <input
             id="user-name"
@@ -240,7 +237,7 @@ const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale 
         {creating && (
           <div className="min-w-0">
             <label htmlFor="user-role" className="mb-1 block text-xs font-medium text-foreground-800">
-              시스템 역할
+              {ADMIN_TEXT.colSystemRole}
             </label>
             <select
               id="user-role"
@@ -259,7 +256,7 @@ const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale 
         )}
         <div className="min-w-0">
           <label htmlFor="user-departmentId" className="mb-1 block text-xs font-medium text-foreground-800">
-            부서 {needsDepartment ? "" : "(선택)"}
+            {needsDepartment ? ADMIN_TEXT.colDepartment : ADMIN_TEXT.fieldDepartmentOptional}
           </label>
           <select
             id="user-departmentId"
@@ -270,11 +267,11 @@ const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale 
             aria-invalid={Boolean(errors.departmentId)}
             aria-describedby={describedBy("departmentId")}
           >
-            <option value="">{needsDepartment ? "부서 선택" : ADMIN_TEXT.none}</option>
+            <option value="">{needsDepartment ? ADMIN_TEXT.fieldDepartmentSelect : ADMIN_TEXT.none}</option>
             {departmentOptions.map(({ department, path }) => (
               <option key={department.id} value={department.id}>
                 {path}
-                {department.status === "inactive" ? " (비활성)" : ""}
+                {department.status === "inactive" ? ADMIN_TEXT.inactiveSuffix : ""}
               </option>
             ))}
           </select>
@@ -282,7 +279,7 @@ const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale 
         </div>
         <div className="min-w-0">
           <label htmlFor="user-jobTitle" className="mb-1 block text-xs font-medium text-foreground-800">
-            직무 (선택)
+            {ADMIN_TEXT.fieldJobTitleOptional}
           </label>
           <input
             id="user-jobTitle"
@@ -298,7 +295,7 @@ const UserFormDialog = function ({ mode, departments, onClose, onSaved, onStale 
         </div>
         {editingUser && (
           <p className="text-xs text-foreground-500 sm:col-span-2">
-            아이디 <span className="font-mono">{editingUser.loginId}</span>는 바꿀 수 없습니다.
+            {formatLabel(ADMIN_TEXT.loginIdFixedNote, { loginId: editingUser.loginId })}
           </p>
         )}
         {submit.phase === "failed" && (

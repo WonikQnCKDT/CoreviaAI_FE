@@ -1,3 +1,5 @@
+import { AUTH_TEXT } from "@/features/auth/i18n/ko";
+
 /**
  * 세션 만료 처리 공통 모듈.
  *
@@ -89,8 +91,8 @@ export function isSessionExpired(userId: string, now = Date.now()): boolean {
 export function markSessionExpiredNotice() {
   const notice: SessionNotice = {
     reason: "expired",
-    title: "로그인이 만료되었습니다. 다시 로그인해주세요.",
-    note: "일정 시간 동안 활동이 없어 세션이 종료되었습니다. 다시 로그인하면 이전에 보던 화면으로 이동합니다.",
+    title: AUTH_TEXT.sessionExpiredTitle,
+    note: AUTH_TEXT.sessionExpiredNote,
     at: Date.now(),
   };
   writeJson(NOTICE_KEY, notice);

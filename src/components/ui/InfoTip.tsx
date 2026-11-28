@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { COMMON_UI_TEXT } from "@/shared/i18n/catalog/common";
 
 interface InfoTipProps {
   text: string;
@@ -7,13 +8,14 @@ interface InfoTipProps {
 }
 
 /** 짧은 설명을 아이콘 뒤에 숨겨 두는 툴팁입니다. */
-export default function InfoTip({ text, label = "설명 보기", className = "" }: InfoTipProps) {
+export default function InfoTip({ text, label, className = "" }: InfoTipProps) {
   const id = useId();
+  const resolvedLabel = label ?? COMMON_UI_TEXT.infoTipLabel;
   return (
     <span className={`group relative inline-flex h-4 w-4 shrink-0 items-center justify-center ${className}`}>
       <button
         type="button"
-        aria-label={label}
+        aria-label={resolvedLabel}
         aria-describedby={id}
         className="flex h-4 w-4 cursor-help items-center justify-center rounded-full text-foreground-400 transition hover:text-primary-600"
       >

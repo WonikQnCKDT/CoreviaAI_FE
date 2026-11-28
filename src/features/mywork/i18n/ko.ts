@@ -54,6 +54,8 @@ export const TODO_TEXT = defineLabels("mywork.todo", {
   timeout: "응답이 늦어 요청을 멈췄습니다. 같은 내용으로 다시 저장하면 중복 없이 처리됩니다.",
   serverError: "서버 오류로 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.",
   unknown: "요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+  approvalPendingTitle: "승인 요청 연동 준비 중",
+  approvalPendingDesc: "승인 요청 목록은 후속 서버 연동 후 표시됩니다.",
 });
 
 /** api 모드 내 일정 문구 (06-2. 개인 일정·업무일지 API, FR-PSN-02) */

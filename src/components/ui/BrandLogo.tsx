@@ -1,3 +1,5 @@
+import { COMMON_UI_TEXT } from "@/shared/i18n/catalog/common";
+
 interface BrandLogoProps {
   /** 크기·색상 유틸리티. 색은 text-* 클래스의 currentColor를 그대로 사용합니다. */
   className?: string;
@@ -14,7 +16,7 @@ export default function BrandLogo({ className = "h-5 w-auto" }: BrandLogoProps) 
       className={className}
       fill="currentColor"
       role="img"
-      aria-label="CoreviaAI 로고"
+      aria-label={COMMON_UI_TEXT.brandLogo}
       focusable="false"
     >
       <path d="M160 46.5 209 68.5 187.5 107 160 90.5 111 117.5 111 162 160 189 187.5 172.5 214.5 199.5 160 231.5 72.5 183 72.5 96Z" />
